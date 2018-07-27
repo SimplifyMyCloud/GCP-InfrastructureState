@@ -1,4 +1,4 @@
-# SMCInfrastructureState
+# SMC Infrastructure State
 
 SimplifyMy.Cloud infrastructure state with a focus on simplicity and empathy.
 
