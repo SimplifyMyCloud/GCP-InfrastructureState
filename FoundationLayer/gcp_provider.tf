@@ -7,7 +7,7 @@ provider "google" {
 terraform {
  backend "gcs" {
    bucket  = "smc-theorum-terraform-state-files"
-   path    = "/terraform.tfstate"
+   prefix    = "/terraform.tfstate"
    project = "theorum"
  }
 }
