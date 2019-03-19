@@ -6,6 +6,6 @@
 # provider variables to configure terraform and gcp
 # ---------------------------------------------------------------------------------------------------------------------
 
-gcp_project = theorum-stage
+gcp_project = simplifymycloud-stage
 gcp_region  = us-west1
 gcp_environment = stage
