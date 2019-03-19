@@ -1,13 +1,13 @@
 provider "google" {
   credentials = "${file("~/.config/gcloud/terraform-admin.json")}"
-  project     = "${var.gcp_project}"
-  region      = "${var.gcp_region}"
+  project     = "simplifymycloud-dev"
+  region      = "us-west1"
 }
 
 terraform {
  backend "gcs" {
-   bucket  = "smc-theorum-terraform-state-files"
-   prefix    = "/terraform_state_${var.gcp_environment}.tfstate"
-   project = "${var.gcp_project}"
+   bucket  = "smc-terraform-state-files-dev"
+   prefix    = "/terraform_state_dev.tfstate"
+   project = "simplifymycloud-dev"
  }
 }
