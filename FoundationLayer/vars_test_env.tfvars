@@ -6,6 +6,6 @@
 # provider variables to configure terraform and gcp
 # ---------------------------------------------------------------------------------------------------------------------
 
-gcp_project = simplifymycloud-test
-gcp_region  = us-west1
-gcp_environment = test
+gcp_project = "simplifymycloud-test"
+gcp_region  = "us-west1"
+gcp_environment = "test"
