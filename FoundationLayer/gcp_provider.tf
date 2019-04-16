@@ -1,3 +1,8 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# Foundation Layer
+# GCP Provider
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "google" {
   credentials = "${file("~/.config/gcloud/terraform-admin.json")}"
   project     = "simplifymycloud-dev"
@@ -5,9 +10,9 @@ provider "google" {
 }
 
 terraform {
- backend "gcs" {
-   bucket  = "smc-terraform-state-files-dev"
-   prefix    = "/terraform_state_dev.tfstate"
-   project = "simplifymycloud-dev"
- }
+  backend "gcs" {
+    bucket  = "smc-terraform-state-files-dev"
+    prefix  = "/terraform_state_dev.tfstate"
+    project = "simplifymycloud-dev"
+  }
 }
