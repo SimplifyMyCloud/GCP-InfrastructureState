@@ -3,6 +3,17 @@
 # GCP Networking state
 # ---------------------------------------------------------------------------------------------------------------------
 
+# Ensure a VPC network exists for this Project
+# Default is to use auto-subnet creation
+resource "google_compute_network" "vpc_network" {
+  name                            = "${var.vpc_network_name}"
+  description                     = "${var.vpc_network_description}"
+  project                         = "${var.gcp_project}"
+  auto_create_subnetworks         = "${var.vpc_network_autocreate_subnetworks}"
+  routing_mode                    = "${var.vpc_network_routing_mode}"
+  #delete_default_routes_on_create = "${var.vpc_network_delete_default_routes}"
+}
+
 # ensure data gathered from default project
 
 # GCP project & region output
