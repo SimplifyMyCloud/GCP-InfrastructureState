@@ -11,5 +11,10 @@ gcp_region  = "us-west1"
 gcp_environment = "dev"
 
 # networking variables
-vpc_network_name  = "smc-test-vpc"
+vpc_network_name  = "smc-test-vpc-v01"
 vpc_network_description = "SMC development environment VPC"
+
+# security variables
+vpc_network_firewall_icmp_disabled  = ""
+vpc_network_firewall_internal_disabled  = ""
+vpc_network_firewall_ssh_disabled = ""

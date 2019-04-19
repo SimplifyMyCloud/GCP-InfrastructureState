@@ -51,3 +51,22 @@ variable "vpc_network_routing_mode" {
 #  description = "declares if the default routes created for the VPC network will be deleted after the VPC network is deployed"
 #  default     = "false"
 #}
+
+# Security variables
+variable "vpc_network_firewall_icmp_disabled" {
+  type        = "string"
+  description = "declares if the ICMP firewall rule is disabled or enabled with regards to ICMP traffic from the public internet. true = ICMP traffic is disabled | false = ICMP traffic is enabled."
+  default     = "false"
+}
+
+variable "vpc_network_firewall_internal_disabled" {
+  type        = "string"
+  description = "declares if the internal traffic firewall rule is disabled or enabled with regards to internal traffic from the public internet. true = internal traffic is disabled | false = internal traffic is enabled."
+  default     = "false"
+}
+
+variable "vpc_network_firewall_ssh_disabled" {
+  type        = "string"
+  description = "declares if the SSH firewall rule is disabled or enabled with regards to SSH traffic from the public internet.  true = SSH traffic is disabled | false = SSH traffic is enabled."
+  default     = "false"
+}
