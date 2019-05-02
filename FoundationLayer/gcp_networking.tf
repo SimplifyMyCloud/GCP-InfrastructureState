@@ -3,18 +3,6 @@
 # GCP Networking state
 # ---------------------------------------------------------------------------------------------------------------------
 
-# Ensure a VPC network exists for this Project
-# Default is to use auto-subnet creation
-resource "google_compute_network" "vpc_network" {
-  name                    = "${var.vpc_network_name}"
-  description             = "${var.vpc_network_description}"
-  project                 = "${var.gcp_project}"
-  auto_create_subnetworks = "${var.vpc_network_autocreate_subnetworks}"
-  routing_mode            = "${var.vpc_network_routing_mode}"
-
-  #delete_default_routes_on_create = "${var.vpc_network_delete_default_routes}"
-}
-
 # ensure data gathered from default project
 
 # GCP project & region output
@@ -44,4 +32,62 @@ data "google_compute_subnetwork" "default" {
 
 output "GCP default VPC subnetwork" {
   value = "a GCP default VPC subnetwork list with the name ${data.google_compute_subnetwork.default.name} has a CIDR range of ${data.google_compute_subnetwork.default.ip_cidr_range}"
+}
+
+# ensure a not-default VPC network 
+
+# regional VPC network
+module  "vpc" {
+  source  = "terraform-google-modules/network/google"
+  version = "0.6.0"
+
+  project_id   = "${var.gcp_project}"
+  network_name = "${var.vpc_network_name}"
+  routing_mode = "${var.vpc_network_routing_mode}"
+
+  subnets   = [
+    {
+      subnet_name = "${var.vpc_network_subnet_one}"
+      subnet_ip   = "${var.vpc_network_subnet_one_cidr}"
+      subnet_region = "${var.gcp_region}"
+      subnet_private_access = "${var.vpc_network_subnet_one_gcp_private_access}"
+      subnet_flow_logs  = "${var.vpc_network_subnet_one_vpc_flow_logs}"
+      
+    },
+    {
+      subnet_name = "${var.vpc_network_subnet_two}"
+      subnet_ip   = "${var.vpc_network_subnet_two_cidr}"
+      subnet_region = "${var.gcp_region}"
+      subnet_private_access = "${var.vpc_network_subnet_two_gcp_private_access}"
+      subnet_flow_logs  = "${var.vpc_network_subnet_two_vpc_flow_logs}"
+    },
+  ]
+
+  secondary_ranges = {
+      "${var.vpc_network_subnet_one}" = []
+      "${var.vpc_network_subnet_two}" = []
+    }
+
+
+  routes  = [
+    {
+      name  = "egress-internet"
+      description  =  "route through the IGW to access internet"
+      destination_range   = "0.0.0.0/0"
+      tags  = "egress-inet"
+      next_hop_internet = "true"
+    },
+    {
+      name  = "subnet-one-route"
+      description = "Default local route to the subnetwork one"
+      destination_range = "${var.vpc_network_subnet_one_cidr}"
+      tags  = "subnet-one"
+    },
+    {
+      name  = "subnet-two-route"
+      description = "Default local route to the subnetwork two"
+      destination_range = "${var.vpc_network_subnet_two_cidr}"
+      tags  = "subnet-two"
+    },
+  ]
 }

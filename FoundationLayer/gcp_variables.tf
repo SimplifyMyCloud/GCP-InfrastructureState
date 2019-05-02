@@ -34,23 +34,59 @@ variable "vpc_network_description" {
   default     = ""
 }
 
-variable "vpc_network_autocreate_subnetworks" {
-  type        = "string"
-  description = "declares if GCP should autocreate the subnetworks across the VPC network, true creates a subnet in every region, false does not create subnets"
-  default     = "true"
-}
-
 variable "vpc_network_routing_mode" {
   type        = "string"
   description = "declares the routing mode for the VPC network.  If set to REGIONAL, this network's cloud routers will only advertise routes with subnetworks of this network in the same region as the router. If set to GLOBAL, this network's cloud routers will advertise routes with all subnetworks of this network, across regions."
   default     = "REGIONAL"
 }
 
-#variable "vpc_network_delete_default_routes" {
-#  type        = "string"
-#  description = "declares if the default routes created for the VPC network will be deleted after the VPC network is deployed"
-#  default     = "false"
-#}
+variable  "vpc_network_subnet_one"  {
+  type  = "string"
+  description = "declares the name of the VPC network subnetwork one"
+  default = ""
+}
+
+variable  "vpc_network_subnet_one_cidr"  {
+  type  = "string"
+  description = "declares the cidr of the VPC network subnetwork one"
+  default = ""
+}
+
+variable  "vpc_network_subnet_one_gcp_private_access" {
+  type  = "string"
+  description = "declares if the instances within a private subnetwork can access private GCP APIs"
+  default = "true"
+}
+
+variable  "vpc_network_subnet_one_vpc_flow_logs"  {
+  type  = "string"
+  description = "declares if the VPC subnet has flow logs enabled"
+  default = "true"
+}
+
+variable  "vpc_network_subnet_two"  {
+  type  = "string"
+  description = "declares the name of the VPC network subnetwork two"
+  default = ""
+}
+
+variable  "vpc_network_subnet_two_cidr" {
+  type  = "string"
+  description = "declares the cidr of the VPC network subnetwork two"
+  default = ""
+}
+
+variable  "vpc_network_subnet_two_vpc_flow_logs"  {
+  type  = "string"
+  description = "declares if the VPC subnet has flow logs enabled"
+  default = "true"
+}
+
+variable  "vpc_network_subnet_two_gcp_private_access" {
+  type  = "string"
+  description = "declares if the instances within a private subnetwork can access private GCP APIs"
+  default = "true"
+}
 
 # Security variables
 variable "vpc_network_firewall_icmp_disabled" {
