@@ -40,52 +40,52 @@ variable "vpc_network_routing_mode" {
   default     = "REGIONAL"
 }
 
-variable  "vpc_network_subnet_one"  {
-  type  = "string"
+variable "vpc_network_subnet_one" {
+  type        = "string"
   description = "declares the name of the VPC network subnetwork one"
-  default = ""
+  default     = ""
 }
 
-variable  "vpc_network_subnet_one_cidr"  {
-  type  = "string"
+variable "vpc_network_subnet_one_cidr" {
+  type        = "string"
   description = "declares the cidr of the VPC network subnetwork one"
-  default = ""
+  default     = ""
 }
 
-variable  "vpc_network_subnet_one_gcp_private_access" {
-  type  = "string"
+variable "vpc_network_subnet_one_gcp_private_access" {
+  type        = "string"
   description = "declares if the instances within a private subnetwork can access private GCP APIs"
-  default = "true"
+  default     = "true"
 }
 
-variable  "vpc_network_subnet_one_vpc_flow_logs"  {
-  type  = "string"
+variable "vpc_network_subnet_one_vpc_flow_logs" {
+  type        = "string"
   description = "declares if the VPC subnet has flow logs enabled"
-  default = "true"
+  default     = "true"
 }
 
-variable  "vpc_network_subnet_two"  {
-  type  = "string"
+variable "vpc_network_subnet_two" {
+  type        = "string"
   description = "declares the name of the VPC network subnetwork two"
-  default = ""
+  default     = ""
 }
 
-variable  "vpc_network_subnet_two_cidr" {
-  type  = "string"
+variable "vpc_network_subnet_two_cidr" {
+  type        = "string"
   description = "declares the cidr of the VPC network subnetwork two"
-  default = ""
+  default     = ""
 }
 
-variable  "vpc_network_subnet_two_vpc_flow_logs"  {
-  type  = "string"
+variable "vpc_network_subnet_two_vpc_flow_logs" {
+  type        = "string"
   description = "declares if the VPC subnet has flow logs enabled"
-  default = "true"
+  default     = "true"
 }
 
-variable  "vpc_network_subnet_two_gcp_private_access" {
-  type  = "string"
+variable "vpc_network_subnet_two_gcp_private_access" {
+  type        = "string"
   description = "declares if the instances within a private subnetwork can access private GCP APIs"
-  default = "true"
+  default     = "true"
 }
 
 # Security variables

@@ -37,7 +37,7 @@ output "GCP default VPC subnetwork" {
 # ensure a not-default VPC network 
 
 # regional VPC network
-module  "vpc" {
+module "vpc" {
   source  = "terraform-google-modules/network/google"
   version = "0.6.0"
 
@@ -45,49 +45,47 @@ module  "vpc" {
   network_name = "${var.vpc_network_name}"
   routing_mode = "${var.vpc_network_routing_mode}"
 
-  subnets   = [
+  subnets = [
     {
-      subnet_name = "${var.vpc_network_subnet_one}"
-      subnet_ip   = "${var.vpc_network_subnet_one_cidr}"
-      subnet_region = "${var.gcp_region}"
+      subnet_name           = "${var.vpc_network_subnet_one}"
+      subnet_ip             = "${var.vpc_network_subnet_one_cidr}"
+      subnet_region         = "${var.gcp_region}"
       subnet_private_access = "${var.vpc_network_subnet_one_gcp_private_access}"
-      subnet_flow_logs  = "${var.vpc_network_subnet_one_vpc_flow_logs}"
-      
+      subnet_flow_logs      = "${var.vpc_network_subnet_one_vpc_flow_logs}"
     },
     {
-      subnet_name = "${var.vpc_network_subnet_two}"
-      subnet_ip   = "${var.vpc_network_subnet_two_cidr}"
-      subnet_region = "${var.gcp_region}"
+      subnet_name           = "${var.vpc_network_subnet_two}"
+      subnet_ip             = "${var.vpc_network_subnet_two_cidr}"
+      subnet_region         = "${var.gcp_region}"
       subnet_private_access = "${var.vpc_network_subnet_two_gcp_private_access}"
-      subnet_flow_logs  = "${var.vpc_network_subnet_two_vpc_flow_logs}"
+      subnet_flow_logs      = "${var.vpc_network_subnet_two_vpc_flow_logs}"
     },
   ]
 
   secondary_ranges = {
-      "${var.vpc_network_subnet_one}" = []
-      "${var.vpc_network_subnet_two}" = []
-    }
+    "${var.vpc_network_subnet_one}" = []
+    "${var.vpc_network_subnet_two}" = []
+  }
 
-
-  routes  = [
+  routes = [
     {
-      name  = "egress-internet"
-      description  =  "route through the IGW to access internet"
-      destination_range   = "0.0.0.0/0"
-      tags  = "egress-inet"
+      name              = "egress-internet"
+      description       = "route through the IGW to access internet"
+      destination_range = "0.0.0.0/0"
+      tags              = "egress-inet"
       next_hop_internet = "true"
     },
     {
-      name  = "subnet-one-route"
-      description = "Default local route to the subnetwork one"
+      name              = "subnet-one-route"
+      description       = "Default local route to the subnetwork one"
       destination_range = "${var.vpc_network_subnet_one_cidr}"
-      tags  = "subnet-one"
+      tags              = "subnet-one"
     },
     {
-      name  = "subnet-two-route"
-      description = "Default local route to the subnetwork two"
+      name              = "subnet-two-route"
+      description       = "Default local route to the subnetwork two"
       destination_range = "${var.vpc_network_subnet_two_cidr}"
-      tags  = "subnet-two"
+      tags              = "subnet-two"
     },
   ]
 }
