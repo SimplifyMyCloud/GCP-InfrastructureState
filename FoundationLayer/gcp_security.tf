@@ -8,7 +8,7 @@
 # Disable via the variable
 resource "google_compute_firewall" "vpc_network_firewall_icmp" {
   name     = "vpc-network-firewall-icmp"
-  network  = "${var.vpc_network_name}"
+  network  = "${module.vpc.network_name}"
   disabled = "${var.vpc_network_firewall_icmp_disabled}"
 
   allow {
@@ -18,11 +18,15 @@ resource "google_compute_firewall" "vpc_network_firewall_icmp" {
   priority      = 65534
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["all-instances"]
+
+  depends_on  = [
+
+  ]
 }
 
 resource "google_compute_firewall" "vpc_network_firewall_internal" {
   name     = "vpc-network-firewall-internal"
-  network  = "${var.vpc_network_name}"
+  network  = "${module.vpc.network_name}"
   disabled = "${var.vpc_network_firewall_internal_disabled}"
 
   allow {
@@ -40,13 +44,13 @@ resource "google_compute_firewall" "vpc_network_firewall_internal" {
   }
 
   priority      = 65534
-  source_ranges = ["10.138.0.0/20"]
+  source_tags = ["internal-traffic"]
   target_tags   = ["all-instances"]
 }
 
 resource "google_compute_firewall" "vpc_network_firewall_ssh" {
   name     = "vpc-network-firewall-ssh"
-  network  = "${var.vpc_network_name}"
+  network  = "${module.vpc.network_name}"
   disabled = "${var.vpc_network_firewall_ssh_disabled}"
 
   allow {

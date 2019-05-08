@@ -75,17 +75,25 @@ module "vpc" {
       tags              = "egress-inet"
       next_hop_internet = "true"
     },
-    {
-      name              = "subnet-one-route"
-      description       = "Default local route to the subnetwork one"
-      destination_range = "${var.vpc_network_subnet_one_cidr}"
-      tags              = "subnet-one"
-    },
-    {
-      name              = "subnet-two-route"
-      description       = "Default local route to the subnetwork two"
-      destination_range = "${var.vpc_network_subnet_two_cidr}"
-      tags              = "subnet-two"
-    },
+#    {
+#      name              = "subnet-one-route"
+#      description       = "Default local route to the subnetwork one"
+#      destination_range = "0.0.0.0/0"
+#      #destination_range = "${var.vpc_network_subnet_one_cidr}"
+#      tags              = "subnet-one"
+#      next_hop_gateway  = "${module.vpc.gateway_ipv4}"
+#    },
+#    {
+##      name              = "subnet-two-route"
+#     description       = "Default local route to the subnetwork two"
+#     destination_range = "0.0.0.0/0"
+#     #destination_range = "${var.vpc_network_subnet_two_cidr}"
+#      tags              = "subnet-two"
+#      next_hop_gateway  = "default-internet-gateway"
+#    },
   ]
 }
+
+#output "vpc_network_name" {
+#  value = "${module.vpc.google_compute_network.network.name}"
+#}
