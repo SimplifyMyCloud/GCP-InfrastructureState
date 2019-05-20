@@ -62,3 +62,5 @@ resource "google_compute_firewall" "vpc_network_firewall_ssh" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ssh-open-external-web"]
 }
+
+# adding comments to trigger test atlantis run
