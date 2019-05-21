@@ -7,7 +7,7 @@
 # Hard coding the default rules 
 # Disable via the variable
 resource "google_compute_firewall" "vpc_network_firewall_icmp" {
-  name     = "vpc-network-firewall-icmp"
+  name     = "vpc-network-firewall-icmp-atlantis"
   network  = "${module.vpc.network_name}"
   disabled = "${var.vpc_network_firewall_icmp_disabled}"
 
@@ -25,7 +25,7 @@ resource "google_compute_firewall" "vpc_network_firewall_icmp" {
 }
 
 resource "google_compute_firewall" "vpc_network_firewall_internal" {
-  name     = "vpc-network-firewall-internal"
+  name     = "vpc-network-firewall-internal-atlantis"
   network  = "${module.vpc.network_name}"
   disabled = "${var.vpc_network_firewall_internal_disabled}"
 
@@ -49,7 +49,7 @@ resource "google_compute_firewall" "vpc_network_firewall_internal" {
 }
 
 resource "google_compute_firewall" "vpc_network_firewall_ssh" {
-  name     = "vpc-network-firewall-ssh"
+  name     = "vpc-network-firewall-ssh-atlantis"
   network  = "${module.vpc.network_name}"
   disabled = "${var.vpc_network_firewall_ssh_disabled}"
 
