@@ -6,13 +6,13 @@
 # ensure data gathered from default project
 
 # GCP project & region output
-output "gcp_region" {
+output "gcp_region_output" {
   value = "Terraform is targeting the ${var.gcp_region} region"
 }
 
 data "google_project" "default_project" {}
 
-output "GCP default project" {
+output "gcp_default_project_output" {
   value = "a GCP project named ${data.google_project.default_project.name} has the id ${data.google_project.default_project.number}"
 }
 
@@ -21,7 +21,7 @@ data "google_compute_network" "default" {
   name = "default"
 }
 
-output "GCP default VPC network" {
+output "gcp_default_vpc_network_output" {
   value = "a GCP default VPC network named ${data.google_compute_network.default.name}"
 }
 
@@ -30,7 +30,7 @@ data "google_compute_subnetwork" "default" {
   name = "default"
 }
 
-output "GCP default VPC subnetwork" {
+output "gcp_default_vpc_subnetwork_output" {
   value = "a GCP default VPC subnetwork list with the name ${data.google_compute_subnetwork.default.name} has a CIDR range of ${data.google_compute_subnetwork.default.ip_cidr_range}"
 }
 
