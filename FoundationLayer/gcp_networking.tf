@@ -6,7 +6,7 @@
 # ensure data gathered from default project
 
 # GCP project & region output
-output "GCP region" {
+output "gcp_region" {
   value = "Terraform is targeting the ${var.gcp_region} region"
 }
 
