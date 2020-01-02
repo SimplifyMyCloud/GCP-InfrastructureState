@@ -1,0 +1,125 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# Foundation Layer
+# GCP Projects
+# ensures GCP Projects per Infrastructure Environment
+# for the Foundation Layer development environment, ensure a random prefix is included to avoid naming collisions
+# and naming reservations.  GCP Projects are long lived naming reservations.
+# the cloud foundation toolkit addresses the naming collisions
+# ---------------------------------------------------------------------------------------------------------------------
+# production environment host vpc
+/******************************************
+  Host Project Creation
+ *****************************************/
+module "host-project" {
+  source = "terraform-google-modules/project-factory/google"
+  name   = "iq9-prod-shared-host-project"
+  folder_id = "data.gcp_folder_production_env.id"
+  org_id  = "${var.gcp_org_id}"
+  billing_account = "${var.gcp_org_billing_account}"
+  random_project_id = true
+}
+
+/******************************************
+  Network Creation
+ *****************************************/
+module "vpc" {
+  source  = "terraform-google-modules/network/google"
+  version = "~> 1.4.0"
+
+  project_id   = module.host-project.project_id
+  network_name = "iq9-prod-shared-host-vpc"
+
+  delete_default_internet_gateway_routes = true
+  shared_vpc_host                        = true
+
+  subnets = [
+    {
+      subnet_name   = "iq9_prod_bigbarkozspeedshop_subnet"
+      subnet_ip     = "10.10.10.0/24"
+      subnet_region = "us-west1"
+    },
+    {
+      subnet_name   = "iq9_prod_caballerosflyingclub_subnet"
+      subnet_ip     = "10.10.20.0/24"
+      subnet_region = "us-west1"
+    },
+    {
+      subnet_name   = "iq9_prod_crashwithme_subnet"
+      subnet_ip     = "10.10.30.0/24"
+      subnet_region = "us-west1"
+    },
+    {
+      subnet_name   = "iq9_prod_hostelhub_subnet"
+      subnet_ip     = "10.10.40.0/24"
+      subnet_region = "us-west1"
+    },
+    {
+      subnet_name   = "iq9_prod_madeinwestgermany_subnet"
+      subnet_ip     = "10.10.50.0/24"
+      subnet_region = "us-west1"
+    },
+    {
+      subnet_name   = "iq9_prod_screwthedealers_subnet"
+      subnet_ip     = "10.10.60.0/24"
+      subnet_region = "us-west1"
+    },
+    {
+      subnet_name   = "iq9_prod_simplifymybiz_subnet"
+      subnet_ip     = "10.10.10.0/24"
+      subnet_region = "us-west1"
+    },
+      subnet_name   = "iq9_prod_simplifymycloud_subnet"
+      subnet_ip     = "10.10.10.0/24"
+      subnet_region = "us-west1"
+    },
+      subnet_name   = "iq9_prod_theargo_subnet"
+      subnet_ip     = "10.10.10.0/24"
+      subnet_region = "us-west1"
+    },
+  ]
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module "project-factory" {
+  source = "terraform-google-modules/project-factory/google"
+  version = "~> 6.0"
+
+  name  = "iq9-prod-bigbarkozspeedshop"
+  folder_id = "data.gcp_folder_production_env.id"
+  org_id  = "${var.gcp_org_id}"
+  billing_account = "${var.gcp_org_billing_account}"
+  lien = "true"
+  random_project_id = "true"
+  usage_bucket_name  = "iq9-prod-bigbarkozspeedshop-usage-reporting-bucket"
+  usage_bucket_prefix = "iq9/production/bigbarkozspeedshop"
+  shared_vpc  = "iq9-prod-shared-host"
+
+  shared_vpc_subnets = [
+    "project/iq9-prod-bigbarkozspeedshop/regions/us-west1/subnetworks/default",
+  ]
+  
+}
+
+
+projects/$project_id/regions/$region/subnetworks/$subnet_id

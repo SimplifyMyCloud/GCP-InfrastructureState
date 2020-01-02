@@ -1,6 +1,20 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Foundation Layer
-# GCP IAC Bastion
-# Ensures a GCE VM exists in all projects created to provide a bastion server to run Terraform 
-# and ensure the state of that project
+# GCP Provider
 # ---------------------------------------------------------------------------------------------------------------------
+provider "google" {
+  region      = "us-west1"
+  version     = "~> 2.18.1"
+}
+
+provider "google-beta" {
+  version     = "~> 2.18.1"
+}
+
+provider "null" {
+  version = "~> 2.1"
+}
+
+provider "random" {
+  version = "~> 2.2"
+}

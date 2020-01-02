@@ -8,4 +8,3 @@
 
 gcp_project = "simplifymycloud-test"
 gcp_region  = "us-west1"
-gcp_environment = "test"
