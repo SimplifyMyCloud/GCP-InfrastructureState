@@ -7,6 +7,12 @@ variable "gcp_org_id" {
   default = "447686549950"
 }
 
+# set the GCP Org prefix
+variable "gcp_org_project_prefix" {
+  type = string
+  default = "iq9"
+}
+
 # set the GCP Organization Billing Account for the Foundation Layer
 variable "gcp_org_billing_account" {
   type    = string
@@ -52,3 +58,16 @@ variable "gcp_org_billing_admins_group" {
   type    = string
   default = "gcp-billing-admins@iq9.io"
 }
+
+# set the list of Cloud Source Repos to create
+variable "gcp_csr_repo_list" {
+  type = list(string)
+  default = ["FoundationLayer", "ServiceLayer", "AppLayer"]
+}
+
+# set the list of GCP APIs to be enabled
+variable "gcp_bootstrap_apis" {
+  type = list(string)
+  default = ["cloudresourcemanager.googleapis.com", "cloudbilling.googleapis.com", "iam.googleapis.com", "storage-api.googleapis.com", "serviceusage.googleapis.com", "cloudbuild.googleapis.com", "sourcerepo.googleapis.com", "cloudkms.googleapis.com"]
+}
+

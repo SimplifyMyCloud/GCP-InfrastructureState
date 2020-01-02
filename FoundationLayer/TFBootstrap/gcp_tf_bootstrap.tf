@@ -14,4 +14,7 @@ module "bootstrap" {
   terraform_sa_email      = "${var.gcp_org_terraform_sa_email}"
   terraform_sa_name       = "${var.gcp_org_terraform_sa_name}"
   terraform_state_bucket  = "${var.gcp_org_bootstrap_bucket}"
+  cloud_source_repos      = "${var.gcp_csr_repo_list}"
+  project_prefix          = "${var.gcp_org_project_prefix}"
+  activate_apis             = "${var.gcp_bootstrap_apis}"
 }
