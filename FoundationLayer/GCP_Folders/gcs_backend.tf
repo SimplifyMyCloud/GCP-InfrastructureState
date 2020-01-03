@@ -1,20 +1,10 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Foundation Layer
-# GCP Provider
+# GCS Backend for Terraform State
 # ---------------------------------------------------------------------------------------------------------------------
-provider "google" {
-  region      = "us-west1"
-  version     = "~> 2.18.1"
-}
-
-provider "google-beta" {
-  version     = "~> 2.18.1"
-}
-
-provider "null" {
-  version = "~> 2.1"
-}
-
-provider "random" {
-  version = "~> 2.2"
+terraform {
+  backend "gcs" {
+    bucket  = "iq9-tf-states"
+    prefix  = "terraform/state/foundation/gcp_folders"
+  }
 }
