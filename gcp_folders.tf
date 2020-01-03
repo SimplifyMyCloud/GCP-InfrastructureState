@@ -14,6 +14,7 @@ module "folders" {
     "test",
     "staging",
     "production",
+    "ops",
   ]
 
   set_roles = true
