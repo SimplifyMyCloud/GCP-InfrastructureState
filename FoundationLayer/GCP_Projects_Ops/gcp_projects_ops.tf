@@ -6,7 +6,7 @@
 # and naming reservations.  GCP Projects are long lived naming reservations.
 # the cloud foundation toolkit addresses the naming collisions
 # ---------------------------------------------------------------------------------------------------------------------
-# development environment
+# ops environment
 module "project-factory" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 6.0"
