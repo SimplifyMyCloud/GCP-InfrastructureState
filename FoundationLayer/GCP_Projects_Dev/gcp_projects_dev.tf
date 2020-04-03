@@ -25,6 +25,13 @@ module "project-factory" {
     "iam.googleapis.com",
     "serviceusage.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "run.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "appengine.googleapis.com",
+    "storage-component.googleapis.com",
+    "logging.googleapis.com",
+    "clouderrorreporting.googleapis.com",
+    "monitoring.googleapis.com",
   ]
   auto_create_network     = false
   default_service_account = "keep"
