@@ -33,7 +33,7 @@ module "project-factory" {
     "clouderrorreporting.googleapis.com",
     "monitoring.googleapis.com",
   ]
-  auto_create_network     = false
+  auto_create_network     = true
   default_service_account = "keep"
   group_name              = "gcp-developers"
 }
