@@ -4,12 +4,12 @@
 # ---------------------------------------------------------------------------------------------------------------------
 provider "google" {
   region  = "us-west1"
-  version = "~> 3.15.0"
+  version = "~> 3.25.0"
 }
 
-provider "google-beta" {
-  version = "~> 3.15.0"
-}
+#provider "google-beta" {
+#  version = "~> 3.25.0"
+#}
 
 provider "null" {
   version = "~> 2.1"
