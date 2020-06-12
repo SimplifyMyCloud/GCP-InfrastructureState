@@ -1,6 +1,6 @@
-# SMC Infrastructure State Genesis
+# SMC Infrastructure State Bootstrapping
 
-SimplifyMy.Cloud infrastructure state with a focus on simplicity and empathy.
+SimplifyMy.Cloud GCP genesis build.  GCP must be configured to prepare it for the infrastructure state to be ensure by Terraform.  This bootstrapping process will use manually run commands to create a dedicated GCP Project that will host the Terraform server.  This Terraform GCP Project is a long lived home for Terraform.  Because of this long lived status we can can wire up dedicated GCP Service Accounts.
 
 ---
 
