@@ -2,17 +2,13 @@
 
 GCP must be prepared for the infrastructure state to be ensure by Terraform.  This bootstrapping process will use manually run commands to create a dedicated GCP Project that will host the Terraform server.  This Terraform GCP Project is a long lived home for Terraform.  Because of this long lived status we can can wire up dedicated GCP Service Accounts.
 
----
-
-## Backstory:
-
 With a newly created Google Cloud, a beachhead must be established to enable the Foundation Layer to be ensured by Terraform.  To accomplish this we will follow this excellent documentation from Google, [Managing GCP Projects with Terraform](https://cloud.google.com/community/tutorials/managing-gcp-projects-with-terraform) with a small change, naming the project "Operations".
 
 ---
 
-## The goal:
+## The goal
 
-Create an "Operations" project that will host the automation to build Google Cloud along with any internal tooling needed by the infrastructure.
+Create an "Operations" GCP Project that will host the automation to build Google Cloud along with any internal tooling needed by the infrastructure.  This will be the "Ops environment" hosting all infrastructure needed to manage and maintain the entire GCP Org.  The Ops environment would be on the same level as the dev, test, stage, production environments.
 
 Steps:
 
@@ -29,16 +25,27 @@ gcloud beta billing accounts list
 export TF_VAR_org_id=447686549950
 export TF_VAR_billing_account=01AE65-A7583F-D9EB1A
 export TF_OPS_PROJECT=iq9-ops-env
+export TF_OPS_FOLDER=ops
 export TF_FOUNDATION_SA=tf-foundation-sa
 export TF_CREDS_JSON=~/.config/gcloud/${TF_FOUNDATION_SA}.json
 export TF_FOUNDATION_SA_URL=${TF_FOUNDATION_SA}@${TF_OPS_PROJECT}.iam.gserviceaccount.com
 ```
 
-### create the tf admin GCP Project
+### Create the Ops environment GCP Folder
+
+```bash
+gcloud resource-manager folders create \
+  --organization ${TF_VAR_org_id} \
+  --display-name ${TF_OPS_FOLDER}
+```
+
+
+### Create the Ops environment GCP Project
 
 ```bash
 gcloud projects create ${TF_OPS_PROJECT} \
   --organization ${TF_VAR_org_id} \
+  --folder ${TF_OPS_FOLDER} \
   --set-as-default
 ```
 
