@@ -4,13 +4,11 @@ GCP must be prepared for the infrastructure state to be ensure by Terraform.  Th
 
 With a newly created Google Cloud, a beachhead must be established to enable the Foundation Layer to be ensured by Terraform.  To accomplish this we will follow this excellent documentation from Google, [Managing GCP Projects with Terraform](https://cloud.google.com/community/tutorials/managing-gcp-projects-with-terraform) with a small change, naming the project "Operations".
 
----
-
 ## The goal
 
 Create an "Operations" GCP Project that will host the automation to build Google Cloud along with any internal tooling needed by the infrastructure.  This will be the "Ops environment" hosting all infrastructure needed to manage and maintain the entire GCP Org.  The Ops environment would be on the same level as the dev, test, stage, production environments.
 
-Steps:
+## Steps
 
 ### Retrieve the organization number along with the billing account
 
@@ -38,7 +36,6 @@ gcloud resource-manager folders create \
   --organization ${TF_VAR_org_id} \
   --display-name ${TF_OPS_FOLDER}
 ```
-
 
 ### Create the Ops environment GCP Project
 
