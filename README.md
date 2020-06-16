@@ -2,8 +2,6 @@
 
 SimplifyMy.Cloud infrastructure state with a focus on simplicity and empathy.
 
----
-
 ## Traditional horizontal environments
 
 ![Horizontal Environment Segmentation](horizontal_environments.png)
@@ -25,16 +23,42 @@ Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to prod
 
 ![Vertical infrastructure layers](vertical_infrastructure_layers.png)
 
-Breaking apart the cloud into three layers delivers a simple infrastructure state to manage and push changes to.  The goal of a well defined and engineered infrastructure is a DevOps culture which promotes healthy collaboration between all customers of that infrastructure, development, operations, security, end users and management.  Infrastructure empathy is the foundation which this is engineered.  Empathy for developers so they will never worry about making accidental changes to Production, empathy of operations by incorporating self-healing and self-sizing along with self-service for other teams, empathy for the security folks by siloing environments and access into auditable and verifiable worlds.
+Breaking apart the cloud into three vertical layers delivers a simple infrastructure state to manage and push changes to.  The goal of a well defined and engineered infrastructure is a DevOps culture which promotes healthy collaboration between all customers of that infrastructure, development, operations, security, end users and management.  
+
+Infrastructure empathy is the foundation which this is engineered.  Empathy for developers so they will never worry about making accidental changes to Production, empathy of operations by incorporating self-healing and self-sizing along with self-service for other teams, empathy for the security folks by siloing environments and access into auditable and verifiable worlds.
 
 ## Foundation Layer
 
-Definition: The Foundation Layer is responsible for networking, security, users.
+The Foundation Layer is responsible for ensuring the state of:
+
+* GCP Organization
+* GCP Folders
+* GCP Projects
+* Security
+* Networking
+* IAM
+
 
 ## Service Layer
 
-Definition: The Service Layer is responsible for cloud native services (*-as-a-service), Baked VMs, storage, and observability.
+The Service Layer is responsible for:
+
+* GCP cloud native services
+  * GKE
+  * GCS
+  * BigQuery
+  * CloudSQL
+  * Cloud Run
+  * etc... 
+* GCE VMs
+  * _must be "baked" in the GCP Bakery to be available on the GCP API_
 
 ## App Layer
 
-Definition: The App Layer is the orchestration of applications, services, data and monitoring that resides into the Services Layer.
+The App Layer is the orchestration of applications deployed and running on the Service Layer services.  The App Layer _should not be_ managed in Terraform! There are better solutions for managing App state, Ansible, Jenkins, Spinnaker, etc.
+
+App Layer hosts:
+
+* Containers
+* Helm Charts
+* Binaries
