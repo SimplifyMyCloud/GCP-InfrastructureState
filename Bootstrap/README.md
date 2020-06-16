@@ -1,6 +1,6 @@
 # SMC Infrastructure State Bootstrapping
 
-SimplifyMy.Cloud GCP genesis build.  GCP must be configured to prepare it for the infrastructure state to be ensure by Terraform.  This bootstrapping process will use manually run commands to create a dedicated GCP Project that will host the Terraform server.  This Terraform GCP Project is a long lived home for Terraform.  Because of this long lived status we can can wire up dedicated GCP Service Accounts.
+GCP must be prepared for the infrastructure state to be ensure by Terraform.  This bootstrapping process will use manually run commands to create a dedicated GCP Project that will host the Terraform server.  This Terraform GCP Project is a long lived home for Terraform.  Because of this long lived status we can can wire up dedicated GCP Service Accounts.
 
 ---
 
@@ -12,30 +12,32 @@ With a newly created Google Cloud, a beachhead must be established to enable the
 
 ## The goal:
 
-Create an "Operations" project that will host the automation to build Google Cloud along with any internal tooling needed by the infrastructure.  
+Create an "Operations" project that will host the automation to build Google Cloud along with any internal tooling needed by the infrastructure.
 
 Steps:
 
-- Retrieve the organization number along with the billing account
+### Retrieve the organization number along with the billing account
 
 ```bash
 gcloud organizations list
 gcloud beta billing accounts list
 ```
 
+### Export environment variables in order to simplify the manual steps
+  
 ```bash
 export TF_VAR_org_id=447686549950
 export TF_VAR_billing_account=01AE65-A7583F-D9EB1A
-export TF_BOOTSTRAP_PROJECT=iq9-tf-bootstrap
+export TF_OPS_PROJECT=iq9-ops-env
 export TF_FOUNDATION_SA=tf-foundation-sa
 export TF_CREDS_JSON=~/.config/gcloud/${TF_FOUNDATION_SA}.json
-export TF_FOUNDATION_SA_URL=${TF_FOUNDATION_SA}@${TF_BOOTSTRAP_PROJECT}.iam.gserviceaccount.com
+export TF_FOUNDATION_SA_URL=${TF_FOUNDATION_SA}@${TF_OPS_PROJECT}.iam.gserviceaccount.com
 ```
 
-### create tf admin GCP Project
+### create the tf admin GCP Project
 
 ```bash
-gcloud projects create ${TF_BOOTSTRAP_PROJECT} \
+gcloud projects create ${TF_OPS_PROJECT} \
   --organization ${TF_VAR_org_id} \
   --set-as-default
 ```
@@ -45,9 +47,9 @@ gcloud beta billing projects link ${TF_ADMIN} \
   --billing-account ${TF_VAR_billing_account}
 ```
 
-### Create the Terraform service account
+### Create the Terraform foundation service account
 
-Create the service account in the Terraform admin project and download the JSON credentials:
+Create the foundation service account in the Terraform admin project and download the JSON credentials:
 
 ```bash
 gcloud iam service-accounts create ${TF_FOUNDATION_SA} \
@@ -59,21 +61,21 @@ gcloud iam service-accounts keys create ${TF_CREDS} \
   --iam-account ${TF_FOUNDATION_SA_URL}
 ```
 
-### Grant the service account permission to view the Admin Project and manage Cloud Storage:
+### Grant the service account permission to view the Ops environment GCP Project and manage GCP Cloud Storage:
 
 ```bash
-gcloud projects add-iam-policy-binding ${TF_BOOTSTRAP_PROJECT} \
+gcloud projects add-iam-policy-binding ${TF_OPS_PROJECT} \
   --member serviceAccount:${TF_FOUNDATION_SA_URL} \
   --role roles/viewer
 ```
 
 ```bash
-gcloud projects add-iam-policy-binding ${TF_BOOTSTRAP_PROJECT} \
+gcloud projects add-iam-policy-binding ${TF_OPS_PROJECT} \
   --member serviceAccount:${TF_FOUNDATION_SA_URL} \
   --role roles/storage.admin
 ```
 
-### Any actions that Terraform performs require that the API be enabled to do so. In this guide, Terraform requires the following:
+### Any actions that Terraform performs require that the API be enabled to do so. For the Bootstrap, Terraform requires the following:
 
 ```bash
 gcloud services enable cloudresourcemanager.googleapis.com
@@ -107,28 +109,28 @@ gcloud organizations add-iam-policy-binding ${TF_VAR_org_id} \
 
 ### Set up remote state in Cloud Storage
 
-Create the remote backend bucket in Cloud Storage and the backend.tf file for storage of the terraform.tfstate file:
+Create the remote backend bucket in Cloud Storage and the `backend.tf` Terraform file for storage of the `terraform.tfstate` file:
 
 ```bash
 gsutil mb \
--p ${TF_BOOTSTRAP_PROJECT} \
+-p ${TF_OPS_PROJECT} \
 -l us-west1 \
-gs://${TF_BOOTSTRAP_PROJECT}
+gs://${TF_OPS_PROJECT}
 ```
 
 ```bash
 cat > foundation_backend.tf << EOF
 terraform {
  backend "gcs" {
-   bucket  = "${TF_BOOTSTRAP_PROJECT}"
+   bucket  = "${TF_OPS_PROJECT}"
    prefix  = "terraform/state"
  }
 }
 EOF
 ```
 
-### Enable versioning for said remote bucket:
+### Enable versioning for the Terraform state GCS bucket:
 
 ```bash
-gsutil versioning set on gs://${TF_BOOTSTRAP_PROJECT}
+gsutil versioning set on gs://${TF_OPS_PROJECT}
 ```
