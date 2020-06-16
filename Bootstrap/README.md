@@ -2,7 +2,9 @@
 
 GCP must be prepared for the infrastructure state to be ensure by Terraform.  This bootstrapping process will use manually run commands to create a dedicated GCP Project that will host the Terraform server.  This Terraform GCP Project is a long lived home for Terraform.  Because of this long lived status we can can wire up dedicated GCP Service Accounts.
 
-With a newly created Google Cloud, a beachhead must be established to enable the Foundation Layer to be ensured by Terraform.  To accomplish this we will follow this excellent documentation from Google, [Managing GCP Projects with Terraform](https://cloud.google.com/community/tutorials/managing-gcp-projects-with-terraform) with a small change, naming the project "Operations".
+With a newly created Google Cloud, a beachhead must be established to enable the Foundation Layer to be ensured by Terraform.  To accomplish this we will follow this excellent documentation from Google, [Managing GCP Projects with Terraform](https://cloud.google.com/community/tutorials/managing-gcp-projects-with-terraform) with a small change, naming the project "Operations" and adding a GCP Folder to contain the Ops environment.
+
+_This GCP bootstrapping will only be run once, manually, and never used again._
 
 ## The goal
 
@@ -138,3 +140,7 @@ EOF
 ```bash
 gsutil versioning set on gs://${TF_OPS_PROJECT}
 ```
+
+### From here
+
+After running these manual steps you have created an Ops environment to host Terraform.  At this point you can refer back to the GCP Infrastructure Culture `../` Terraform to ensure the state of the dev, test, stage, and production environments.
