@@ -4,7 +4,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 terraform {
   backend "gcs" {
-    bucket  = "iq9-tf-states"
+    bucket  = "iq9-terraform-shared-state-bucket"
     prefix  = "terraform/state/foundation/gcp_folders"
   }
 }

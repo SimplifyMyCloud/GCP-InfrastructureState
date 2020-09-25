@@ -12,8 +12,9 @@ module "folders" {
   names = [
     "dev",
     "test",
-    "staging",
     "production",
+    "ops",
+    "logwarehouse",
   ]
 
   set_roles = true
@@ -21,8 +22,9 @@ module "folders" {
   per_folder_admins = [
     "group:gcp-developers@iq9.io",
     "group:gcp-test@iq9.io",
-    "group:gcp-stage@iq9.io",
-    "group:gcp-ops@iq9.io"
+    "group:gcp-production@iq9.io",
+    "group:gcp-ops@iq9.io",
+    "group:gcp-logwarehouse@iq9.io",
   ]
 
   all_folder_admins = [
