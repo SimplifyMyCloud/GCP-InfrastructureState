@@ -9,3 +9,7 @@ Directory contents:
 * `gcp_folders.tf` - contains all GCP Folders desired state
 * `gcp_providers.tf` - soft Linux link back to the root Terraform providers file
 * `gcs_backend.tf` - Terraform state file located in `terraform/state/foundation/gcp_folders`
+
+Terraform State File stored in a GCS Bucket:
+
+`gs://iq9-tf-states/terraform/state/foundation/gcp_folders`
