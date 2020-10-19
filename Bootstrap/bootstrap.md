@@ -1,5 +1,17 @@
 # Bootstrap Steps
 
+## GCP Cloud Shell
+
+The bootstrap steps can and should be run from GCP Cloud Shell for simplicity and security.  GCP Cloud Shell can be used with a GCP Org that has no GCP Projects, a simple way to run these commands.  GCP Cloud Shell is secure becuase it does not require any GCP Service Account private keys to be generated and offloaded from GCP to a local workstation.  GCP Cloud Shell will authenticate with the genesis user account and ask for privledged access during startup.  That allows GCP Cloud Shell to assume the identity and privledges of the genesis account, to create the `Operations` GCP Project, the ultimate permanent home of Terraform OSS or Terraform Enterprise.
+
+## Clean up the GCP Org
+
+The first step of the bootstrap involves deleting the `My First Project` GCP Project.  We do not want to use this GCP Project in anyway, so removing it is the simpliest way to start.
+
+```bash
+gcloud projects delete [PROJECT_ID_OR_NUMBER]
+```
+
 ## Retrieve the organization number along with the billing account
 
 ```bash
@@ -10,8 +22,9 @@ gcloud beta billing accounts list
 ## Export environment variables in order to simplify the manual steps
   
 ```bash
-export TF_VAR_org_id=447686549950
-export TF_VAR_billing_account=01AE65-A7583F-D9EB1A
+export TF_VAR_ORG_ID=123456789000
+export TF_VAR_BILLING_ACCOUNT=012345-ABCDEF-012345
+export TF_VAR_GENESIS_ORG_ADMIN=bob@example.com
 export TF_OPS_PROJECT=iq9-ops-env
 export TF_OPS_FOLDER=ops
 export TF_FOUNDATION_SA=tf-foundation-sa
@@ -19,11 +32,32 @@ export TF_CREDS_JSON=~/.config/gcloud/${TF_FOUNDATION_SA}.json
 export TF_FOUNDATION_SA_URL=${TF_FOUNDATION_SA}@${TF_OPS_PROJECT}.iam.gserviceaccount.com
 ```
 
+## Add authorizations to create the Ops environment
+
+```bash
+gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
+  --member user:${TF_VAR_GENESIS_ORG_ADMIN} \
+  --role roles/resourcemanager.projectCreator
+```
+
+```bash
+gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
+  --member user:${TF_VAR_GENESIS_ORG_ADMIN} \
+  --role roles/resourcemanager.folderCreator
+```
+
+```bash
+gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
+  --member user:${TF_VAR_GENESIS_ORG_ADMIN} \
+  --role roles/billing.user
+```
+
+
 ## Create the Ops environment GCP Folder
 
 ```bash
 gcloud resource-manager folders create \
-  --organization ${TF_VAR_org_id} \
+  --organization ${TF_VAR_ORG_ID} \
   --display-name ${TF_OPS_FOLDER}
 ```
 
@@ -31,14 +65,13 @@ gcloud resource-manager folders create \
 
 ```bash
 gcloud projects create ${TF_OPS_PROJECT} \
-  --organization ${TF_VAR_org_id} \
-  --folder ${TF_OPS_FOLDER} \
+  --organization ${TF_VAR_ORG_ID} \
   --set-as-default
 ```
 
 ```bash
-gcloud beta billing projects link ${TF_ADMIN} \
-  --billing-account ${TF_VAR_billing_account}
+gcloud beta billing projects link ${TF_OPS_PROJECT} \
+  --billing-account ${TF_VAR_BILLING_ACCOUNT}
 ```
 
 ## Create the Terraform foundation service account
@@ -51,9 +84,11 @@ gcloud iam service-accounts create ${TF_FOUNDATION_SA} \
 ```
 
 ```bash
-gcloud iam service-accounts keys create ${TF_CREDS} \
-  --iam-account ${TF_FOUNDATION_SA_URL}
+gcloud iam service-accounts keys create \
+  --iam-account ${TF_FOUNDATION_SA_URL} ${TF_FOUNDATION_SA}.json
 ```
+
+This will place a private key in the directory where you are running the command.  This private key is highly privledged and should be safely stored with extreme care.  Once Terraform is configured on GCP with either Cloud Build or on a GCE VM, this private key will be removed and no longer used.
 
 ## Grant the service account permission to view the Ops environment GCP Project and manage GCP Cloud Storage:
 
@@ -84,19 +119,19 @@ gcloud services enable serviceusage.googleapis.com
 Grant the service account permission to create projects and assign billing accounts:
 
 ```bash
-gcloud organizations add-iam-policy-binding ${TF_VAR_org_id} \
+gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
   --member serviceAccount:${TF_FOUNDATION_SA_URL} \
   --role roles/resourcemanager.projectCreator
 ```
 
 ```bash
-gcloud organizations add-iam-policy-binding ${TF_VAR_org_id} \
+gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
   --member serviceAccount:${TF_FOUNDATION_SA_URL} \
   --role roles/resourcemanager.folderCreator
 ```
 
 ```bash
-gcloud organizations add-iam-policy-binding ${TF_VAR_org_id} \
+gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
   --member serviceAccount:${TF_FOUNDATION_SA_URL} \
   --role roles/billing.user
 ```
