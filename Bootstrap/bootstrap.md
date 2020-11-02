@@ -32,7 +32,7 @@ export TF_CREDS_JSON=~/.config/gcloud/${TF_FOUNDATION_SA}.json
 export TF_FOUNDATION_SA_URL=${TF_FOUNDATION_SA}@${TF_OPS_PROJECT}.iam.gserviceaccount.com
 ```
 
-## Add authorizations to create the Ops environment
+## Add privledge escalations and authorizations to create the Ops environment
 
 ```bash
 gcloud organizations add-iam-policy-binding ${TF_VAR_ORG_ID} \
@@ -163,6 +163,29 @@ EOF
 ```bash
 gsutil versioning set on gs://${TF_OPS_PROJECT}
 ```
+
+## De-privledge genesis account:
+
+In order to provision the `Ops` environment that hosts the Terraform server we manually ran commands that required elevated privledges on the genesis GCP Account.  We will now remove those added privledges, returning the genesis account to its original state.  To further de-privledge user accounts, GCP Super Admins should be offlined via paper stored passwords.
+
+```bash
+gcloud organizations remove-iam-policy-binding ${TF_VAR_ORG_ID} \
+  --member user:${TF_VAR_GENESIS_ORG_ADMIN} \
+  --role roles/resourcemanager.projectCreator
+```
+
+```bash
+gcloud organizations remove-iam-policy-binding ${TF_VAR_ORG_ID} \
+  --member user:${TF_VAR_GENESIS_ORG_ADMIN} \
+  --role roles/resourcemanager.folderCreator
+```
+
+```bash
+gcloud organizations remove-iam-policy-binding ${TF_VAR_ORG_ID} \
+  --member user:${TF_VAR_GENESIS_ORG_ADMIN} \
+  --role roles/billing.user
+```
+
 
 ## From here
 
