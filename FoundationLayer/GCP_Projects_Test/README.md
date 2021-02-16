@@ -2,7 +2,7 @@
 
 GCP Project named `iq9-test` hosted in the GCP Folder named `test`.
 
-This is the testelopment environment for iq9.
+This is the test development environment for iq9.
 
 Terraform will be run in this directory, creating a Terraform state containing:
 

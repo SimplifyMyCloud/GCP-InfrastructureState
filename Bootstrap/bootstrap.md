@@ -2,11 +2,11 @@
 
 ## GCP Cloud Shell
 
-The bootstrap steps can and should be run from GCP Cloud Shell for simplicity and security.  GCP Cloud Shell can be used with a GCP Org that has no GCP Projects, a simple way to run these commands.  GCP Cloud Shell is secure becuase it does not require any GCP Service Account private keys to be generated and offloaded from GCP to a local workstation.  GCP Cloud Shell will authenticate with the genesis user account and ask for privledged access during startup.  That allows GCP Cloud Shell to assume the identity and privledges of the genesis account, to create the `Operations` GCP Project, the ultimate permanent home of Terraform OSS or Terraform Enterprise.
+The bootstrap steps can and should be run from GCP Cloud Shell for simplicity and security.  GCP Cloud Shell can be used with a GCP Org that has no GCP Projects, a simple way to run these commands.  GCP Cloud Shell is secure because it does not require any GCP Service Account private keys to be generated and offloaded from GCP to a local workstation.  GCP Cloud Shell will authenticate with the genesis user account and ask for privileged access during startup.  That allows GCP Cloud Shell to assume the identity and privileges of the genesis account, to create the `Operations` GCP Project, the ultimate permanent home of Terraform OSS or Terraform Enterprise.
 
 ## Clean up the GCP Org
 
-The first step of the bootstrap involves deleting the `My First Project` GCP Project.  We do not want to use this GCP Project in anyway, so removing it is the simpliest way to start.
+The first step of the bootstrap involves deleting the `My First Project` GCP Project.  We do not want to use this GCP Project in anyway, so removing it is the simplest way to start.
 
 ```bash
 gcloud projects delete [PROJECT_ID_OR_NUMBER]
@@ -88,7 +88,7 @@ gcloud iam service-accounts keys create \
   --iam-account ${TF_FOUNDATION_SA_URL} ${TF_FOUNDATION_SA}.json
 ```
 
-This will place a private key in the directory where you are running the command.  This private key is highly privledged and should be safely stored with extreme care.  Once Terraform is configured on GCP with either Cloud Build or on a GCE VM, this private key will be removed and no longer used.
+This will place a private key in the directory where you are running the command.  This private key is highly privileged and should be safely stored with extreme care.  Once Terraform is configured on GCP with either Cloud Build or on a GCE VM, this private key will be removed and no longer used.
 
 ## Grant the service account permission to view the Ops environment GCP Project and manage GCP Cloud Storage:
 
@@ -164,9 +164,9 @@ EOF
 gsutil versioning set on gs://${TF_OPS_PROJECT}
 ```
 
-## De-privledge genesis account:
+## De-privilege genesis account:
 
-In order to provision the `Ops` environment that hosts the Terraform server we manually ran commands that required elevated privledges on the genesis GCP Account.  We will now remove those added privledges, returning the genesis account to its original state.  To further de-privledge user accounts, GCP Super Admins should be offlined via paper stored passwords.
+In order to provision the `Ops` environment that hosts the Terraform server we manually ran commands that required elevated privileges on the genesis GCP Account.  We will now remove those added privileges, returning the genesis account to its original state.  To further de-privilege user accounts, GCP Super Admins should be offline via paper stored passwords.
 
 ```bash
 gcloud organizations remove-iam-policy-binding ${TF_VAR_ORG_ID} \

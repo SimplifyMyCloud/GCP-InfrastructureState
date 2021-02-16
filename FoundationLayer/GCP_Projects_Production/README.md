@@ -2,7 +2,7 @@
 
 GCP Project named `iq9-production` hosted in the GCP Folder named `production`.
 
-This is the productionelopment environment for iq9.
+This is the production development environment for iq9.
 
 Terraform will be run in this directory, creating a Terraform state containing:
 

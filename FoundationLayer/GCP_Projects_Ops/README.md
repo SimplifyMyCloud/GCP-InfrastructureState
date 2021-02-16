@@ -2,7 +2,7 @@
 
 GCP Project named `iq9-ops` hosted in the GCP Folder named `ops`.
 
-This is the opselopment environment for iq9.
+This is the ops development environment for iq9.
 
 Terraform will be run in this directory, creating a Terraform state containing:
 
