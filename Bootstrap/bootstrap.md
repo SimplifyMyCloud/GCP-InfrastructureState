@@ -32,6 +32,23 @@ export TF_CREDS_JSON=~/.config/gcloud/${TF_FOUNDATION_SA}.json
 export TF_FOUNDATION_SA_URL=${TF_FOUNDATION_SA}@${TF_OPS_PROJECT}.iam.gserviceaccount.com
 ```
 
+## Set inherited GCP Organization Policy
+
+Some GCP Org policies are not retroactively applied and must be set _before_ the GCP Projects are created, ensuring the newly created GCP Projects are under the desired state of the GCP Org policy being enforced.  If these policies are decided upon now, and implemented now, before the bootstrapping, all GCP Projects will be under the desired state of the GCP Org policies.
+
+GCP Org policy can be set with Terraform using the CFT-module ![terraform-google-org-policy](https://github.com/terraform-google-modules/terraform-google-org-policy) which allows for exclusionary actions.  Certain GCP Org policy however is absolutely required across all GCP Projects and the GCP Org itself without any exceptions and those GCP Org policies should be run here manually during the bootstrap.
+
+Review GCP Org policy constraints ![here](https://cloud.google.com/resource-manager/docs/organization-policy/org-policy-constraints) and then add them to your bootstrap playbook here, to ensure they are enforced GCP Org wide.
+
+### OS Login - GCP API for Linux user accounts and SSH access
+
+Easily one of the most important security policies you can set!
+
+```
+gcloud beta resource-manager org-policies enable-enforce compute.requireOsLogin \
+--organization=${TF_VAR_ORG_ID}
+```
+
 ## Add privledge escalations and authorizations to create the Ops environment
 
 ```bash
