@@ -11,7 +11,7 @@ resource "google_folder" "tf_gcp_folder" {
   parent = "organizations/447686549950"
 }
 
-# Second level GCP Folders - to host vanilla Terraform
+# Second level GCP Folders - to host vanilla Terraform environment
 resource "google_folder" "sandbox_env_tf_gcp_folder" {
   display_name = "iq9_sandbox_tf"
   parent  = "folders/97206097866"
@@ -27,12 +27,23 @@ resource "google_folder" "prod_env_tf_gcp_folder" {
   parent  = "folders/97206097866"
 }
 
-#resource "google_folder" "ari_vatanen_gcp_folder" {
-#  display_name = "iq9_ari_dev_tf"
-#  parent  = "folders/534726012946"
-#}
+# Third level GCP Folders - to host vanilla Terraform apps
+resource "google_folder" "dev_env_ari_vatanen_gcp_folder" {
+  display_name = "iq9_ari_dev_tf"
+  parent  = "folders/882276245846"
+}
 
-#resource "google#_folder" "ari_vatanen_gcp_folder" {
-#  display_name = "iq9_ari_dev_tf"
-#  parent  = "folders/534726012946"
-#}
+resource "google_folder" "prod_env_ari_vatanen_gcp_folder" {
+  display_name = "iq9_ari_prod_tf"
+  parent  = "folders/771423495270"
+}
+
+resource "google_folder" "dev_env_colin_vatanen_gcp_folder" {
+  display_name = "iq9_ari_dev_tf"
+  parent  = "folders/882276245846"
+}
+
+resource "google_folder" "prod_env_colin_vatanen_gcp_folder" {
+  display_name = "iq9_ari_prod_tf"
+  parent  = "folders/771423495270"
+}
