@@ -39,11 +39,11 @@ resource "google_folder" "prod_env_ari_vatanen_gcp_folder" {
 }
 
 resource "google_folder" "dev_env_colin_vatanen_gcp_folder" {
-  display_name = "iq9_ari_dev_tf"
+  display_name = "iq9_colin_dev_tf"
   parent  = "folders/882276245846"
 }
 
 resource "google_folder" "prod_env_colin_vatanen_gcp_folder" {
-  display_name = "iq9_ari_prod_tf"
+  display_name = "iq9_colin_prod_tf"
   parent  = "folders/771423495270"
 }
