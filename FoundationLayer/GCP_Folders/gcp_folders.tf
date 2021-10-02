@@ -17,12 +17,12 @@ resource "google_folder" "sandbox_env_tf_gcp_folder" {
   parent  = "folders/97206097866"
 }
 
-#resource "google_folder" "dev_env_tf_gcp_folder" {
+resource "google_folder" "dev_env_tf_gcp_folder" {
   display_name = "iq9_dev_tf"
   parent  = "folders/97206097866"
 }
 
-#resource "google_folder" "prod_env_tf_gcp_folder" {
+resource "google_folder" "prod_env_tf_gcp_folder" {
   display_name = "iq9_prod_tf"
   parent  = "folders/97206097866"
 }
