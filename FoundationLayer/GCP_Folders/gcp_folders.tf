@@ -3,31 +3,47 @@
 # GCP Folders
 # ensures GCP Folders per Infrastructure Environment for the Foundation Layer
 # ---------------------------------------------------------------------------------------------------------------------
-module "folders" {
-  source  = "terraform-google-modules/folders/google"
-  version = "~> 2.0"
+#
+# Top level GCP Folders are to split Cloud Foundation Toolkit & Vanilla Terraform
 
-  parent  = "organizations/447686549950"
+resource "google_folder" "tf_gcp_folder" {
+  display_name = "tf"
+  parent = "organizations/447686549950"
+}
 
-  names = [
-    "dev",
-    "test",
-    "production",
-    "ops",
-    "logwarehouse",
-  ]
+# Second level GCP Folders - to host vanilla Terraform environment
+resource "google_folder" "sandbox_env_tf_gcp_folder" {
+  display_name = "iq9_sandbox_tf"
+  parent  = "folders/97206097866"
+}
 
-  set_roles = true
+resource "google_folder" "dev_env_tf_gcp_folder" {
+  display_name = "iq9_dev_tf"
+  parent  = "folders/97206097866"
+}
 
-  per_folder_admins = [
-    "group:gcp-developers@iq9.io",
-    "group:gcp-test@iq9.io",
-    "group:gcp-production@iq9.io",
-    "group:gcp-ops@iq9.io",
-    "group:gcp-logwarehouse@iq9.io",
-  ]
+resource "google_folder" "prod_env_tf_gcp_folder" {
+  display_name = "iq9_prod_tf"
+  parent  = "folders/97206097866"
+}
 
-  all_folder_admins = [
-    "group:gcp-ops@iq9.io",
-  ]
+# Third level GCP Folders - to host vanilla Terraform apps
+resource "google_folder" "dev_env_ari_gcp_folder" {
+  display_name = "iq9_ari_vatanen_dev_tf"
+  parent  = "folders/882276245846"
+}
+
+resource "google_folder" "prod_env_ari_gcp_folder" {
+  display_name = "iq9_ari_vatanen_prod_tf"
+  parent  = "folders/771423495270"
+}
+
+resource "google_folder" "dev_env_colin_gcp_folder" {
+  display_name = "iq9_colin_mcrae_dev_tf"
+  parent  = "folders/882276245846"
+}
+
+resource "google_folder" "prod_env_colin_gcp_folder" {
+  display_name = "iq9_colin_mcrae_prod_tf"
+  parent  = "folders/771423495270"
 }

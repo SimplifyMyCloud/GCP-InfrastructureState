@@ -3,18 +3,9 @@
 # GCP Provider
 # ---------------------------------------------------------------------------------------------------------------------
 provider "google" {
-  region  = "us-west1"
-  version = "~> 3.44.0"
+  region = "us-west1"
 }
 
 provider "google-beta" {
-  version = "~> 3.44.0"
-}
-
-provider "null" {
-  version = "~> 3.0"
-}
-
-provider "random" {
-  version = "~> 2.3.1"
+  region = "us-west1"
 }
