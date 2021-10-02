@@ -12,20 +12,20 @@ resource "google_folder" "tf_gcp_folder" {
 }
 
 # Second level GCP Folders - to host vanilla Terraform
-#resource "google_folder" "sandbox_env_tf_gcp_folder" {
-#  display_name = "iq9_sandbox_tf"
-#  parent  = "organizations/447686549950"
-#}
+resource "google_folder" "sandbox_env_tf_gcp_folder" {
+  display_name = "iq9_sandbox_tf"
+  parent  = "folders/97206097866"
+}
 
 #resource "google_folder" "dev_env_tf_gcp_folder" {
-#  display_name = "iq9_dev_tf"
-#  parent  = "organizations/447686549950"
-#}
+  display_name = "iq9_dev_tf"
+  parent  = "folders/97206097866"
+}
 
 #resource "google_folder" "prod_env_tf_gcp_folder" {
-#  display_name = "iq9_prod_tf"
-#  parent  = "organizations/447686549950"
-#}
+  display_name = "iq9_prod_tf"
+  parent  = "folders/97206097866"
+}
 
 #resource "google_folder" "ari_vatanen_gcp_folder" {
 #  display_name = "iq9_ari_dev_tf"
