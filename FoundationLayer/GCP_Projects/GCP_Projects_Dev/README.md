@@ -7,4 +7,4 @@ This Git directory will contain the personal development environments for the de
 Directory contents:
 
 * `Ari_Vatanen_Dev` - contains the development environment for Ari Vatanen
-* `Colin_McRae_Dev` - conatins the development environment for Colin McRae
+* `Colin_McRae_Dev` - contains the development environment for Colin McRae
