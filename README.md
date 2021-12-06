@@ -20,7 +20,7 @@ The main goal for achieving a healthy infrastructure state is to remove the huma
 
 ![RBAC humans out of prod](rbac_humans_out_of_prod.png)
 
-Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the sandbox environment, so they can do their job and go home feeling successful.
+Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the sandbox and development environment, so they can do their job and go home feeling successful.
 
 ## WebUI & CLI welcome in sandbox
 
@@ -28,7 +28,7 @@ Because the Foundation Layer "locks" the base of GCP and prevents unknown or unw
 
 ## Environment promotion of code
 
-`Individual dev sandbox -> development environment for integrations -> test environment for security, perf, sanity testing -> A/B stage/production`
+![Code promotion lifecycle](code_promotion_lifecycle.png)
 
 
 ## Infrastructure Layers
