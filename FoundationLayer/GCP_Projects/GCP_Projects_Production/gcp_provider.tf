@@ -1,1 +1,1 @@
-../../gcp_provider.tf
+../../../gcp_provider.tf
