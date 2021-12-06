@@ -16,11 +16,19 @@ From what we have seen engaging with customers on their infrastructures is human
 
 The main goal for achieving a healthy infrastructure state is to remove the humans from production and keep them in the dev environment where they must have any and all permissions to get their job done.
 
-## Humans in dev - No humans in prod
+## Humans in sandbox - No humans in prod
 
 ![RBAC humans out of prod](rbac_humans_out_of_prod.png)
 
-Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the development environment, so they can do their job and go home feeling successful.
+Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the sandbox environment, so they can do their job and go home feeling successful.
+
+## WebUI & CLI welcome in sandbox
+
+Because the Foundation Layer "locks" the base of GCP and prevents unknown or unwanted outside access from the public internet, the developers are freed up to do with their sandbox environments as they please.  We want to empower developers to be mad scientists in a laboratory free to explore solutions to problems or add value to customers.  That means we do not need or want to slow down developers with Terraform code to use their personal sandbox environments.  Devs are free to use the WebUI Console, the GCP API, the CLI, the SDK, whatever empowers them to be creative.  However, at some point, before the code created in the sandbox environment is able to be shipped out and over into the development environment it must be Terraform'd by someone.  
+
+## Environment promotion of code
+
+`Individual dev sandbox -> development environment for integrations -> test environment for security, perf, sanity testing -> A/B stage/production`
 
 
 ## Infrastructure Layers
