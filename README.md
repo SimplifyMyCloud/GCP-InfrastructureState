@@ -30,6 +30,12 @@ Because the Foundation Layer "locks" the base of GCP and prevents unknown or unw
 
 ![Code promotion lifecycle](code_promotion_lifecycle.png)
 
+1. Code genesis in the personal developers sandbox
+2. Code promoted to development environment for integration with other app code and Terraform infrastructure state code
+3. Code promoted to testing environment for automated security, performance, and infrastructure testing
+4. Code promoted to staging environment for 10% migration of production customer traffic along with testing passes by human test team
+5. Code fully promoted to production
+
 
 ## Infrastructure Layers
 
