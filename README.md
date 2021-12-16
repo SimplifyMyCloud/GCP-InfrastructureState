@@ -8,7 +8,7 @@ Built using the [GCP Provider Terraform Modules](https://registry.terraform.io/p
 
 ## Traditional horizontal environments
 
-![Horizontal Environment Segmentation](horizontal_environments.png)
+![Horizontal Environment Segmentation](docs/imgs/horizontal_environments.png)
 
 A traditional environment segmentation that everyone should be using now is the classic Dev - Test - Prod.
 
@@ -18,7 +18,7 @@ The main goal for achieving a healthy infrastructure state is to remove the huma
 
 ## Humans in sandbox - No humans in prod
 
-![RBAC humans out of prod](rbac_humans_out_of_prod.png)
+![RBAC humans out of prod](docs/imgs/rbac_humans_out_of_prod.png)
 
 Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the sandbox and development environment, so they can do their job and go home feeling successful.
 
@@ -28,7 +28,7 @@ Because the Foundation Layer "locks" the base of GCP and prevents unknown or unw
 
 ## Environment promotion of code
 
-![Code promotion lifecycle](code_promotion_lifecycle.png)
+![Code promotion lifecycle](docs/imgs/code_promotion_lifecycle.png)
 
 1. Code genesis in the personal developers sandbox
 2. Code promoted to development environment for integration with other app code and Terraform infrastructure state code
@@ -39,7 +39,7 @@ Because the Foundation Layer "locks" the base of GCP and prevents unknown or unw
 
 ## Infrastructure Layers
 
-![Vertical infrastructure layers](vertical_infrastructure_layers.png)
+![Vertical infrastructure layers](docs/imgs/vertical_infrastructure_layers.png)
 
 Breaking apart the cloud into three vertical layers delivers a simple infrastructure state to manage and push changes to.  The goal of a well defined and engineered infrastructure is a DevOps culture which promotes healthy collaboration between all customers of that infrastructure, development, operations, security, end users and management.  
 
