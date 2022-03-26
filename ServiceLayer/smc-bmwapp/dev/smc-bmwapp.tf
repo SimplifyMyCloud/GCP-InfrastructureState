@@ -1,5 +1,5 @@
 # Service Layer
-# smc-hello-app
+# smc-bmwapp
 
 resource "google_cloud_run_service" "smc-hello" {
   name     = "smc-hello-tf"
