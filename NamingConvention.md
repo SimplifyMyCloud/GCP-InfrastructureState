@@ -43,6 +43,14 @@ Actual:
 
 `iq9-gcp-prod-bmwapp` - Project Name for the application
 
+## GCP IAM Custom Roles
+
+[GCP docs link](https://cloud.google.com/iam/docs/understanding-custom-roles)
+
+Standard:
+  * syntax: `{company}-iam-{environment}-{rolename}-{rw | ro}`
+  * example: `iq9-iam-dev-gce-rw`
+
 ## GCP Networks
 
 [GCP docs link](https://cloud.google.com/architecture/best-practices-vpc-design#naming)
