@@ -1,25 +1,14 @@
-## Desired State:
+## Fixes Github Issue #
 
-A GCP Project named `GCP_PROJECT_NAME` exists,  is a subscriber to the host `GCP_PROJECT_NAME` and is nested in the GCP Folder named `GCP_FOLDER_NAME`
+ - [ ] Documented desired GCP state in a README.md in the Terraform workspace Git directory
 
-The GCP Project `GCP_PROJECT_NAME` will exist in the Git directory for the production GCP Projects:
+ - [ ] Documented desired GCP state in the code comment header
 
-`/gcp-projects/prod/GCP_PROJECT_NAME'
+ - [ ] Soft linked to `gcp_provider.tf` in the base Git directory via `ln -s`
 
-## Current State:
+ - [ ] Ran `terraform fmt`
 
-A GCP Project named `GCP_PROJECT_NAME` does exist, the GCP Folder `GCP_FOLDER_NAME` does exist.
-
-The GCP Project `GCP_PROJECT_NAME` Terraform code is in the Git directory:
-
-`/gcp-projects/common/GCP_PROJECT_NAME'
-
-## Expected changes to achieve desired state:
-
-_NO Terraform state changes_
-
-_NO GCP API changes_
-
+ - [ ] Have NOT run `terraform apply`  
 
 ## Additional Comments
 
