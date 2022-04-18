@@ -12,6 +12,11 @@ resource "google_folder" "tf_gcp_folder" {
 }
 
 # Second level GCP Folders - to host vanilla Terraform environment
+resource "google_folder" "logging_env_tf_gcp_folder" {
+  display_name = "iq9_logging_tf"
+  parent = "folders/97206097866"
+}
+
 resource "google_folder" "sandbox_env_tf_gcp_folder" {
   display_name = "iq9_sandbox_tf"
   parent  = "folders/97206097866"
