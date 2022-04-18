@@ -10,7 +10,7 @@
 resource "google_project" "gcp_project_iq9_log_warehouse" {
   name                = "iq9_log_warehouse_00"
   project_id          = "iq9_log_warehouse_00"
-  folder_id           = "{NEED_VALUE}"
+  folder_id           = "1074889022289"
   billing_account     = "01AE65-A7583F-D9EB1A"
   skip_delete         = false
   auto_create_network = false
