@@ -15,13 +15,6 @@ resource "google_logging_organization_sink" "iq9_org_log_sync" {
   destination = "storage.googleapis.com/iq9-log-warehouse"
 }
 
-resource "google_logging_organization_bucket_config" "iq9_org_sync_log_bucket" {
-  organization = "447686549950"
-  location = "global"
-  retention_days = 48
-  bucket_id = "iq9-log-warehouse"
-}
-
 #resource "google_project_iam_member" "log_writer" {
 #  project = "iq9_log_warehouse_01"
 #  role    = "roles/storage.objectCreator"
