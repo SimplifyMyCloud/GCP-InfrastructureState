@@ -9,7 +9,7 @@
 # ensure the GCP Org log sync
 
 resource "google_logging_organization_sink" "iq9_org_log_sync" {
-  name        = "iq9_org_level_log_sync"
+  name        = "iq9-log-warehouse"
   description = "GCP iq9 Org level log sync"
   org_id      = "447686549950"
   destination = "storage.googleapis.com/iq9-log-warehouse"
