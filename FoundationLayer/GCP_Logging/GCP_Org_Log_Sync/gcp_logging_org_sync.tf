@@ -19,7 +19,7 @@ resource "google_logging_organization_bucket_config" "iq9_org_sync_log_bucket" {
   organization = "447686549950"
   location = "global"
   retention_days = 48
-  bucket_id = "iq9-org-log-sync-bucket"
+  bucket_id = "iq9-log-warehouse"
 }
 
 #resource "google_project_iam_member" "log_writer" {
