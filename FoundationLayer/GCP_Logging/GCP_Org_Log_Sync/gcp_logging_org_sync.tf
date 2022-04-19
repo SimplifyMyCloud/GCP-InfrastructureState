@@ -16,7 +16,7 @@ resource "google_logging_organization_sink" "iq9_org_log_sync" {
 }
 
 resource "google_project_iam_member" "log_writer" {
-  project = "iq9_log_warehouse_00"
+  project = "iq9_log_warehouse_01"
   role    = "roles/storage.objectCreator"
   member  = "850153025254-compute@developer.gserviceaccount.com"
 }
