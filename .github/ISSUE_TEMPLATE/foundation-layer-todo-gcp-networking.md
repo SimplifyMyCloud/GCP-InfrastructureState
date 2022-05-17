@@ -1,23 +1,25 @@
 ---
-name: Foundation Layer ToDo GCP Networking
+name: Foundation Layer ToDo GCP Network
 about: ToDo for the GCP Foundation Layers GCP Networks
-title: ''
-labels: ''
-assignees: ''
+title: "[WIP] Ensure a GCP Network { VPC Subnet } named {GCP NETWORK NAME} exists in the {ENV} environment"
+labels: ["ToDo", "WIP", "gcp-network"]
+assignees:
+  - first
+  - second
 
 ---
 
 ## Desired GCP Infrastructure State
 
- - [ ] Ensure a GCP Network exists and is named {GCP NETWORK NAME}.
+ - [ ] Ensure a GCP Network exists and is named {GCP NETWORK NAME}
 
  - [ ] Ensure the GCP Network is created in the GCP Project {GCP PROJECT NAME}
 
- - [ ] Ensure the GCP Network is located in the {GCP REGION} GCP Region and in these GCP Zones {a b c d}
+ - [ ] Ensure the GCP Network is a { Shared Host Standalone} type VPC
 
- - [ ] Ensure the GCP Network is a {Shared Host Standalone} type VPC
+ - [ ] Ensure the GCP Subnet is located in the {GCP REGION} GCP Region and in these GCP Zones {a b c d}
 
- - [ ]  Ensure the GCP Network has {NUMBER} subnets 
+ - [ ] Ensure the GCP Network has {NUMBER} subnets 
 
  - [ ] Ensure the GCP Network has the following IP Spacing - {BASE IP - /8 /12 /16 /24 /32}
 
