@@ -17,7 +17,13 @@ assignees:
 
 - [ ] The Terraform workspace will be contained in a Git directory here:
 
-`FoundationLayer/GCP_Folders/{GCP_FOLDER_NAME}`
+`foundation/gcp-folders/{GCP_FOLDER_NAME}`
+
+- [ ] The Terraform workspace state file will be contained in a GCS directory here:
+
+`foundation/gcp-folders`
+
+---
 
 ## Current GCP Infrastructure State
 

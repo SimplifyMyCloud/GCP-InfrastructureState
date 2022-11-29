@@ -1,8 +1,8 @@
-# Bootstrap Steps
+# Bootstrap Setup
 
-## GCP Cloud Shell
+## Scaffolding
 
-The bootstrap steps can and should be run from GCP Cloud Shell for simplicity and security.  GCP Cloud Shell can be used with a GCP Org that has no GCP Projects, a simple way to run these commands.  GCP Cloud Shell is secure because it does not require any GCP Service Account private keys to be generated and offloaded from GCP to a local workstation.  GCP Cloud Shell will authenticate with the genesis user account and ask for privileged access during startup.  That allows GCP Cloud Shell to assume the identity and privileges of the genesis account, to create the `Operations` GCP Project, the ultimate permanent home of Terraform OSS or Terraform Enterprise.
+In order to prepare the GCP environment to host and run Terraform, we must build up a scaffolding that will be short lived and eventually torn down.  The highest priority of all actions taken during the bootstrap is every action being atomically recorded.
 
 ## Clean up the GCP Org
 

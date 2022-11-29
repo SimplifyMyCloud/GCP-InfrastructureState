@@ -39,7 +39,7 @@ Standard:
 
 Actual:
 
-`iq9-ops-01` - iq9 Operations Environment
+`iq9-gcp-ops-01` - iq9 Operations Environment
 
 `iq9-gcp-prod-bmwapp` - Project Name for the application
 

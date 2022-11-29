@@ -15,9 +15,17 @@ assignees:
 
 - [ ] Ensure the GCP Project is created under the environment GCP Folder { `Sandbox` `Dev` `Production` `Ops` `Logging` }
 
-- [ ] The Terraform workspace will be contained in a Git directory here:
+---
 
-`FoundationLayer/GCP_Projects/GCP_Projects_{ENV}/{GCP_PROJECT_NAME}`
+The Terraform workspace will be contained in a Git directory here:
+
+`foundation/gcp-projects/{ENV}/{GCP_PROJECT_NAME}`
+
+- [ ] The Terraform workspace state file will be contained in a GCS directory here:
+
+`foundation/gcp-projects/{ENV}/{GCP_PROJECT_NAME}`
+
+---
 
 ## Current GCP Infrastructure State
 

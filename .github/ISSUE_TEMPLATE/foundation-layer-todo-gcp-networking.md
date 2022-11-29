@@ -27,7 +27,11 @@ assignees:
 
 The Terraform workspace will be contained in a Git directory here:
 
-`FoundationLayer/GCP_Networks/GCP_Networks_{ENV}/{GCP_NETWORK_NAME}`
+`foundation/networks/{ENV}/{GCP_NETWORK_NAME}`
+
+- [ ] The Terraform workspace state file will be contained in a GCS directory here:
+
+`foundation/networks/{ENV}/{GCP_NETWORK_NAME}`
 
 --- 
 
