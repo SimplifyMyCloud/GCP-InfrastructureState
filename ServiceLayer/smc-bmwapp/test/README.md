@@ -1,3 +1,0 @@
-# BMW App Specs
-
-## Test
