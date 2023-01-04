@@ -1,4 +1,4 @@
-# GCP Project - Test Environment IaC
+# Foundation Layer - GCP Projects - Test Environment
 
 GCP Project named `iq9-test` hosted in the GCP Folder named `test`.
 

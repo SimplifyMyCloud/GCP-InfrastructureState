@@ -1,4 +1,4 @@
-# GCP Project - Dev Environment IaC
+# Foundation Layer - GCP Projects - Development
 
 This is the development environment for iq9.
 

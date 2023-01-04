@@ -1,4 +1,4 @@
-# GCP Networks IaC
+# Foundation Layer - GCP Networks
 
 GCP Networks contain the host VPC networks for the environments, dev, test, stage, and production. GCP Networks are long lived, permanent GCP assets.  Because of this fact, the Terraform for the GCP Networks should be hard coded with no variables.  
 

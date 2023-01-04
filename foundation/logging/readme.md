@@ -1,0 +1,1 @@
+# Foundation Layer - GCP Logging Layer

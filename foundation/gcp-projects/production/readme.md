@@ -1,4 +1,4 @@
-# GCP Project - Production Environment IaC
+# Foundation Layer - GCP Projects - Production
 
 GCP Project named `iq9-production` hosted in the GCP Folder named `production`.
 

@@ -1,4 +1,4 @@
-# GCP Org Log Sync
+# Foundation Layer - GCP Logging Layer - Log Sinks
 
 The Terraform Service Account must have Org level permissions for:
 
