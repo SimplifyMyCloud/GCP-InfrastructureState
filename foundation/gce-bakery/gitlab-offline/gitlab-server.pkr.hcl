@@ -5,10 +5,11 @@ source "googlecompute" "gitlab-offline" {
   source_image_family     = "rocky-linux-8"
   ssh_username            = "packer"
   use_os_login            = true
+  machine_type            = "n2-highmem-4"
   zone                    = "us-west1-c"
   subnetwork              = "smc-dev-subnet-01"
-  image_name              = "gitlab-offline-v1"
-  image_description       = "Gitlab server v.1.0"
+  image_name              = "gitlab-offline-v03"
+  image_description       = "Gitlab server v.0.3"
   image_storage_locations = ["us-west1"]
 }
 
@@ -47,7 +48,3 @@ build {
     ]
   }
 }
-
-
-
-
