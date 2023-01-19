@@ -10,7 +10,7 @@ Built using the [GCP Provider Terraform Modules](https://registry.terraform.io/p
 
 ![Horizontal Environment Segmentation](docs/imgs/horizontal_environments.png)
 
-A traditional environment segmentation that everyone should be using now is the classic Dev - Test - Prod.
+A traditional environment segmentation that everyone should be familiar with by now is the classic Sandbox - NonProd - Prod.
 
 From what we have seen engaging with customers on their infrastructures is humans are everywhere, bringing technical debt, toil, and destruction to everything they type or click.
 
@@ -20,7 +20,7 @@ The main goal for achieving a healthy infrastructure state is to remove the huma
 
 ![RBAC humans out of prod](docs/imgs/rbac_humans_out_of_prod.png)
 
-Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the sandbox and development environment, so they can do their job and go home feeling successful.
+Using Cloud APIs + Terraform, we can give humans `RO - Read Only` access to production, preventing unknown or unwanted desired state changes to production.  While we are preventing changes to production that are outside of Infrastructure-as-Code, we _must allow engineers to be successful_ by giving them `RW - Read Write`, any and all access needed in the sandbox and nonprod environment, so they can do their job and go home feeling successful.
 
 ## WebUI & CLI welcome in sandbox
 
@@ -35,7 +35,6 @@ Because the Foundation Layer "locks" the base of GCP and prevents unknown or unw
 3. Code promoted to testing environment for automated security, performance, and infrastructure testing
 4. Code promoted to staging environment for 10% migration of production customer traffic along with testing passes by human test team
 5. Code fully promoted to production
-
 
 ## Infrastructure Layers
 
@@ -55,7 +54,9 @@ The Foundation Layer is responsible for ensuring the state of:
 * Security
 * Networking
 * IAM
-
+* Firewalls to the open internet
+* GCE Bakery
+* Container Bakery
 
 ## Service Layer
 
@@ -67,7 +68,6 @@ The Service Layer is responsible for:
   * BigQuery
   * CloudSQL
   * Cloud Run
-  * etc... 
 * GCE VMs
   * _must be "baked" in the GCP Bakery to be available on the GCP API_
 
