@@ -1,54 +1,51 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Foundation Layer
-# GCP Folders
-# ensures GCP Folders per Infrastructure Environment for the Foundation Layer
+# GCP Folders — environment hierarchy under the iq9 top-level folder
 # ---------------------------------------------------------------------------------------------------------------------
 #
-# Top level GCP Folders are to split Cloud Foundation Toolkit & Vanilla Terraform
+# Five environment folders hang directly off the iq9 folder, one per
+# environment. The iq9 folder itself is bootstrap-created and lives outside
+# Terraform management; this state owns only its children.
+#
+#   ops      — SRE domain. Hosts iac (this terraform), observability, image
+#              bakery, and the short-lived bootstrap project.
+#   logs     — log warehouse. Cold archive, multi-year retention, deliberately
+#              separate from observability.
+#   sandbox  — per-engineer playgrounds. No company code or data.
+#   dev      — application development. Contains a `test` sub-environment
+#              project (CI-only IAM).
+#   prod     — production. Contains a `stage` sub-environment project for
+#              blue/green flip-flops.
+#
+# `ops` and `logs` are created manually by the bootstrap and brought under
+# Terraform management via `terraform import` (commands in readme.md). The
+# other three are created fresh by `terraform apply`.
+#
+# Parent folder ID 147640766174 is the bootstrap-created `iq9` folder, child
+# of organization 933250405420 (simplifymy.cloud). It is treated as a
+# constant by every foundation TF state in this repo.
 
-resource "google_folder" "tf_gcp_folder" {
-  display_name = "tf"
-  parent = "organizations/447686549950"
+resource "google_folder" "ops" {
+  display_name = "ops"
+  parent       = "folders/147640766174"
 }
 
-# Second level GCP Folders - to host vanilla Terraform environment
-resource "google_folder" "logging_env_tf_gcp_folder" {
-  display_name = "iq9_logging_tf"
-  parent = "folders/97206097866"
+resource "google_folder" "logs" {
+  display_name = "logs"
+  parent       = "folders/147640766174"
 }
 
-resource "google_folder" "sandbox_env_tf_gcp_folder" {
-  display_name = "iq9_sandbox_tf"
-  parent  = "folders/97206097866"
+resource "google_folder" "sandbox" {
+  display_name = "sandbox"
+  parent       = "folders/147640766174"
 }
 
-resource "google_folder" "dev_env_tf_gcp_folder" {
-  display_name = "iq9_dev_tf"
-  parent  = "folders/97206097866"
+resource "google_folder" "dev" {
+  display_name = "dev"
+  parent       = "folders/147640766174"
 }
 
-resource "google_folder" "prod_env_tf_gcp_folder" {
-  display_name = "iq9_prod_tf"
-  parent  = "folders/97206097866"
-}
-
-# Third level GCP Folders - to host vanilla Terraform apps
-resource "google_folder" "dev_env_ari_gcp_folder" {
-  display_name = "iq9_ari_vatanen_dev_tf"
-  parent  = "folders/882276245846"
-}
-
-resource "google_folder" "prod_env_ari_gcp_folder" {
-  display_name = "iq9_ari_vatanen_prod_tf"
-  parent  = "folders/771423495270"
-}
-
-resource "google_folder" "dev_env_colin_gcp_folder" {
-  display_name = "iq9_colin_mcrae_dev_tf"
-  parent  = "folders/882276245846"
-}
-
-resource "google_folder" "prod_env_colin_gcp_folder" {
-  display_name = "iq9_colin_mcrae_prod_tf"
-  parent  = "folders/771423495270"
+resource "google_folder" "prod" {
+  display_name = "prod"
+  parent       = "folders/147640766174"
 }
