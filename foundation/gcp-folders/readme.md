@@ -1,12 +1,45 @@
 # Foundation Layer — GCP Folders
 
-The five environment folders that anchor the entire `iq9` infrastructure tree. Every project, network, IAM binding, and log line in this repo eventually hangs off one of these folders. This is the deepest, most rarely-changed Terraform state in the foundation — once an environment folder exists, it lives forever. A folder addition is an architectural decision, a folder deletion is essentially never approved.
+The five environment folders that anchor the entire `iq9` infrastructure tree. Every project, network, IAM binding, and log line in this repo eventually hangs off one of these folders.
+
+For the broader design philosophy behind this state — hardcoded values, state granularity, and change-control posture — see [`docs/infrastructurestate.md`](../../docs/infrastructurestate.md).
 
 ## What this state owns
 
 Five resources, all of type `google_folder`, all parented to the bootstrap-created `iq9` top-level folder (folder ID `147640766174`, under organization `933250405420` — `simplifymy.cloud`). The `iq9` folder itself is *not* managed by this state; it was created by hand during the bootstrap and is treated as a constant. This state owns only its children.
 
 Two of the five folders pre-existed this Terraform state: `ops` and `logs` were created during the bootstrap so that the bootstrap's own audit trail could be captured by the folder-level log sink before the foundation layer ever ran. Those two are brought under management with `terraform import`. The other three — `sandbox`, `dev`, `prod` — are net-new resources created by the first `terraform apply`.
+
+## Folder structure
+
+```mermaid
+flowchart TD
+    org["simplifymy.cloud<br/><i>org · 933250405420</i>"]
+    iq9["iq9<br/><i>folder · 147640766174</i>"]
+
+    ops["ops<br/><i>imported</i>"]
+    logs["logs<br/><i>imported</i>"]
+    sandbox["sandbox"]
+    dev["dev"]
+    prod["prod"]
+
+    org --> iq9
+    iq9 --> ops
+    iq9 --> logs
+    iq9 --> sandbox
+    iq9 --> dev
+    iq9 --> prod
+
+    classDef unmanaged fill:#f5f5f5,stroke:#9e9e9e,color:#5f6368,stroke-dasharray: 5 5
+    classDef imported  fill:#fef7e0,stroke:#f9ab00,color:#594300
+    classDef created   fill:#e8f0fe,stroke:#1967d2,color:#174ea6
+
+    class org,iq9 unmanaged
+    class ops,logs imported
+    class sandbox,dev,prod created
+```
+
+**Legend:** blue = managed by this state, created on first `apply` · yellow = managed by this state, imported from bootstrap · gray dashed = not managed by this state (created during bootstrap, treated as a constant). When a folder is added, removed, or re-parented, this diagram is updated in the same PR as the `gcp_folders.tf` change so the visual and the code never drift.
 
 ## Environment roles
 
@@ -21,10 +54,6 @@ Two of the five folders pre-existed this Terraform state: `ops` and `logs` were 
 **`prod` — production.** The customer-facing environment. Inside `prod` is a sub-environment called `stage`, modeled as a separate project (`iq9-gcp-{app}-stage`) that runs the same code as `prod` but receives no live customer traffic. `stage` is the blue side of a blue/green flip-flop: deployments target `stage`, smoke tests run, traffic shifts incrementally, and on the next release `stage` and `prod` swap roles. Both share the same folder for IAM and policy inheritance reasons; they're distinguished by traffic split, not by environment boundary.
 
 A note on `test` and `stage`: they're sub-environments — conceptually distinct, lifecycle-coupled to their parent. They appear in the repo as projects inside the parent folder, distinguished by IAM (test: CI-only) and traffic split (stage: no live traffic). They are *not* their own folders. If they were, every PR that touched `dev` would have to consider whether it also applies to `dev/test`, doubling the cognitive load for no isolation gain.
-
-## Hardcoded values, no variables
-
-Per the foundation layer's design philosophy, every value in `gcp_folders.tf` is hardcoded. Reading the file tells you exactly which folders exist and where they live, with no variable resolution, no module indirection, and no `.tfvars` to chase down. The cost is that the parent folder ID `147640766174` appears five times; the benefit is that the file is self-documenting and a newly-onboarded engineer can read the whole foundation layer in an afternoon and understand what's deployed.
 
 ## Files in this directory
 
@@ -60,11 +89,3 @@ terraform plan   # steady state — should report "No changes."
 ```
 
 If a `plan` ever shows drift on this state, something has changed by hand and the audit log is the next stop.
-
-## Why one Terraform state for all five folders
-
-Folders are the most rarely-changed resources in the entire org. The dependency graph between them is trivial — they're siblings, with no cross-references and no nested ordering. Bundling all five into a single state file keeps the foundation footprint small, the dependency graph readable, and the import surface tiny. As the foundation layer climbs upward into projects, networks, IAM, and the eventual Service Layer, granularity increases — projects break down per environment subdirectory, networks break down per host VPC, the Service Layer goes finer still. But here, at the very bottom, one state for five resources is the right choice.
-
-## Change-control posture
-
-Foundation Layer changes require a minimum of 3 PR approvals from the foundation reviewers group. Every change to this directory is, by definition, a change to the org-shape — a new environment, a renamed environment, a removal. The reviewer's default disposition is to push back hard and ask whether the new shape is really necessary, or whether the work could fit inside an existing environment. Folder *additions* are rare exceptions to the steady-state expectation. Folder *deletions* are essentially never approved.
