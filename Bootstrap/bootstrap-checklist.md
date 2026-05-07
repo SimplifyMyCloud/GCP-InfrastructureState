@@ -53,6 +53,7 @@ Pilot's pre-flight. One pass, top to bottom. Every box ticked before moving to t
 - [ ] APIs enabled on `iq9-ops-iac` (cloudresourcemanager, cloudbilling, iam, iamcredentials, serviceusage, storage, compute, oslogin, logging)
 - [ ] `iq9-tf-foundation-sa` created — `FOUNDATION_SA` exported
 - [ ] **Folder-scoped** roles granted to `iq9-tf-foundation-sa` on `iq9` folder (NOT org-level)
+- [ ] `iq9-tf-foundation-sa` granted `roles/billing.user` directly on the billing account (NOT folder-scoped — billing accounts live outside the resource hierarchy, so folder bindings are a no-op. Run by the genesis admin, since bootstrap SA lacks `billing.admin` to call `setIamPolicy`)
 - [ ] `iq9-bootstrap-sa` granted `roles/iam.serviceAccountUser` on `iq9-tf-foundation-sa` (so it can attach the SA to the runner VM)
 - [ ] `iq9-tf-foundation-sa` granted `roles/iam.roleAdmin` at `iq9-ops-iac` project scope (project-only role; not folder-supported. Lets foundation TF manage custom IAM roles)
 - [ ] `gs://iq9-iac-ops-tf-state-bucket` created — uniform bucket-level access + public access prevention

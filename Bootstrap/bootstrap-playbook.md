@@ -201,10 +201,14 @@ gcloud iam service-accounts create iq9-tf-foundation-sa \
 export FOUNDATION_SA=iq9-tf-foundation-sa@iq9-ops-iac.iam.gserviceaccount.com
 
 # Scope the foundation SA's perms to the iq9 folder, NOT the org. Blast radius reduction.
+# Note: roles/billing.user is intentionally OMITTED from this loop. Billing
+# accounts live outside the resource hierarchy, so a folder-scoped
+# billing.user binding is a no-op — terraform would fail at project creation
+# with `billing.resourceAssociations.create` permission denied. billing.user
+# is bound directly on the billing account in the next block.
 for role in roles/resourcemanager.folderAdmin \
             roles/resourcemanager.projectCreator \
             roles/resourcemanager.projectDeleter \
-            roles/billing.user \
             roles/compute.networkAdmin \
             roles/compute.securityAdmin \
             roles/iam.serviceAccountAdmin \
@@ -218,6 +222,21 @@ for role in roles/resourcemanager.folderAdmin \
     --role=${role} \
     ${IMPERSONATE}
 done
+
+# `roles/billing.user` is bound directly on the billing account because billing
+# accounts aren't under the org/folder hierarchy. This grant is what lets the
+# foundation SA associate newly-created projects (yamato/dev, yamato/prod, ...)
+# with the iq9 billing account. Scoped to a single billing account, so the SA
+# can't link projects to any other billing account in the org.
+#
+# This command is NOT impersonated through the bootstrap SA: bootstrap SA holds
+# roles/billing.user at org scope but NOT roles/billing.admin, so it cannot
+# call billing.accounts.setIamPolicy. The genesis admin runs this directly,
+# leveraging the roles/billing.admin they hold by virtue of being the billing
+# account creator. One-time, audited as the genesis identity.
+gcloud billing accounts add-iam-policy-binding ${TF_VAR_BILLING_ACCOUNT} \
+  --member=serviceAccount:${FOUNDATION_SA} \
+  --role=roles/billing.user
 
 # `roles/iam.roleAdmin` is project-scoped only (not folder-supported), so it gets
 # granted separately at the iq9-ops-iac project. Lets terraform manage custom IAM
