@@ -31,6 +31,6 @@ image is built and pushed, flip the cloudrun `container_image` variable off the
 ## Foundation this depends on
 
 - Project `iq9-gcp-dev-yamato` — [`foundation/gcp-projects/yamato/dev/`](../../../foundation/gcp-projects/yamato/dev/)
-- VPC + PSA + the reserved connector range — [`foundation/gcp-networks/yamato/dev/`](../../../foundation/gcp-networks/yamato/dev/)
+- VPC + PSA + the reserved connector range — [`foundation/networks/yamato/dev/`](../../../foundation/networks/yamato/dev/)
 
 Each `<service>/` directory has its own readme with the full detail.

@@ -53,15 +53,15 @@ These three ranges don't overlap, leaving plenty of room for future subnets (GKE
 
 | File | Purpose |
 | --- | --- |
-| `gcp_networks_yamato_dev.tf` | The 6 resources, hardcoded, heavily commented |
-| `gcp_networks_yamato_dev_gcs_backend.tf` | TF state at `gs://iq9-iac-ops-tf-state-bucket/terraform/state/foundation/gcp-networks/yamato/dev/` |
+| `networks_yamato_dev.tf` | The 6 resources, hardcoded, heavily commented |
+| `networks_yamato_dev_gcs_backend.tf` | TF state at `gs://iq9-iac-ops-tf-state-bucket/terraform/state/foundation/networks/yamato/dev/` |
 | `gcp_provider.tf` | Soft link to repo-root `gcp_provider.tf` |
 | `readme.md` | This file |
 
 ## First-time setup
 
 ```bash
-cd foundation/gcp-networks/yamato/dev/
+cd foundation/networks/yamato/dev/
 
 terraform init
 
@@ -97,7 +97,7 @@ Expected:
 ## Subsequent runs
 
 ```bash
-cd foundation/gcp-networks/yamato/dev/
+cd foundation/networks/yamato/dev/
 terraform init
 terraform plan   # steady state — should report "No changes."
 ```

@@ -9,7 +9,7 @@
 # This file owns one resource: the project shell. Per the foundation-layer
 # discipline, NO cloud services and NO API enablement live here. APIs are
 # enabled by the state that needs them — `compute` + `servicenetworking` in
-# foundation/gcp-networks/yamato/dev/, and per-service APIs (`sqladmin`,
+# foundation/networks/yamato/dev/, and per-service APIs (`sqladmin`,
 # `run`, `vpcaccess`, ...) in the Service Layer states.
 #
 # Hardcoded values
@@ -19,7 +19,7 @@
 #   project_id       iq9-gcp-dev-yamato                 (per docs/naming-convention.md)
 #
 # auto_create_network = false because the default VPC is a sprawl of
-# auto-mode subnets across every region. Foundation/gcp-networks/yamato/dev/
+# auto-mode subnets across every region. Foundation/networks/yamato/dev/
 # creates a single custom-mode VPC inside this project.
 #
 # deletion_policy = "PREVENT" so a `terraform destroy` cannot accidentally

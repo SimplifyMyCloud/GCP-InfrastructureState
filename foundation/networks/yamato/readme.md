@@ -7,7 +7,7 @@ For the broader design philosophy — hardcoded values, state granularity, and c
 ## Layout
 
 ```
-foundation/gcp-networks/yamato/
+foundation/networks/yamato/
 ├── readme.md          (this file)
 ├── dev/               (state #1 — iq9-vpc-dev-yamato in us-west1)
 ├── test/              (pending — iq9-vpc-dev-yamato-test, when CI/CD wiring lands)
@@ -38,8 +38,8 @@ Every environment subdir follows the same shape as [`dev/`](./dev/):
 
 ```
 yamato/{env}/
-├── gcp_networks_yamato_{env}.tf            (APIs + VPC + subnet + PSA + peering)
-├── gcp_networks_yamato_{env}_gcs_backend.tf (state prefix: foundation/gcp-networks/yamato/{env}/)
+├── networks_yamato_{env}.tf            (APIs + VPC + subnet + PSA + peering)
+├── networks_yamato_{env}_gcs_backend.tf (state prefix: foundation/networks/yamato/{env}/)
 ├── gcp_provider.tf                          (symlink to repo-root)
 └── readme.md
 ```

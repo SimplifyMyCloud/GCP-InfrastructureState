@@ -6,9 +6,9 @@ For the broader design philosophy — hardcoded values, state granularity, and c
 
 ## What this state owns
 
-One resource: `google_project.yamato_dev`. Project ID `iq9-gcp-dev-yamato`, parented to the `dev` folder, billed against the iq9 billing account, deletion-protected, and tagged with `env=dev` / `app=yamato` labels. `auto_create_network` is off — the default VPC is a sprawl of auto-mode subnets across every region, and we'd rather have a clean slate for `foundation/gcp-networks/yamato/dev/` to fill in.
+One resource: `google_project.yamato_dev`. Project ID `iq9-gcp-dev-yamato`, parented to the `dev` folder, billed against the iq9 billing account, deletion-protected, and tagged with `env=dev` / `app=yamato` labels. `auto_create_network` is off — the default VPC is a sprawl of auto-mode subnets across every region, and we'd rather have a clean slate for `foundation/networks/yamato/dev/` to fill in.
 
-No APIs are enabled here. No services are provisioned here. The project is a shell; the next foundation state (gcp-networks) and the eventual Service Layer states populate it.
+No APIs are enabled here. No services are provisioned here. The project is a shell; the next foundation state (networks) and the eventual Service Layer states populate it.
 
 ## Hardcoded values
 
@@ -61,4 +61,4 @@ If a `plan` ever shows drift on this state, something has changed by hand and th
 
 ## What comes next
 
-Once this project exists, the next foundation state — [`foundation/gcp-networks/yamato/dev/`](../../../gcp-networks/yamato/dev/) — enables `compute` + `servicenetworking` inside it and creates the VPC, subnet, Cloud Router, Cloud NAT, IAP-SSH firewall rule, and PSA range. After that, the Service Layer (Cloud SQL, Cloud Run) populates the project with services that run the yamato app.
+Once this project exists, the next foundation state — [`foundation/networks/yamato/dev/`](../../../networks/yamato/dev/) — enables `compute` + `servicenetworking` inside it and creates the VPC, subnet, Cloud Router, Cloud NAT, IAP-SSH firewall rule, and PSA range. After that, the Service Layer (Cloud SQL, Cloud Run) populates the project with services that run the yamato app.

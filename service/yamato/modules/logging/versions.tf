@@ -1,10 +1,14 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# Foundation Layer - GCP Logging Project
-# GCS Backend for Terraform State
+# Service Layer — module: logging
+# Provider version constraints (no provider config — that lives in the root)
 # ---------------------------------------------------------------------------------------------------------------------
 terraform {
-  backend "gcs" {
-    bucket = "iq9-terraform-shared-state-bucket"
-    prefix = "terraform/state/foundation/gcp_logging/log_org_sync"
+  required_version = "~> 1.10"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.0"
+    }
   }
 }

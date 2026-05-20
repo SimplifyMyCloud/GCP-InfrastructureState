@@ -4,7 +4,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 #
 # State for this directory's resources lives in:
-#   gs://iq9-iac-ops-tf-state-bucket/terraform/state/foundation/gcp-networks/yamato/dev/
+#   gs://iq9-iac-ops-tf-state-bucket/terraform/state/foundation/networks/yamato/dev/
 #
 # The bucket is in iq9-ops-iac, has uniform bucket-level access on, public
 # access prevention enforced, and versioning enabled. Object access is
@@ -23,6 +23,6 @@
 terraform {
   backend "gcs" {
     bucket = "iq9-iac-ops-tf-state-bucket"
-    prefix = "terraform/state/foundation/gcp-networks/yamato/dev"
+    prefix = "terraform/state/foundation/networks/yamato/dev"
   }
 }

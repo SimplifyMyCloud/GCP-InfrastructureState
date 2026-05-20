@@ -17,7 +17,7 @@ What does **not** go here: Cloud NAT / Cloud Router (deferred — only created w
 One directory per app, one Terraform state per VPC. Each app's network tree mirrors the project tree at `foundation/gcp-projects/{app}/`.
 
 ```
-foundation/gcp-networks/
+foundation/networks/
 ├── readme.md                  (this file)
 └── yamato/                    (Star Blazers ships/characters/planets codex)
     ├── readme.md
@@ -38,11 +38,11 @@ foundation/gcp-networks/
 The shape is identical for every app:
 
 ```
-foundation/gcp-networks/{app}/
+foundation/networks/{app}/
 ├── readme.md                                    (app overview, env status, CIDR plan)
 └── {env}/
-    ├── gcp_networks_{app}_{env}.tf              (APIs + VPC + subnet + PSA + peering)
-    ├── gcp_networks_{app}_{env}_gcs_backend.tf  (prefix: foundation/gcp-networks/{app}/{env}/)
+    ├── networks_{app}_{env}.tf              (APIs + VPC + subnet + PSA + peering)
+    ├── networks_{app}_{env}_gcs_backend.tf  (prefix: foundation/networks/{app}/{env}/)
     ├── gcp_provider.tf                          (symlink to repo-root)
     └── readme.md
 ```
@@ -51,4 +51,4 @@ Network constants across every app/env: VPC is custom-mode (`auto_create_subnetw
 
 ## Apply order
 
-`foundation/gcp-networks/{app}/{env}/` depends on `foundation/gcp-projects/{app}/{env}/` having been applied first (the project must exist before TF can enable APIs and create resources in it). Beyond that, network states are independent of each other — `yamato/dev/` and a hypothetical second app's network can apply in any order.
+`foundation/networks/{app}/{env}/` depends on `foundation/gcp-projects/{app}/{env}/` having been applied first (the project must exist before TF can enable APIs and create resources in it). Beyond that, network states are independent of each other — `yamato/dev/` and a hypothetical second app's network can apply in any order.

@@ -51,7 +51,7 @@ until you flip it. Intentional: even a dev DB shouldn't vanish by accident.
 
 The Foundation Layer network state must be applied first — the PSA peering on
 `iq9-vpc-dev-yamato` is what lets this instance get a private IP. See
-[`foundation/gcp-networks/yamato/dev/`](../../../../foundation/gcp-networks/yamato/dev/).
+[`foundation/networks/yamato/dev/`](../../../../foundation/networks/yamato/dev/).
 
 ## First-time setup
 

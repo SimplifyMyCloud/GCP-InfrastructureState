@@ -18,7 +18,7 @@ yamato's Foundation Layer is already provisioned:
 
 - Project `iq9-gcp-dev-yamato` — [`foundation/gcp-projects/yamato/dev/`](../../foundation/gcp-projects/yamato/dev/)
 - VPC `iq9-vpc-dev-yamato`, subnet `10.10.0.0/20`, PSA range `10.20.0.0/20` peered to
-  `servicenetworking` — [`foundation/gcp-networks/yamato/dev/`](../../foundation/gcp-networks/yamato/dev/)
+  `servicenetworking` — [`foundation/networks/yamato/dev/`](../../foundation/networks/yamato/dev/)
 
 This Service Layer consumes those by name. It does **not** modify them. Two address
 ranges are pre-reserved by the network state for this layer to consume:
