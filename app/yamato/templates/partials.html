@@ -1,0 +1,27 @@
+{{define "head"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="starfield" aria-hidden="true"></div>
+{{end}}
+
+{{define "topbar"}}
+<header class="bar">
+  <a class="brand" href="/wiki">★ YAMATO&nbsp;WIKI</a>
+  {{with .User}}<span class="who">signed in · {{.}}</span>{{end}}
+</header>
+{{end}}
+
+{{define "foot"}}
+<footer class="site-footer">
+  <span>SimplifyMy.Cloud · iq9 archive</span>
+  <span>Protected by Google Cloud Identity-Aware Proxy</span>
+</footer>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,10 @@
+{{template "head" .}}
+{{template "topbar" .}}
+<main class="wiki article">
+  <p class="crumb"><a href="/wiki">← Back to the Archive</a></p>
+  <p class="kicker">{{.Article.Category}}</p>
+  <h1>{{.Article.Title}}</h1>
+  {{range .Article.Paragraphs}}<p>{{.}}</p>{{end}}
+  <p class="updated">Last updated {{.Article.Updated}}</p>
+</main>
+{{template "foot" .}}

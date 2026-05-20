@@ -1,0 +1,6 @@
+.git
+.gitignore
+*.md
+Dockerfile
+.dockerignore
+cloudbuild.yaml

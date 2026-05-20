@@ -1,0 +1,35 @@
+# Build the yamato app image and push it to the per-app Artifact Registry repo
+# created by service/yamato/dev/artifact-registry.
+#
+# Manual build:
+#   gcloud builds submit app/yamato \
+#     --project=iq9-gcp-dev-yamato \
+#     --config=app/yamato/cloudbuild.yaml
+#
+# Tag a release instead of latest:
+#   ... --substitutions=_TAG=v1
+#
+# After the push, flip service/yamato/dev/cloudrun/terraform.tfvars
+#   container_image -> us-west1-docker.pkg.dev/iq9-gcp-dev-yamato/yamato/yamato:<_TAG>
+# and re-apply the cloudrun state.
+
+substitutions:
+  _REGION: us-west1
+  _PROJECT: iq9-gcp-dev-yamato
+  _REPO: yamato
+  _IMAGE: yamato
+  _TAG: latest
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${_PROJECT}/${_REPO}/${_IMAGE}:${_TAG}
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/${_PROJECT}/${_REPO}/${_IMAGE}:${_TAG}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
