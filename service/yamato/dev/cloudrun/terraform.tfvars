@@ -8,10 +8,8 @@ subnet_name        = "iq9-subnet-dev-yamato"
 service_name       = "iq9-run-dev-yamato"
 service_account_id = "iq9-yamato-dev-run"
 
-# Placeholder image so the service stands up before the App Layer exists.
-# After the first app build+push, flip this to:
-#   us-west1-docker.pkg.dev/iq9-gcp-dev-yamato/yamato/yamato:<tag>
-container_image = "us-docker.pkg.dev/cloudrun/container/hello"
+# The real yamato app image, built + pushed via app/yamato/cloudbuild.yaml.
+container_image = "us-west1-docker.pkg.dev/iq9-gcp-dev-yamato/yamato/yamato:latest"
 
 # DB wiring — matches the cloudsql state. connection_name is deterministic:
 #   <project>:<region>:<instance_name>
