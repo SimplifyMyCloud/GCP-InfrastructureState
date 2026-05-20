@@ -25,6 +25,12 @@
 # Ignored vscode files
 .vscode/
 
+# Claude Code local/runtime files. Keep the worktree storage and personal
+# settings out of git; a shared .claude/settings.json or .claude/commands/ can
+# still be committed if the team wants to share them.
+.claude/worktrees/
+.claude/settings.local.json
+
 # Ignore Any Generated JSON Files
 operations/automation-script/apply.json
 operations/automation-script/configversion.json
