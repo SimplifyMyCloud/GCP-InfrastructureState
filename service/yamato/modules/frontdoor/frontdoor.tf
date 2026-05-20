@@ -27,12 +27,8 @@ locals {
   np = var.name_prefix
 }
 
-resource "google_project_service" "iap" {
-  project = var.project_id
-  service = "iap.googleapis.com"
-
-  disable_on_destroy = false
-}
+# The iap.googleapis.com API is enabled by the foundation project state,
+# foundation/gcp-projects/yamato/dev/ — not here.
 
 # --- Global external IP + managed certificate ----------------------------------------------------------------------
 
@@ -101,8 +97,6 @@ resource "google_compute_backend_service" "wiki" {
   iap {
     enabled = true
   }
-
-  depends_on = [google_project_service.iap]
 }
 
 # Who may pass IAP on the wiki backend. domain:iq9.io = the whole Workspace org.

@@ -1,45 +1,17 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Service Layer — module: cloudrun
-# The Cloud Run service that runs the yamato app, its dedicated runtime service
-# account, and the Serverless VPC Access connector that lets it reach Cloud SQL
-# over private IP. Ingress is locked to the external HTTPS load balancer; the
-# front door (LB + IAP) is provisioned by the frontdoor state.
+# The Cloud Run service that runs the yamato app and its dedicated runtime service
+# account. The service reaches Cloud SQL over private IP via Direct VPC egress
+# (attached straight to the app subnet) — NOT a Serverless VPC Access connector,
+# which is incompatible with the enforced compute.requireOsLogin org policy (its
+# managed VMs can't provision, so the connector lands in ERROR). Ingress is locked
+# to the external HTTPS load balancer; the front door (LB + IAP) is provisioned by
+# the frontdoor state.
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "google_project_service" "run" {
-  project = var.project_id
-  service = "run.googleapis.com"
-
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "vpcaccess" {
-  project = var.project_id
-  service = "vpcaccess.googleapis.com"
-
-  disable_on_destroy = false
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Serverless VPC Access connector — Cloud Run's on-ramp into the VPC.
-# ---------------------------------------------------------------------------------------------------------------------
-#
-# Cloud Run runs outside the VPC; the connector is what lets it reach RFC1918
-# targets (Cloud SQL's private IP) inside iq9-vpc-dev-yamato. ip_cidr_range is the
-# /28 the network state deliberately left unused for exactly this purpose. It is
-# OUTSIDE the 10.10.0.0/20 workload subnet, so it doesn't collide with anything.
-resource "google_vpc_access_connector" "this" {
-  project       = var.project_id
-  name          = var.connector_name
-  region        = var.region
-  network       = var.network_name
-  ip_cidr_range = var.connector_cidr
-  min_instances = var.connector_min_instances
-  max_instances = var.connector_max_instances
-  machine_type  = var.connector_machine_type
-
-  depends_on = [google_project_service.vpcaccess]
-}
+# APIs (run, vpcaccess) are enabled by the foundation project state,
+# foundation/gcp-projects/yamato/dev/ — not here. The Service Layer assumes they
+# are already on.
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Runtime service account — the identity the container runs as.
@@ -75,8 +47,9 @@ resource "google_secret_manager_secret_iam_member" "accessor" {
 #
 # - ingress = internal-and-cloud-load-balancing: the public cannot hit the
 #   *.run.app URL; only the external HTTPS LB (front door) can route here.
-# - vpc_access egress PRIVATE_RANGES_ONLY: only RFC1918 traffic (Cloud SQL
-#   private IP) is pulled through the connector; public egress goes direct.
+# - vpc_access: Direct VPC egress onto the app subnet; egress PRIVATE_RANGES_ONLY
+#   so only RFC1918 traffic (Cloud SQL private IP) routes through the VPC, while
+#   public egress goes direct.
 # - DB_PASS is injected from Secret Manager as a secret env var; the other DB
 #   parameters are plain env vars. The app uses the Cloud SQL connector with
 #   INSTANCE_CONNECTION_NAME over the private path.
@@ -100,8 +73,11 @@ resource "google_cloud_run_v2_service" "this" {
     }
 
     vpc_access {
-      connector = google_vpc_access_connector.this.id
-      egress    = var.vpc_egress
+      egress = var.vpc_egress
+      network_interfaces {
+        network    = var.network_name
+        subnetwork = var.subnet_name
+      }
     }
 
     containers {
@@ -142,10 +118,7 @@ resource "google_cloud_run_v2_service" "this" {
     }
   }
 
-  depends_on = [
-    google_project_service.run,
-    google_secret_manager_secret_iam_member.accessor,
-  ]
+  depends_on = [google_secret_manager_secret_iam_member.accessor]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

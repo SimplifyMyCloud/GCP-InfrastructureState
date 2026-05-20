@@ -15,14 +15,12 @@
 # the state bucket, this VPC, and any service-layer compute all live on
 # the same continental side of the planet.
 #
-# What this state owns:
+# What this state owns (APIs are enabled by foundation/gcp-projects/yamato/dev/):
 #
-#   1. compute.googleapis.com           enabled on iq9-gcp-dev-yamato
-#   2. servicenetworking.googleapis.com enabled on iq9-gcp-dev-yamato
-#   3. iq9-vpc-dev-yamato               the VPC itself, custom-mode
-#   4. iq9-subnet-dev-yamato            the only subnet, /20 in us-west1
-#   5. iq9-psa-dev-yamato               PSA range reservation
-#   6. PSA peering connection           VPC <-> servicenetworking producers
+#   1. iq9-vpc-dev-yamato               the VPC itself, custom-mode
+#   2. iq9-subnet-dev-yamato            the only subnet, /20 in us-west1
+#   3. iq9-psa-dev-yamato               PSA range reservation
+#   4. PSA peering connection           VPC <-> servicenetworking producers
 #
 # What this state does NOT own (deferred to the Service Layer):
 #
@@ -50,38 +48,13 @@
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# 1 + 2. APIs — enabled by the state that uses them, not by gcp-projects.
+# APIs — enabled by FOUNDATION (the project state), not here.
 # ---------------------------------------------------------------------------------------------------------------------
 #
-# The discipline from foundation/gcp-projects/readme.md: APIs are a security
-# surface, so each state enables only the APIs it actually exercises. This
-# state needs:
-#
-#   - compute.googleapis.com           VPC, subnet, global address all live
-#                                      under the Compute Engine API
-#   - servicenetworking.googleapis.com Required for the PSA peering that
-#                                      service producers (Cloud SQL,
-#                                      Memorystore, ...) consume
-#
-# disable_on_destroy = false because tearing down this state's TF resources
-# should NOT also disable the APIs project-wide. Other states in the same
-# project may already depend on these APIs, and turning them off mid-flight
-# would cause cascading failures elsewhere. Disabling APIs is a manual,
-# deliberate operation, not a side-effect of `terraform destroy`.
-
-resource "google_project_service" "compute" {
-  project = "iq9-gcp-dev-yamato"
-  service = "compute.googleapis.com"
-
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "servicenetworking" {
-  project = "iq9-gcp-dev-yamato"
-  service = "servicenetworking.googleapis.com"
-
-  disable_on_destroy = false
-}
+# compute.googleapis.com and servicenetworking.googleapis.com (and every other API
+# this project uses) are enabled by foundation/gcp-projects/yamato/dev/. API
+# enablement is a foundation-layer responsibility; this state assumes they are
+# already on, so apply the gcp-projects state before this one.
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -104,8 +77,8 @@ resource "google_project_service" "servicenetworking" {
 # would require explicit replacement routes via Cloud NAT, which we're
 # deliberately not provisioning here.
 #
-# Depends on the compute API being enabled — TF can't create VPCs in a
-# project that doesn't have compute.googleapis.com on yet.
+# Requires compute.googleapis.com — enabled by the gcp-projects foundation state,
+# which must be applied before this one.
 
 resource "google_compute_network" "yamato_dev" {
   project = "iq9-gcp-dev-yamato"
@@ -116,8 +89,6 @@ resource "google_compute_network" "yamato_dev" {
   delete_default_routes_on_create = false
 
   description = "Per-project VPC for yamato dev. Single subnet, single region (us-west1)."
-
-  depends_on = [google_project_service.compute]
 }
 
 
@@ -216,6 +187,4 @@ resource "google_service_networking_connection" "psa_peering" {
   reserved_peering_ranges = [google_compute_global_address.psa_range.name]
 
   deletion_policy = "ABANDON"
-
-  depends_on = [google_project_service.servicenetworking]
 }

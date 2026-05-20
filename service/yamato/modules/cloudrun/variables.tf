@@ -3,48 +3,25 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "project_id" {
-  description = "Project that owns the Cloud Run service and connector."
+  description = "Project that owns the Cloud Run service."
   type        = string
 }
 
 variable "region" {
-  description = "Region for the service and the Serverless VPC Access connector."
+  description = "Region for the Cloud Run service."
   type        = string
 }
 
-# --- Serverless VPC Access connector -------------------------------------------------------------------------------
+# --- Direct VPC egress (Cloud Run -> app subnet) -------------------------------------------------------------------
 
 variable "network_name" {
-  description = "Name of the app VPC the connector attaches to (e.g. iq9-vpc-dev-yamato)."
+  description = "Name of the app VPC the Cloud Run service attaches to via Direct VPC egress (e.g. iq9-vpc-dev-yamato)."
   type        = string
 }
 
-variable "connector_name" {
-  description = "Serverless VPC Access connector name. Max 25 chars."
+variable "subnet_name" {
+  description = "Name of the subnet the Cloud Run service draws Direct VPC egress IPs from (e.g. iq9-subnet-dev-yamato)."
   type        = string
-}
-
-variable "connector_cidr" {
-  description = "Unused /28 in the VPC for the connector. Reserved by the network state (10.10.16.0/28 in dev)."
-  type        = string
-}
-
-variable "connector_min_instances" {
-  description = "Minimum connector instances."
-  type        = number
-  default     = 2
-}
-
-variable "connector_max_instances" {
-  description = "Maximum connector instances."
-  type        = number
-  default     = 3
-}
-
-variable "connector_machine_type" {
-  description = "Connector machine type."
-  type        = string
-  default     = "e2-micro"
 }
 
 # --- Runtime identity -----------------------------------------------------------------------------------------------
@@ -104,7 +81,7 @@ variable "ingress" {
 }
 
 variable "vpc_egress" {
-  description = "Connector egress. PRIVATE_RANGES_ONLY routes only RFC1918 traffic (e.g. Cloud SQL private IP) through the VPC; public egress goes direct."
+  description = "VPC egress for Direct VPC egress. PRIVATE_RANGES_ONLY routes only RFC1918 traffic (e.g. Cloud SQL private IP) through the VPC; public egress goes direct."
   type        = string
   default     = "PRIVATE_RANGES_ONLY"
 }

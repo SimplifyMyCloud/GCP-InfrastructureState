@@ -6,11 +6,11 @@
 # Creates the empty GCP project that hosts the dev environment of the
 # `yamato` application (the Star Blazers ships/characters/planets codex).
 #
-# This file owns one resource: the project shell. Per the foundation-layer
-# discipline, NO cloud services and NO API enablement live here. APIs are
-# enabled by the state that needs them — `compute` + `servicenetworking` in
-# foundation/networks/yamato/dev/, and per-service APIs (`sqladmin`,
-# `run`, `vpcaccess`, ...) in the Service Layer states.
+# This state owns the project shell (this file) AND the project's API enablement
+# (gcp_projects_yamato_dev_apis.tf). API enablement is a foundation-layer
+# responsibility — in a hardened split-identity model the Service-layer TF SA
+# cannot enable APIs — so the Service Layer assumes the APIs it needs are already
+# on and never enables them itself.
 #
 # Hardcoded values
 # ----------------

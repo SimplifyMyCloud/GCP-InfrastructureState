@@ -6,14 +6,12 @@ For the broader design philosophy — hardcoded values, state granularity, and c
 
 ## What this state owns
 
-Six resources, all inside `iq9-gcp-dev-yamato`:
+Four resources, all inside `iq9-gcp-dev-yamato` (the APIs this state needs — `compute`, `servicenetworking` — are enabled by `foundation/gcp-projects/yamato/dev/`):
 
-1. `compute.googleapis.com` enabled on the project
-2. `servicenetworking.googleapis.com` enabled on the project
-3. `iq9-vpc-dev-yamato` — the VPC (custom-mode, REGIONAL routing)
-4. `iq9-subnet-dev-yamato` — the only subnet, `10.10.0.0/20` in us-west1 (Oregon)
-5. `iq9-psa-dev-yamato` — Private Service Access range, `10.20.0.0/20`
-6. The PSA peering connection to `servicenetworking.googleapis.com`
+1. `iq9-vpc-dev-yamato` — the VPC (custom-mode, REGIONAL routing)
+2. `iq9-subnet-dev-yamato` — the only subnet, `10.10.0.0/20` in us-west1 (Oregon)
+3. `iq9-psa-dev-yamato` — Private Service Access range, `10.20.0.0/20`
+4. The PSA peering connection to `servicenetworking.googleapis.com`
 
 What this state does *not* own (deferred to Service Layer):
 
@@ -69,7 +67,7 @@ terraform plan   # 6 resources to create
 terraform apply
 ```
 
-The first apply enables the two APIs before creating the VPC, so it'll pause briefly on those resources. Total runtime is usually 1-3 minutes (the `google_service_networking_connection` peering is the long pole — ~60-90s).
+The APIs this state needs (`compute`, `servicenetworking`) are enabled by the gcp-projects foundation state — apply that first. Total runtime is usually 1-3 minutes (the `google_service_networking_connection` peering is the long pole — ~60-90s).
 
 After the apply, verify:
 

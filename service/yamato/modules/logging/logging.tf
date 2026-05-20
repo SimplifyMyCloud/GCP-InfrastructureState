@@ -72,12 +72,9 @@ resource "google_logging_project_sink" "app" {
   unique_writer_identity = true
 }
 
-# The sink's writer identity needs bucketWriter to deliver into the log bucket.
-resource "google_project_iam_member" "app_sink_bucket_writer" {
-  project = var.project_id
-  role    = "roles/logging.bucketWriter"
-  member  = google_logging_project_sink.app.writer_identity
-}
+# No writer-identity IAM grant is needed: the sink routes to a log bucket in the
+# SAME project, which Cloud Logging delivers internally. (writer_identity comes back
+# empty for same-project log-bucket sinks — there is nothing to grant.)
 
 # --- Layer 3: log-based metrics ------------------------------------------------------------------------------------
 

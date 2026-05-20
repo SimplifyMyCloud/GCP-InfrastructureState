@@ -16,8 +16,3 @@ output "runtime_service_account_email" {
   description = "Email of the Cloud Run runtime service account."
   value       = google_service_account.runtime.email
 }
-
-output "connector_id" {
-  description = "The Serverless VPC Access connector resource ID."
-  value       = google_vpc_access_connector.this.id
-}

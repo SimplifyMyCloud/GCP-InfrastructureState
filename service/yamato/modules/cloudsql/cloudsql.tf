@@ -6,21 +6,9 @@
 # that the Foundation Layer network state established.
 # ---------------------------------------------------------------------------------------------------------------------
 
-# APIs this state exercises. disable_on_destroy = false so destroying this state
-# never disables an API another state in the project depends on.
-resource "google_project_service" "sqladmin" {
-  project = var.project_id
-  service = "sqladmin.googleapis.com"
-
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "secretmanager" {
-  project = var.project_id
-  service = "secretmanager.googleapis.com"
-
-  disable_on_destroy = false
-}
+# APIs (sqladmin, secretmanager) are enabled by the foundation project state,
+# foundation/gcp-projects/yamato/dev/ — not here. The Service Layer assumes they
+# are already on.
 
 # ---------------------------------------------------------------------------------------------------------------------
 # The Postgres instance — private IP only.
@@ -66,8 +54,6 @@ resource "google_sql_database_instance" "this" {
       }
     }
   }
-
-  depends_on = [google_project_service.sqladmin]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -117,8 +103,6 @@ resource "google_secret_manager_secret" "db_password" {
   replication {
     auto {}
   }
-
-  depends_on = [google_project_service.secretmanager]
 }
 
 resource "google_secret_manager_secret_version" "db_password" {

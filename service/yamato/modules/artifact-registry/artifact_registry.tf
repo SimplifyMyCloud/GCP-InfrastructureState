@@ -7,22 +7,9 @@
 # to the source repo is a later step once the App Layer exists.
 # ---------------------------------------------------------------------------------------------------------------------
 
-# APIs are enabled by the state that uses them (same discipline as the Foundation
-# Layer). disable_on_destroy = false so a `terraform destroy` of this state never
-# yanks an API out from under another state in the same project.
-resource "google_project_service" "artifactregistry" {
-  project = var.project_id
-  service = "artifactregistry.googleapis.com"
-
-  disable_on_destroy = false
-}
-
-resource "google_project_service" "cloudbuild" {
-  project = var.project_id
-  service = "cloudbuild.googleapis.com"
-
-  disable_on_destroy = false
-}
+# APIs (artifactregistry, cloudbuild) are enabled by the foundation project state,
+# foundation/gcp-projects/yamato/dev/ — not here. The Service Layer assumes they
+# are already on.
 
 # The Docker repository that holds the yamato app image. Cloud Run pulls from
 # here; Cloud Build pushes to here.
@@ -33,6 +20,4 @@ resource "google_artifact_registry_repository" "this" {
   format        = "DOCKER"
   description   = var.description
   labels        = var.labels
-
-  depends_on = [google_project_service.artifactregistry]
 }

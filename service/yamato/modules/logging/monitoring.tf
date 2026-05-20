@@ -103,7 +103,7 @@ resource "google_monitoring_alert_policy" "app_errors" {
   conditions {
     display_name = "app ERROR log events"
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.app_errors.name}\""
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.app_errors.name}\" AND resource.type=\"cloud_run_revision\""
       comparison      = "COMPARISON_GT"
       threshold_value = var.app_error_threshold
       duration        = "0s"
@@ -127,7 +127,7 @@ resource "google_monitoring_alert_policy" "secret_access_spike" {
   conditions {
     display_name = "AccessSecretVersion calls"
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.secret_access.name}\""
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.secret_access.name}\" AND resource.type=\"audited_resource\""
       comparison      = "COMPARISON_GT"
       threshold_value = var.secret_access_threshold
       duration        = "0s"

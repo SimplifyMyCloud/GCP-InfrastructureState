@@ -1,6 +1,6 @@
 # Foundation Layer — yamato / dev
 
-The empty GCP project that hosts the dev environment of the `yamato` application.
+The GCP project that hosts the dev environment of the `yamato` application — and the project's API enablement (a foundation-layer responsibility).
 
 For the broader design philosophy — hardcoded values, state granularity, and change-control posture — see [`docs/infrastructurestate.md`](../../../../docs/infrastructurestate.md).
 
@@ -8,7 +8,7 @@ For the broader design philosophy — hardcoded values, state granularity, and c
 
 One resource: `google_project.yamato_dev`. Project ID `iq9-gcp-dev-yamato`, parented to the `dev` folder, billed against the iq9 billing account, deletion-protected, and tagged with `env=dev` / `app=yamato` labels. `auto_create_network` is off — the default VPC is a sprawl of auto-mode subnets across every region, and we'd rather have a clean slate for `foundation/networks/yamato/dev/` to fill in.
 
-No APIs are enabled here. No services are provisioned here. The project is a shell; the next foundation state (networks) and the eventual Service Layer states populate it.
+API enablement lives here too — see `gcp_projects_yamato_dev_apis.tf`. Turning on a project's APIs is a foundation-layer responsibility (in a hardened split-identity model the Service-layer TF SA can't enable APIs), so the Service Layer assumes the APIs it needs are already on. No application *services* are provisioned here — the network state and the Service Layer do that.
 
 ## Hardcoded values
 
@@ -22,7 +22,8 @@ No APIs are enabled here. No services are provisioned here. The project is a she
 
 | File | Purpose |
 | --- | --- |
-| `gcp_projects_yamato_dev.tf` | The single `google_project` resource |
+| `gcp_projects_yamato_dev.tf` | The `google_project` resource |
+| `gcp_projects_yamato_dev_apis.tf` | All `google_project_service` API enables for this project |
 | `gcp_projects_yamato_dev_gcs_backend.tf` | TF state at `gs://iq9-iac-ops-tf-state-bucket/terraform/state/foundation/gcp-projects/yamato/dev/` |
 | `gcp_provider.tf` | Soft link to repo-root `gcp_provider.tf` (terraform / provider version pins) |
 | `readme.md` | This file |
@@ -61,4 +62,4 @@ If a `plan` ever shows drift on this state, something has changed by hand and th
 
 ## What comes next
 
-Once this project exists, the next foundation state — [`foundation/networks/yamato/dev/`](../../../networks/yamato/dev/) — enables `compute` + `servicenetworking` inside it and creates the VPC, subnet, Cloud Router, Cloud NAT, IAP-SSH firewall rule, and PSA range. After that, the Service Layer (Cloud SQL, Cloud Run) populates the project with services that run the yamato app.
+Once this project (and its APIs) exist, the next foundation state — [`foundation/networks/yamato/dev/`](../../../networks/yamato/dev/) — creates the VPC, subnet, and PSA peering (the APIs it needs are already enabled here). After that, the Service Layer (Cloud SQL, Cloud Run, the front door, logging) populates the project with the services that run the yamato app.

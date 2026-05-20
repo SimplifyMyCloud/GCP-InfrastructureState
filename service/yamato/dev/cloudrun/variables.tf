@@ -4,27 +4,22 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "project_id" {
-  description = "Project that owns the Cloud Run service and connector."
+  description = "Project that owns the Cloud Run service."
   type        = string
 }
 
 variable "region" {
-  description = "Region for the service and connector."
+  description = "Region for the Cloud Run service."
   type        = string
 }
 
 variable "network_name" {
-  description = "Name of the app VPC the connector attaches to."
+  description = "Name of the app VPC (Cloud Run attaches via Direct VPC egress)."
   type        = string
 }
 
-variable "connector_name" {
-  description = "Serverless VPC Access connector name."
-  type        = string
-}
-
-variable "connector_cidr" {
-  description = "The /28 reserved for the connector."
+variable "subnet_name" {
+  description = "Subnet the Cloud Run service draws Direct VPC egress IPs from."
   type        = string
 }
 

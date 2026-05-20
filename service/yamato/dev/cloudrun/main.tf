@@ -10,9 +10,8 @@ module "cloudrun" {
   project_id = var.project_id
   region     = var.region
 
-  network_name   = var.network_name
-  connector_name = var.connector_name
-  connector_cidr = var.connector_cidr
+  network_name = var.network_name
+  subnet_name  = var.subnet_name
 
   service_name       = var.service_name
   service_account_id = var.service_account_id

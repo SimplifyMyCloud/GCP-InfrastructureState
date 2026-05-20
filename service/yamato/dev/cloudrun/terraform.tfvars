@@ -4,8 +4,7 @@
 project_id         = "iq9-gcp-dev-yamato"
 region             = "us-west1"
 network_name       = "iq9-vpc-dev-yamato"
-connector_name     = "iq9-conn-dev-yamato"
-connector_cidr     = "10.10.16.0/28"
+subnet_name        = "iq9-subnet-dev-yamato"
 service_name       = "iq9-run-dev-yamato"
 service_account_id = "iq9-yamato-dev-run"
 
