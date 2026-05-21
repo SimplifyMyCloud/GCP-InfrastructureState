@@ -15,8 +15,8 @@ everything. See [`docs/infrastructurestate.md`](../../../docs/infrastructurestat
 | --- | --- |
 | [`artifact-registry/`](./artifact-registry/) | A Docker Artifact Registry repository + the image-pipeline APIs. |
 | [`cloudsql/`](./cloudsql/) | A private-IP Postgres instance, its database, app user, and the password in Secret Manager. |
-| [`cloudrun/`](./cloudrun/) | A Cloud Run service, its runtime service account, and the Serverless VPC connector. |
-| [`frontdoor/`](./frontdoor/) | A global external HTTPS load balancer with IAP, fronting a Cloud Run service. |
+| [`cloudrun/`](./cloudrun/) | Two Cloud Run services (public + IAP-gated wiki), a shared runtime service account, and Direct VPC egress to Cloud SQL. |
+| [`frontdoor/`](./frontdoor/) | A global external HTTPS load balancer with IAP, fronting two Cloud Run services via two NEGs. |
 
 ## Conventions for every module here
 

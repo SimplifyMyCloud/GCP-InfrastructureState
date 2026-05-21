@@ -20,22 +20,27 @@ yamato's Foundation Layer is already provisioned:
 - VPC `iq9-vpc-dev-yamato`, subnet `10.10.0.0/20`, PSA range `10.20.0.0/20` peered to
   `servicenetworking` — [`foundation/networks/yamato/dev/`](../../foundation/networks/yamato/dev/)
 
-This Service Layer consumes those by name. It does **not** modify them. Two address
-ranges are pre-reserved by the network state for this layer to consume:
+This Service Layer consumes those by name. It does **not** modify them.
 
 | Range | Consumed by |
 | --- | --- |
 | `10.20.0.0/20` (PSA) | Cloud SQL private IP |
-| `10.10.16.0/28` | Serverless VPC Access connector (Cloud Run → VPC) |
+| subnet `10.10.0.0/20` | Cloud Run **Direct VPC egress** (services attach straight to the app subnet) |
+
+> Cloud Run uses **Direct VPC egress** onto the app subnet — *not* a Serverless VPC
+> Access connector, which is incompatible with the enforced `compute.requireOsLogin`
+> org policy. The `10.10.16.0/28` the network state once reserved for a connector is
+> no longer consumed.
 
 ## Services
 
 | State | Owns |
 | --- | --- |
-| [`dev/artifact-registry/`](./dev/artifact-registry/) | Docker repo for the app image; Artifact Registry + Cloud Build APIs |
+| [`dev/artifact-registry/`](./dev/artifact-registry/) | Docker repo for the app image |
 | [`dev/cloudsql/`](./dev/cloudsql/) | Postgres instance (private IP), database, app user, password in Secret Manager |
-| [`dev/cloudrun/`](./dev/cloudrun/) | Serverless VPC connector, runtime SA, the Cloud Run service |
-| [`dev/frontdoor/`](./dev/frontdoor/) | External HTTPS LB, managed cert, IAP, public landing + IAP-gated wiki routing |
+| [`dev/cloudrun/`](./dev/cloudrun/) | Two Cloud Run services (public + IAP-gated wiki), shared runtime SA, Direct VPC egress |
+| [`dev/frontdoor/`](./dev/frontdoor/) | External HTTPS LB, managed cert, IAP; two NEGs → two services (public landing + IAP-gated wiki) |
+| [`dev/logging/`](./dev/logging/) | Per-app performance + security logging: log-based metrics, alert policies, dashboard |
 
 `modules/` holds the reusable shape for each of the above; `dev/` is the dev
 environment's dedicated roots. `test/`, `stage/`, and `prod/` will be added as
@@ -47,12 +52,15 @@ Infrastructure is laid down first, the app second (per the project's build plan)
 
 1. `dev/artifact-registry/` — so an image has somewhere to be pushed.
 2. `dev/cloudsql/` — the database and its Secret Manager secret.
-3. `dev/cloudrun/` — the connector, runtime SA, and the service. The container
-   image is a **variable** with a placeholder default (`cloudrun/hello`) so the
-   service stands up before the real app exists.
-4. `dev/frontdoor/` — the LB + IAP front door.
-5. App Layer: build the Go app, push the image to Artifact Registry, then flip the
-   Cloud Run `container_image` variable to the real image.
+3. `dev/cloudrun/` — the runtime SA and the two services (public + IAP wiki), on
+   Direct VPC egress. The container image is a **variable** with a placeholder
+   default (`cloudrun/hello`) so the services stand up before the real app exists;
+   it only seeds the first create (see step 5).
+4. `dev/frontdoor/` — the LB + IAP front door (two NEGs → the two services).
+5. App Layer: build the Go app, push to Artifact Registry, then `gcloud run services
+   update` **both** services onto the new image. The cloudrun state ignores the
+   running image (`lifecycle ignore_changes`), so this is a pure App-Layer deploy —
+   Terraform never reverts it. (`dev/logging/` can be applied any time after step 3.)
 
 ## Conventions in every `dev/<service>/` root
 

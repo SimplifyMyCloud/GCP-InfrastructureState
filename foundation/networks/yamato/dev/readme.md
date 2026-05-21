@@ -15,7 +15,7 @@ Four resources, all inside `iq9-gcp-dev-yamato` (the APIs this state needs — `
 
 What this state does *not* own (deferred to Service Layer):
 
-- Serverless VPC Access connector — created when Cloud Run lands
+- Serverless VPC Access connector — **not used**: Cloud Run reaches private IPs via Direct VPC egress onto this subnet, not a connector (a connector's managed instances fail under the enforced `compute.requireOsLogin` org policy)
 - Cloud NAT / Cloud Router — not needed; Cloud Run egresses direct-to-internet for public traffic, and only private RFC1918 targets route via VPC
 - Firewall rules — not needed; we have no GCE VMs to SSH into, and GCP's stateful firewall handles Cloud Run → Cloud SQL return traffic without explicit rules
 - Cloud SQL, Cloud Run, GKE, anything else — Service Layer concerns
@@ -28,7 +28,7 @@ us-west1, The Dalles, Oregon. Matches the bootstrap region and the provider defa
 
 ```
 10.10.0.0/20    subnet for primary workloads          (4096 addresses)
-10.10.16.0/28   Serverless VPC Access connector       (16 addresses, reserved by service layer when CR lands)
+10.10.16.0/28   spare carve-out, currently unused     (16 addresses; was earmarked for a VPC connector — Cloud Run now uses Direct VPC egress from the /20)
 10.20.0.0/20    PSA range for service producers        (4096 addresses, peered to Cloud SQL et al)
 ```
 
@@ -107,6 +107,6 @@ If a `plan` ever shows drift, something has changed by hand and the audit log is
 Once this VPC exists, the Service Layer states for yamato can land:
 
 1. `service/yamato/dev/cloudsql/` — Cloud SQL Postgres with private IP from the PSA range
-2. `service/yamato/dev/cloudrun/` — Cloud Run service + Serverless VPC Access connector consuming `10.10.16.0/28`, plus the runtime SA and Secret Manager bindings
+2. `service/yamato/dev/cloudrun/` — two Cloud Run services (public + IAP wiki) using Direct VPC egress onto this subnet, plus the runtime SA and Secret Manager bindings
 
 Both consume this VPC by name; neither modifies it.

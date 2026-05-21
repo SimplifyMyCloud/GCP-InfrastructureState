@@ -55,8 +55,10 @@ resource "google_secret_manager_secret_iam_member" "accessor" {
 # - DB_PASS is injected from Secret Manager as a secret env var; the other DB
 #   parameters are plain env vars. The app uses the Cloud SQL connector with
 #   INSTANCE_CONNECTION_NAME over the private path.
-# - container_image defaults to the GCP hello image so this stands up before the
-#   App Layer exists; flip the variable to the real image after the first build.
+# - container_image seeds ONLY the first create: the lifecycle block below makes the
+#   App Layer (gcloud / Cloud Build) the sole authority over the running image, so
+#   terraform never reverts an app deploy. It defaults to GCP's hello image so the
+#   service stands up before the App Layer exists.
 resource "google_cloud_run_v2_service" "this" {
   project  = var.project_id
   name     = var.service_name
@@ -118,6 +120,15 @@ resource "google_cloud_run_v2_service" "this" {
         }
       }
     }
+  }
+
+  lifecycle {
+    # The wall between Service Layer (infra) and App Layer (app versions): the running
+    # container image is set and rolled EXCLUSIVELY by the App Layer — `gcloud run
+    # services update` / Cloud Build — never by terraform. The Service Layer owns
+    # everything else about the service but never reverts its image, so devs can ship
+    # at will without a terraform run. var.container_image only seeds the FIRST create.
+    ignore_changes = [template[0].containers[0].image]
   }
 
   depends_on = [google_secret_manager_secret_iam_member.accessor]
@@ -191,6 +202,13 @@ resource "google_cloud_run_v2_service" "wiki" {
         }
       }
     }
+  }
+
+  lifecycle {
+    # Same Service/App Layer wall as the public service above: the App Layer (gcloud /
+    # Cloud Build) is the sole authority over the running image; terraform never
+    # reverts it. var.container_image only seeds the FIRST create.
+    ignore_changes = [template[0].containers[0].image]
   }
 
   depends_on = [google_secret_manager_secret_iam_member.accessor]

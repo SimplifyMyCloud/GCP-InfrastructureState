@@ -38,6 +38,14 @@ Service Layer changes require 2 reviewer approvals from the platform team. Appli
 
 If a `terraform plan` on any foundation state ever shows drift, the audit log is the next stop — drift on rarely-changed state usually means somebody has touched the org by hand, and that's a finding worth tracing.
 
+## The Service / Application Layer boundary
+
+The Service Layer provisions the *runtime* a product runs on; the Application Layer ships the *versions* of the product. Where those two meet — the running container image on a Cloud Run service — there is a deliberate wall.
+
+Terraform owns everything about the service except the image it is currently running: the service account, ingress posture, VPC egress, scaling, environment wiring, and IAP. The image itself is handed to the Application Layer. Concretely, each `google_cloud_run_v2_service` carries a `lifecycle { ignore_changes = [template[0].containers[0].image] }`, and the `container_image` variable only seeds the *first* create (a placeholder until the app exists). After that, the running version is set exclusively by the App Layer's own tooling — `gcloud run services update` driven by Cloud Build / CI — and Terraform never reverts it.
+
+This is what lets a team ship a thousand versions a day without a Terraform run, while the platform team keeps a slow, heavily-reviewed grip on the infrastructure those versions run on. A `terraform plan` on a Cloud Run state shows no image diff no matter how many times the app has been redeployed, so infra drift and app deploys never contend for the same review. The SRE team owns the box; the developers own what runs in it.
+
 ## Bootstrap-created resources
 
 A small number of foundation resources predate the Terraform that manages them. The `iq9` top-level folder, the `ops` and `logs` environment folders, the `iq9-bootstrap` project, the `iq9-ops-iac` project, and the `iq9-iac-ops-tf-state-bucket` GCS bucket were all created by hand during bootstrap, before any Terraform state existed to capture them.

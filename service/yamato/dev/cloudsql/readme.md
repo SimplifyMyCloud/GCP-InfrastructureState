@@ -31,9 +31,10 @@ state grants its runtime SA `secretAccessor`, so each state owns its own IAM.
 
 ## Connectivity model
 
-Cloud Run reaches this instance over **private IP** via the Serverless VPC Access
-connector (created in the cloudrun state). The app uses the Cloud SQL connector
-with the instance **connection name** — `iq9-gcp-dev-yamato:us-west1:yamato-dev` —
+Cloud Run reaches this instance over **private IP** via **Direct VPC egress** (the
+services attach straight to the app subnet — see the cloudrun state). The app uses
+the Cloud SQL Go connector with the instance **connection name** —
+`iq9-gcp-dev-yamato:us-west1:yamato-dev` —
 plus the DB name, user, and the password read from Secret Manager. No public IP,
 no SQL Auth Proxy over the internet.
 

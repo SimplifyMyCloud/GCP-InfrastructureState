@@ -12,10 +12,11 @@ When `test`, `stage`, and `prod` activate, they become sibling directories under
 
 | State | Focus / desired state |
 | --- | --- |
-| [`artifact-registry/`](./artifact-registry/) | A Docker repo to hold the app image; Artifact Registry + Cloud Build APIs enabled. |
+| [`artifact-registry/`](./artifact-registry/) | A Docker repo to hold the app image. |
 | [`cloudsql/`](./cloudsql/) | Postgres 16 (private IP, smallest zonal tier), the `yamato` DB + `yamato_app` user, password in Secret Manager. |
-| [`cloudrun/`](./cloudrun/) | The Cloud Run service, its runtime SA, and the Serverless VPC connector to reach Cloud SQL. Ingress locked to the LB. |
-| [`frontdoor/`](./frontdoor/) | External HTTPS LB + IAP: public landing at `/`, IAP-gated wiki at `/wiki` for `@iq9.io`. |
+| [`cloudrun/`](./cloudrun/) | Two Cloud Run services (public + IAP-gated wiki), shared runtime SA, Direct VPC egress to Cloud SQL. Ingress locked to the LB. |
+| [`frontdoor/`](./frontdoor/) | External HTTPS LB + IAP: public landing at `/`, IAP-gated wiki at `/wiki` for `@iq9.io`. Two NEGs → the two services. |
+| [`logging/`](./logging/) | Per-app performance + security logging: log-based metrics, alert policies, and a dashboard. |
 
 ## Apply order
 
@@ -23,14 +24,18 @@ When `test`, `stage`, and `prod` activate, they become sibling directories under
 artifact-registry  →  cloudsql  →  cloudrun  →  frontdoor
 ```
 
+`logging/` is independent and can be applied any time after `cloudrun/`.
+
 After `frontdoor`: create the `yamato-dev.iq9.io` A-record pointing at the LB IP
 output, and wait for the managed certificate to go `ACTIVE`. Once the App Layer
-image is built and pushed, flip the cloudrun `container_image` variable off the
-`cloudrun/hello` placeholder.
+image is built and pushed, deploy it with `gcloud run services update` on **both**
+Cloud Run services — the cloudrun state ignores the running image, so app versions
+ship via gcloud/CI, not Terraform.
 
 ## Foundation this depends on
 
 - Project `iq9-gcp-dev-yamato` — [`foundation/gcp-projects/yamato/dev/`](../../../foundation/gcp-projects/yamato/dev/)
-- VPC + PSA + the reserved connector range — [`foundation/networks/yamato/dev/`](../../../foundation/networks/yamato/dev/)
+- VPC + app subnet + PSA range — [`foundation/networks/yamato/dev/`](../../../foundation/networks/yamato/dev/)
+  (Cloud Run uses Direct VPC egress onto the app subnet; no VPC connector.)
 
 Each `<service>/` directory has its own readme with the full detail.

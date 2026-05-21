@@ -44,7 +44,7 @@ variable "wiki_service_name" {
 }
 
 variable "container_image" {
-  description = "Container image to run. Defaults to GCP's hello image so the service stands up before the real app exists; flip to the Artifact Registry image once it's built and pushed."
+  description = "Container image used ONLY to seed the first create. After that the App Layer (gcloud / Cloud Build) owns the running image and terraform ignores changes to it (lifecycle ignore_changes in cloudrun.tf). Defaults to GCP's hello image so the service stands up before the App Layer exists."
   type        = string
   default     = "us-docker.pkg.dev/cloudrun/container/hello"
 }

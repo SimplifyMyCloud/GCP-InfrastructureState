@@ -1,16 +1,19 @@
 # Module — frontdoor
 
-**Focus:** a global external Application Load Balancer that fronts a Cloud Run
-service, serving a public landing page and gating the rest behind Identity-Aware
+**Focus:** a global external Application Load Balancer that fronts **two** Cloud Run
+services, serving a public landing page and gating the wiki behind Identity-Aware
 Proxy (IAP).
 
 **Desired state**
-- `iap.googleapis.com` enabled (`disable_on_destroy = false`).
 - Global external IP + managed SSL certificate for `var.domain`.
-- One serverless NEG → the Cloud Run service.
-- **Two backend services on that one NEG:** `public` (no IAP, default route) and
-  `wiki` (IAP on, the `var.wiki_path_prefix` route). IAP uses the **Google-managed
-  OAuth client** (`iap { enabled = true }`) — not the deprecated
+  (`iap.googleapis.com` is enabled by the foundation project state, not here.)
+- **Two serverless NEGs:** one → `var.cloud_run_service_name` (public), one →
+  `var.wiki_service_name` (IAP-gated).
+- **Two backend services, one per NEG:** `public` (no IAP, default route) and
+  `wiki` (IAP on, the `var.wiki_path_prefix` route). Two services rather than one
+  because IAP attaches to the underlying Cloud Run *service*; a shared service would
+  leak IAP onto the public path. IAP uses the **Google-managed OAuth client**
+  (`iap { enabled = var.iap_enabled }`) — not the deprecated
   `google_iap_brand`/`google_iap_client`.
 - `roles/iap.httpsResourceAccessor` granted to `var.iap_members` (default `domain:iq9.io`).
 - URL map (default → public, `/wiki*` → wiki), HTTPS target proxy, port-443
@@ -30,8 +33,9 @@ Proxy (IAP).
 | `project_id`, `region` | yes | Project + Cloud Run region |
 | `name_prefix` | yes | Prefix for all front-door resource names |
 | `domain` | yes | Hostname for the managed cert |
-| `cloud_run_service_name` | yes | Service both backends route to |
-| `wiki_path_prefix`, `iap_members`, `enable_http_redirect` | no | Routing/access/redirect overrides |
+| `cloud_run_service_name` | yes | Public service (public NEG target) |
+| `wiki_service_name` | yes | IAP-gated service (wiki NEG target) |
+| `wiki_path_prefix`, `iap_members`, `iap_enabled`, `enable_http_redirect` | no | Routing/access/redirect overrides |
 
 ## Outputs
 
