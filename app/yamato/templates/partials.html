@@ -4,10 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{.Title}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <div class="starfield" aria-hidden="true"></div>
+<div class="nebula" aria-hidden="true"></div>
 {{end}}
 
 {{define "topbar"}}
@@ -19,7 +23,6 @@
 
 {{define "foot"}}
 <footer class="site-footer">
-  <span>SimplifyMy.Cloud · iq9 archive</span>
   <span>Protected by Google Cloud Identity-Aware Proxy</span>
 </footer>
 </body>

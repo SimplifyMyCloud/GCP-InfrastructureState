@@ -1,0 +1,6 @@
+# Compiled binary from `go build .` (shares the module dir's name). Built into
+# the container by cloudbuild — never committed.
+/yamato
+
+# Throwaway local preview of the landing page (regenerate as needed; not embedded).
+preview_landing.html
