@@ -4,7 +4,8 @@
 # service, with Identity-Aware Proxy (IAP) gating the wiki and a public, ungated
 # landing page.
 #
-# Two backend services point at the SAME Cloud Run service via one serverless NEG:
+# Two backend services point at the SAME Cloud Run service, each via its OWN
+# serverless NEG (they must not share one — IAP would leak across a shared NEG):
 #
 #   - "public"  no IAP    -> default route (the Star Blazers landing page at "/")
 #   - "wiki"    IAP on    -> the wiki path prefix (var.wiki_path_prefix, e.g. /wiki)
@@ -48,10 +49,24 @@ resource "google_compute_managed_ssl_certificate" "this" {
 
 # --- Serverless NEG -> the Cloud Run service -----------------------------------------------------------------------
 #
-# One NEG, referenced by both backend services below.
-resource "google_compute_region_network_endpoint_group" "this" {
+# ONE serverless NEG PER backend service, both pointing at the SAME Cloud Run
+# service. They must NOT share a single NEG: IAP enabled on the wiki backend's NEG
+# leaks onto a shared NEG and intermittently 403s the public landing. Separate NEGs
+# keep IAP enforcement scoped to the wiki backend only.
+resource "google_compute_region_network_endpoint_group" "public" {
   project               = var.project_id
-  name                  = "${local.np}-neg"
+  name                  = "${local.np}-neg-public"
+  region                = var.region
+  network_endpoint_type = "SERVERLESS"
+
+  cloud_run {
+    service = var.cloud_run_service_name
+  }
+}
+
+resource "google_compute_region_network_endpoint_group" "wiki" {
+  project               = var.project_id
+  name                  = "${local.np}-neg-wiki"
   region                = var.region
   network_endpoint_type = "SERVERLESS"
 
@@ -79,7 +94,12 @@ resource "google_compute_backend_service" "public" {
   load_balancing_scheme = "EXTERNAL_MANAGED"
 
   backend {
-    group = google_compute_region_network_endpoint_group.this.id
+    group = google_compute_region_network_endpoint_group.public.id
+  }
+
+  log_config {
+    enable      = true
+    sample_rate = 1.0
   }
 }
 
@@ -90,18 +110,25 @@ resource "google_compute_backend_service" "wiki" {
   load_balancing_scheme = "EXTERNAL_MANAGED"
 
   backend {
-    group = google_compute_region_network_endpoint_group.this.id
+    group = google_compute_region_network_endpoint_group.wiki.id
+  }
+
+  log_config {
+    enable      = true
+    sample_rate = 1.0
   }
 
   # Google-managed OAuth client (no brand/client resources needed).
+  # NOTE: set enabled explicitly — REMOVING the iap block does NOT disable IAP in
+  # GCP (terraform just stops managing it), so we toggle via enabled=var.iap_enabled.
   iap {
-    enabled = true
+    enabled = var.iap_enabled
   }
 }
 
 # Who may pass IAP on the wiki backend. domain:iq9.io = the whole Workspace org.
 resource "google_iap_web_backend_service_iam_member" "wiki" {
-  for_each = toset(var.iap_members)
+  for_each = var.iap_enabled ? toset(var.iap_members) : toset([])
 
   project             = var.project_id
   web_backend_service = google_compute_backend_service.wiki.name

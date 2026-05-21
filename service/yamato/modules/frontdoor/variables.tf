@@ -39,6 +39,12 @@ variable "iap_members" {
   default     = ["domain:iq9.io"]
 }
 
+variable "iap_enabled" {
+  description = "Whether IAP is enforced on the wiki backend. Normally true; set false to isolate IAP from other LB issues during debugging."
+  type        = bool
+  default     = true
+}
+
 variable "enable_http_redirect" {
   description = "Also stand up a port-80 listener that 301-redirects to HTTPS."
   type        = bool

@@ -27,3 +27,14 @@ variable "cloud_run_service_name" {
   description = "Cloud Run service name both backends route to."
   type        = string
 }
+
+variable "iap_members" {
+  description = "Principals granted IAP access to the /wiki backend (roles/iap.httpsResourceAccessor)."
+  type        = list(string)
+}
+
+variable "iap_enabled" {
+  description = "Whether IAP is enforced on the wiki backend (set false only for debugging)."
+  type        = bool
+  default     = true
+}
