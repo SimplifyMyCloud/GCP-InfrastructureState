@@ -3,8 +3,13 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 output "service_name" {
-  description = "The Cloud Run service name (frontdoor's serverless NEG targets it)."
+  description = "The public Cloud Run service name (frontdoor's public NEG targets it)."
   value       = google_cloud_run_v2_service.this.name
+}
+
+output "wiki_service_name" {
+  description = "The IAP-gated wiki Cloud Run service name (frontdoor's wiki NEG targets it)."
+  value       = google_cloud_run_v2_service.wiki.name
 }
 
 output "service_uri" {

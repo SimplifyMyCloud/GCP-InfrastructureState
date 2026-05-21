@@ -1,12 +1,14 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # Service Layer — module: cloudrun
-# The Cloud Run service that runs the yamato app and its dedicated runtime service
-# account. The service reaches Cloud SQL over private IP via Direct VPC egress
-# (attached straight to the app subnet) — NOT a Serverless VPC Access connector,
-# which is incompatible with the enforced compute.requireOsLogin org policy (its
-# managed VMs can't provision, so the connector lands in ERROR). Ingress is locked
-# to the external HTTPS load balancer; the front door (LB + IAP) is provisioned by
-# the frontdoor state.
+# TWO Cloud Run services running the SAME yamato app image — "this" (public) and
+# "wiki" (IAP-gated) — plus their shared, dedicated runtime service account.
+# Why two services instead of one service behind two LB backends: IAP enabled on the
+# wiki backend attaches to the underlying Cloud Run *service*, so a shared service
+# leaks IAP onto the public path (intermittent 403s — confirmed). Separate services
+# scope IAP to /wiki only. Both reach Cloud SQL over private IP via Direct VPC egress
+# (attached straight to the app subnet) — NOT a Serverless VPC Access connector, which
+# is incompatible with the enforced compute.requireOsLogin org policy. Ingress is
+# locked to the external HTTPS LB; the front door (LB + IAP) is the frontdoor state.
 # ---------------------------------------------------------------------------------------------------------------------
 
 # APIs (run, vpcaccess) are enabled by the foundation project state,
@@ -122,19 +124,102 @@ resource "google_cloud_run_v2_service" "this" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Invoker binding.
+# The IAP-gated wiki Cloud Run service — SAME image/config as the public one above.
 # ---------------------------------------------------------------------------------------------------------------------
 #
-# With ingress locked to the LB, only the front door can reach the service, so
-# granting run.invoker to allUsers does NOT expose the service publicly — IAP at
-# the LB still enforces identity. If org policy forbids allUsers bindings, set
-# invoker_members to a narrower principal.
+# A SEPARATE Cloud Run service (not just a separate NEG) so IAP — which the front
+# door enables on this service's backend — stays scoped to /wiki and never touches
+# the public service. Same runtime SA, same DB wiring, same Direct VPC egress.
+resource "google_cloud_run_v2_service" "wiki" {
+  project  = var.project_id
+  name     = var.wiki_service_name
+  location = var.region
+  ingress  = var.ingress
+  labels   = var.labels
+
+  deletion_protection = var.deletion_protection
+
+  template {
+    service_account = google_service_account.runtime.email
+
+    scaling {
+      min_instance_count = var.min_instances
+      max_instance_count = var.max_instances
+    }
+
+    vpc_access {
+      egress = var.vpc_egress
+      network_interfaces {
+        network    = var.network_name
+        subnetwork = var.subnet_name
+      }
+    }
+
+    containers {
+      image = var.container_image
+
+      ports {
+        container_port = var.container_port
+      }
+
+      resources {
+        limits = {
+          cpu    = var.cpu_limit
+          memory = var.memory_limit
+        }
+      }
+
+      env {
+        name  = "INSTANCE_CONNECTION_NAME"
+        value = var.db_connection_name
+      }
+      env {
+        name  = "DB_NAME"
+        value = var.db_name
+      }
+      env {
+        name  = "DB_USER"
+        value = var.db_user
+      }
+      env {
+        name = "DB_PASS"
+        value_source {
+          secret_key_ref {
+            secret  = var.password_secret_id
+            version = "latest"
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [google_secret_manager_secret_iam_member.accessor]
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Invoker bindings (one per service).
+# ---------------------------------------------------------------------------------------------------------------------
+#
+# With ingress locked to the LB, only the front door can reach the services, so
+# granting run.invoker to allUsers does NOT expose them publicly — IAP at the LB
+# still enforces identity on the wiki service. If org policy forbids allUsers
+# bindings, set invoker_members to a narrower principal.
 resource "google_cloud_run_v2_service_iam_member" "invoker" {
   for_each = toset(var.invoker_members)
 
   project  = var.project_id
   location = var.region
   name     = google_cloud_run_v2_service.this.name
+  role     = "roles/run.invoker"
+  member   = each.value
+}
+
+resource "google_cloud_run_v2_service_iam_member" "invoker_wiki" {
+  for_each = toset(var.invoker_members)
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.wiki.name
   role     = "roles/run.invoker"
   member   = each.value
 }

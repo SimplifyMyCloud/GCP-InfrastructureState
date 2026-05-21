@@ -66,12 +66,20 @@ resource "google_compute_region_network_endpoint_group" "public" {
 
 resource "google_compute_region_network_endpoint_group" "wiki" {
   project               = var.project_id
-  name                  = "${local.np}-neg-wiki"
+  name                  = "${local.np}-wiki-neg"
   region                = var.region
   network_endpoint_type = "SERVERLESS"
 
   cloud_run {
-    service = var.cloud_run_service_name
+    service = var.wiki_service_name
+  }
+
+  # Renamed from "-neg-wiki" + create_before_destroy so that pointing this NEG at
+  # the new wiki service replaces it CLEANLY: the new NEG is created and be-wiki
+  # repointed before the old NEG is destroyed — avoids the
+  # "resourceInUseByAnotherResource" deadlock when a backend still references it.
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

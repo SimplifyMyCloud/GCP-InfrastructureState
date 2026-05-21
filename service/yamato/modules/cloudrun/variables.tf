@@ -34,7 +34,12 @@ variable "service_account_id" {
 # --- The service ----------------------------------------------------------------------------------------------------
 
 variable "service_name" {
-  description = "Cloud Run service name."
+  description = "Cloud Run service name (the public one)."
+  type        = string
+}
+
+variable "wiki_service_name" {
+  description = "Name of the second, IAP-gated Cloud Run service (serves /wiki). Same image as the public service."
   type        = string
 }
 

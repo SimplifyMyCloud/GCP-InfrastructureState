@@ -14,6 +14,7 @@ module "cloudrun" {
   subnet_name  = var.subnet_name
 
   service_name       = var.service_name
+  wiki_service_name  = var.wiki_service_name
   service_account_id = var.service_account_id
   container_image    = var.container_image
 

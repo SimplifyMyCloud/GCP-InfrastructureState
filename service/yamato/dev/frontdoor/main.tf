@@ -12,6 +12,7 @@ module "frontdoor" {
   name_prefix            = var.name_prefix
   domain                 = var.domain
   cloud_run_service_name = var.cloud_run_service_name
+  wiki_service_name      = var.wiki_service_name
   iap_members            = var.iap_members
   iap_enabled            = var.iap_enabled
 }

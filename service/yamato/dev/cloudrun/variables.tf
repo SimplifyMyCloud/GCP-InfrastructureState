@@ -24,7 +24,12 @@ variable "subnet_name" {
 }
 
 variable "service_name" {
-  description = "Cloud Run service name."
+  description = "Cloud Run service name (the public one)."
+  type        = string
+}
+
+variable "wiki_service_name" {
+  description = "Name of the IAP-gated wiki Cloud Run service (serves /wiki)."
   type        = string
 }
 

@@ -6,6 +6,7 @@ region             = "us-west1"
 network_name       = "iq9-vpc-dev-yamato"
 subnet_name        = "iq9-subnet-dev-yamato"
 service_name       = "iq9-run-dev-yamato"
+wiki_service_name  = "iq9-run-dev-yamato-wiki"
 service_account_id = "iq9-yamato-dev-run"
 
 # The real yamato app image, built + pushed via app/yamato/cloudbuild.yaml.

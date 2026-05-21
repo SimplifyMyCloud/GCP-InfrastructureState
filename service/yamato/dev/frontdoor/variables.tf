@@ -24,7 +24,12 @@ variable "domain" {
 }
 
 variable "cloud_run_service_name" {
-  description = "Cloud Run service name both backends route to."
+  description = "Public Cloud Run service name the public backend routes to."
+  type        = string
+}
+
+variable "wiki_service_name" {
+  description = "IAP-gated wiki Cloud Run service name the wiki backend routes to."
   type        = string
 }
 
