@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 690" font-family="Helvetica, Arial, sans-serif">
+  <!-- Fort Knox defense-in-depth: concentric rings of GCP controls around your data.
+       Hand-authored SVG (graphviz `dot` not required). Edit as XML, or ask for a .dot version. -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d93025"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="690" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="535" y="32" text-anchor="middle" font-size="21" font-weight="bold" fill="#202124">THE FORT KNOX MODEL</text>
+  <text x="535" y="55" text-anchor="middle" font-size="12.5" fill="#5f6368">every layer the IAP wall puts between an attacker and your data — break one and you still face the next</text>
+
+  <!-- Concentric rings (outer → inner) -->
+  <rect x="130" y="70"  width="810" height="550" rx="16" fill="#eef1ec" stroke="#5b6650" stroke-width="2"/>
+  <rect x="184" y="116" width="702" height="458" rx="16" fill="#fef7e0" stroke="#f9ab00" stroke-width="4"/>
+  <rect x="238" y="162" width="594" height="366" rx="14" fill="#e8f0fe" stroke="#1967d2" stroke-width="2"/>
+  <rect x="292" y="208" width="486" height="274" rx="12" fill="#fde7e9" stroke="#d93025" stroke-width="2"/>
+  <rect x="346" y="254" width="378" height="182" rx="10" fill="#fff7d6" stroke="#b8860b" stroke-width="2"/>
+  <rect x="385" y="305" width="300" height="80"  rx="8"  fill="#f4b53a" stroke="#8a6d1a" stroke-width="2"/>
+
+  <!-- Ring labels (top band of each ring) -->
+  <text x="148" y="94"  font-size="13.5" font-weight="bold" fill="#3c4a36">RING 1 — PERIMETER: fences · guards · guns</text>
+  <text x="148" y="110" font-size="11" fill="#5b6650">Cloud Armor — OWASP WAF + rate-limit ban + Adaptive Protection</text>
+
+  <text x="202" y="140" font-size="13.5" font-weight="bold" fill="#7a5b00">RING 2 — THE GATE: no entry without ID · the 302</text>
+  <text x="202" y="156" font-size="11" fill="#8a6a08">Identity-Aware Proxy — Google-grade auth (billions of accounts)</text>
+
+  <text x="256" y="186" font-size="13.5" font-weight="bold" fill="#174ea6">RING 3 — SEALED BUILDING: one road in</text>
+  <text x="256" y="202" font-size="11" fill="#1967d2">Locked Cloud Run ingress — load-balancer only</text>
+
+  <text x="310" y="232" font-size="13.5" font-weight="bold" fill="#a50e0e">RING 4 — VAULT DOOR: barely touch anything inside</text>
+  <text x="310" y="248" font-size="11" fill="#c5221f">Least-privilege service account</text>
+
+  <text x="364" y="278" font-size="13.5" font-weight="bold" fill="#7a5c00">RING 5 — THE CAGE</text>
+  <text x="364" y="294" font-size="11" fill="#8a6d1a">Private-IP Cloud SQL + Secret Manager</text>
+
+  <!-- The gold -->
+  <text x="535" y="338" text-anchor="middle" font-size="15" font-weight="bold" fill="#3a2d00">THE GOLD</text>
+  <text x="535" y="358" text-anchor="middle" font-size="11" fill="#5a4710">your data — DB rows · secrets · pages</text>
+
+  <!-- Attack arrow (repelled at the outer wall) -->
+  <text x="14" y="318" font-size="12" font-weight="bold" fill="#d93025">ATTACKS</text>
+  <text x="14" y="334" font-size="10" fill="#a50e0e">brute force ·</text>
+  <text x="14" y="347" font-size="10" fill="#a50e0e">scan · insider</text>
+  <line x1="16" y1="372" x2="126" y2="372" stroke="#d93025" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="40" y="392" font-size="10" fill="#a50e0e">repelled (403)</text>
+  <text x="118" y="379" font-size="20" font-weight="bold" fill="#d93025">✕</text>
+
+  <!-- Watchtowers / observability band -->
+  <rect x="130" y="636" width="810" height="42" rx="10" fill="#e6f4ea" stroke="#188038" stroke-width="2"/>
+  <text x="535" y="655" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0d652d">WATCHTOWERS &amp; ALARMS — Logging · Alerts · NOC · 365-day org archive</text>
+  <text x="535" y="671" text-anchor="middle" font-size="11" fill="#188038">each layer slows the attacker and raises the alarm — on the way IN, and on the way OUT with the loot</text>
+</svg>

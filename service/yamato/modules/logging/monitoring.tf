@@ -147,6 +147,266 @@ resource "google_monitoring_alert_policy" "secret_access_spike" {
   }
 }
 
+# --- Security: Cloud Armor blocks (log-based metric) --------------------------------------------------------------
+# Gated: the cloud_armor_blocked metric must have logged >=1 DENY before Monitoring will
+# accept an alert built on it (see var.enable_cloud_armor_alert). The metric + dashboard
+# tile exist unconditionally; only this alert waits for the first real block.
+resource "google_monitoring_alert_policy" "cloud_armor_blocks" {
+  count        = var.enable_cloud_armor_alert ? 1 : 0
+  project      = var.project_id
+  display_name = "yamato — Cloud Armor blocks > ${var.cloud_armor_block_threshold}/5min"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "Cloud Armor blocked requests"
+    condition_threshold {
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.cloud_armor_blocked.name}\" AND resource.type=\"http_load_balancer\""
+      comparison      = "COMPARISON_GT"
+      threshold_value = var.cloud_armor_block_threshold
+      duration        = "0s"
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_DELTA"
+        cross_series_reducer = "REDUCE_SUM"
+      }
+    }
+  }
+
+  notification_channels = [google_monitoring_notification_channel.email.id]
+
+  documentation {
+    content   = "Cloud Armor is actively blocking requests at the yamato front door — a scan or injection attempt is in progress. The matched WAF rule IDs are in the LB logs under jsonPayload.enforcedSecurityPolicy (log_level=VERBOSE)."
+    mime_type = "text/markdown"
+  }
+}
+
+# --- Security: denied API calls — the IAM wall (log-based metric) -------------------------------------------------
+resource "google_monitoring_alert_policy" "denied_api_calls" {
+  project      = var.project_id
+  display_name = "yamato — denied API calls > ${var.denied_api_threshold}/5min"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "PERMISSION_DENIED API calls"
+    condition_threshold {
+      # Cloud Audit Log-based metrics surface under the `audited_resource` monitored
+      # resource (Monitoring requires a resource.type pin); REDUCE_SUM aggregates across services.
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.denied_api_calls.name}\" AND resource.type=\"audited_resource\""
+      comparison      = "COMPARISON_GT"
+      threshold_value = var.denied_api_threshold
+      duration        = "0s"
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_DELTA"
+        cross_series_reducer = "REDUCE_SUM"
+      }
+    }
+  }
+
+  notification_channels = [google_monitoring_notification_channel.email.id]
+
+  documentation {
+    content   = "A spike in PERMISSION_DENIED calls means an identity is repeatedly being refused by IAM — the classic signature of stolen credentials probing for privilege escalation. Least privilege is holding."
+    mime_type = "text/markdown"
+  }
+}
+
+# --- Security: SA token mints / impersonation (log-based metric) --------------------------------------------------
+resource "google_monitoring_alert_policy" "sa_token_mints" {
+  project      = var.project_id
+  display_name = "yamato — SA token mints > ${var.sa_token_mint_threshold}/5min"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "GenerateAccessToken calls"
+    condition_threshold {
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sa_token_mints.name}\" AND resource.type=\"audited_resource\""
+      comparison      = "COMPARISON_GT"
+      threshold_value = var.sa_token_mint_threshold
+      duration        = "0s"
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_DELTA"
+        cross_series_reducer = "REDUCE_SUM"
+      }
+    }
+  }
+
+  notification_channels = [google_monitoring_notification_channel.email.id]
+
+  documentation {
+    content   = "Unusual volume of service-account access-token minting (GenerateAccessToken) — a possible service-account-takeover / impersonation attempt (gamilas Profile 2)."
+    mime_type = "text/markdown"
+  }
+}
+
+# --- Security: SA key-creation attempts — should be flat zero (log-based metric) ----------------------------------
+resource "google_monitoring_alert_policy" "sa_key_create_attempts" {
+  project      = var.project_id
+  display_name = "yamato — SA key-creation attempts > ${var.sa_key_create_threshold}/5min"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "CreateServiceAccountKey calls"
+    condition_threshold {
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sa_key_create_attempts.name}\" AND resource.type=\"audited_resource\""
+      comparison      = "COMPARISON_GT"
+      threshold_value = var.sa_key_create_threshold
+      duration        = "0s"
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_DELTA"
+        cross_series_reducer = "REDUCE_SUM"
+      }
+    }
+  }
+
+  notification_channels = [google_monitoring_notification_channel.email.id]
+
+  documentation {
+    content   = "Someone tried to create a service-account KEY. Org policy iam.disableServiceAccountKeyCreation blocks this, so any attempt is suspicious — the attacker is rattling a locked door."
+    mime_type = "text/markdown"
+  }
+}
+
+# --- Attack-view dashboard -----------------------------------------------------------------------------------------
+#
+# The single screen to project during the gamilas demo: six tiles that stay flat in normal
+# operation and visibly spike the moment the attack starts — edge blocks, front-door
+# denials, IAM refusals, impersonation attempts, secret access, key-creation attempts.
+resource "google_monitoring_dashboard" "yamato_security" {
+  project = var.project_id
+
+  dashboard_json = jsonencode({
+    displayName = "yamato — dev (SECURITY / attack view)"
+    mosaicLayout = {
+      columns = 12
+      tiles = [
+        {
+          xPos = 0, yPos = 0, width = 6, height = 4
+          widget = {
+            title = "Cloud Armor — blocked requests (edge WAF/rate-limit)"
+            xyChart = {
+              dataSets = [{
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.cloud_armor_blocked.name}\""
+                    aggregation = {
+                      alignmentPeriod    = "300s"
+                      perSeriesAligner   = "ALIGN_DELTA"
+                      crossSeriesReducer = "REDUCE_SUM"
+                    }
+                  }
+                }
+              }]
+            }
+          }
+        },
+        {
+          xPos = 6, yPos = 0, width = 6, height = 4
+          widget = {
+            title = "Front-door denials — 403 (IAP / authz)"
+            xyChart = {
+              dataSets = [{
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.iap_denied.name}\""
+                    aggregation = {
+                      alignmentPeriod    = "300s"
+                      perSeriesAligner   = "ALIGN_DELTA"
+                      crossSeriesReducer = "REDUCE_SUM"
+                    }
+                  }
+                }
+              }]
+            }
+          }
+        },
+        {
+          xPos = 0, yPos = 4, width = 6, height = 4
+          widget = {
+            title = "Denied API calls — PERMISSION_DENIED (IAM wall)"
+            xyChart = {
+              dataSets = [{
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.denied_api_calls.name}\""
+                    aggregation = {
+                      alignmentPeriod    = "300s"
+                      perSeriesAligner   = "ALIGN_DELTA"
+                      crossSeriesReducer = "REDUCE_SUM"
+                    }
+                  }
+                }
+              }]
+            }
+          }
+        },
+        {
+          xPos = 6, yPos = 4, width = 6, height = 4
+          widget = {
+            title = "SA access-token mints (impersonation / takeover)"
+            xyChart = {
+              dataSets = [{
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sa_token_mints.name}\""
+                    aggregation = {
+                      alignmentPeriod    = "300s"
+                      perSeriesAligner   = "ALIGN_DELTA"
+                      crossSeriesReducer = "REDUCE_SUM"
+                    }
+                  }
+                }
+              }]
+            }
+          }
+        },
+        {
+          xPos = 0, yPos = 8, width = 6, height = 4
+          widget = {
+            title = "Secret Manager access"
+            xyChart = {
+              dataSets = [{
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.secret_access.name}\""
+                    aggregation = {
+                      alignmentPeriod    = "300s"
+                      perSeriesAligner   = "ALIGN_DELTA"
+                      crossSeriesReducer = "REDUCE_SUM"
+                    }
+                  }
+                }
+              }]
+            }
+          }
+        },
+        {
+          xPos = 6, yPos = 8, width = 6, height = 4
+          widget = {
+            title = "SA key-creation attempts (blocked by org policy)"
+            xyChart = {
+              dataSets = [{
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.sa_key_create_attempts.name}\""
+                    aggregation = {
+                      alignmentPeriod    = "300s"
+                      perSeriesAligner   = "ALIGN_DELTA"
+                      crossSeriesReducer = "REDUCE_SUM"
+                    }
+                  }
+                }
+              }]
+            }
+          }
+        }
+      ]
+    }
+  })
+}
+
 # --- Dashboard -----------------------------------------------------------------------------------------------------
 resource "google_monitoring_dashboard" "yamato" {
   project = var.project_id

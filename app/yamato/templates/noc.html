@@ -1,0 +1,90 @@
+{{template "head" .}}
+<style>
+  .noc { flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 1.6rem 1.5rem 4rem; }
+  .noc-hero { text-align: center; padding: 1.4rem 0 2rem; }
+  .noc-hero .eyebrow { letter-spacing: 0.42em; text-transform: uppercase; font-size: 0.66rem; color: var(--muted); margin: 0 0 0.6rem; }
+  .noc-hero h1 {
+    font-family: var(--display); font-weight: 900; font-style: italic; margin: 0;
+    letter-spacing: 0.05em; font-size: clamp(2rem, 6vw, 3.6rem); color: var(--red);
+    text-shadow: 0 0 22px rgba(255, 59, 46, 0.5), 0 2px 0 var(--red-deep);
+  }
+  .noc-hero h1 b { color: var(--ink); }
+  .noc-hero .subtitle { margin: 0.7rem 0 0; }
+  .noc-hero .live { color: var(--green); }
+  .noc-hero .live::before { content: "● "; animation: blink 1.6s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0.25; } }
+
+  .noc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+  .noc-card {
+    display: flex; flex-direction: column; gap: 0.4rem; padding: 1.2rem 1.25rem;
+    background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--steel-deep);
+    border-radius: 8px; color: var(--ink); backdrop-filter: blur(4px);
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .noc-card:hover { text-decoration: none; transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+  .noc-card .no { font-family: var(--display); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.2em; color: var(--muted); }
+  .noc-card .t { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.02em; color: var(--ink); }
+  .noc-card .d { color: var(--muted); font-size: 0.86rem; line-height: 1.5; }
+  .noc-card .go { margin-top: auto; font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
+  .noc-card.k-armor { border-top-color: var(--red); }
+  .noc-card.k-armor:hover { border-color: var(--red); }
+  .noc-card.k-perf  { border-top-color: var(--gold); }
+  .noc-card.k-perf:hover  { border-color: var(--gold); }
+  .noc-card.k-logs  { border-top-color: var(--green); }
+  .noc-card.k-logs:hover  { border-color: var(--green); }
+  .noc-card.k-alert { border-top-color: var(--steel); }
+  .noc-card.k-alert:hover { border-color: var(--steel); }
+
+  .noc-legend { margin-top: 2.5rem; }
+  .noc-legend h2 {
+    font-family: var(--display); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    font-size: 0.85rem; color: var(--gold); text-align: center; margin: 0 0 1rem;
+  }
+  .noc-legend table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .noc-legend th, .noc-legend td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); }
+  .noc-legend th { font-family: var(--display); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .noc-legend td.wall { color: var(--green); }
+  .noc-legend td.sig { color: var(--gold); }
+</style>
+
+<header class="bar">
+  <a class="brand" href="/wiki">★ YAMATO&nbsp;WIKI</a>
+  {{with .User}}<span class="who">signed in · {{.}}</span>{{end}}
+</header>
+
+<main class="noc">
+  <section class="noc-hero">
+    <p class="eyebrow">Identity-Aware Proxy · {{.Project}}</p>
+    <h1>YAMATO <b>DEFENSE COMMAND</b></h1>
+    <p class="subtitle"><span class="live">monitoring live</span> — every probe stopped, logged, alerted.</p>
+  </section>
+
+  <section class="noc-grid">
+    {{range .Cards}}
+    <a class="noc-card k-{{.Kind}}" href="{{.Href}}" target="_blank" rel="noopener">
+      <span class="no">{{.No}}</span>
+      <span class="t">{{.Title}}</span>
+      <span class="d">{{.Desc}}</span>
+      <span class="go">Open ↗</span>
+    </a>
+    {{end}}
+  </section>
+
+  <section class="noc-legend">
+    <h2>Attack → Defense → Signal</h2>
+    <table>
+      <thead><tr><th>Gamilas move</th><th>GCP wall</th><th>Where it shows</th></tr></thead>
+      <tbody>
+        <tr><td>SQLi / XSS / scan payloads</td><td class="wall">Cloud Armor WAF (enforce)</td><td class="sig">Attack View · Armor blocks</td></tr>
+        <tr><td>Scan flood</td><td class="wall">Per-IP rate-limit ban</td><td class="sig">Armor blocks</td></tr>
+        <tr><td>Hit /wiki with no creds</td><td class="wall">IAP → Google login</td><td class="sig">Front-door 403s</td></tr>
+        <tr><td>Stolen creds → escalate</td><td class="wall">Least-priv SA + org policy</td><td class="sig">Denied API calls</td></tr>
+        <tr><td>Service-account takeover</td><td class="wall">Impersonation capped</td><td class="sig">SA token mints</td></tr>
+        <tr><td>Reach the database</td><td class="wall">Private-IP Cloud SQL</td><td class="sig">VPC flow logs</td></tr>
+        <tr><td>Steal the DB secret</td><td class="wall">Secret Manager + audit</td><td class="sig">Secret access</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+{{template "foot" .}}

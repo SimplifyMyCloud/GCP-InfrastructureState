@@ -74,6 +74,38 @@ variable "secret_access_threshold" {
   default     = 50
 }
 
+# --- Security / attack thresholds --------------------------------------------------------------------------------
+
+variable "cloud_armor_block_threshold" {
+  description = "Alert when Cloud Armor blocked requests exceed this count per 5 min (active scan/injection at the edge)."
+  type        = number
+  default     = 20
+}
+
+variable "enable_cloud_armor_alert" {
+  description = "Create the Cloud Armor blocks ALERT policy. A log-based metric's descriptor only registers with Monitoring after it has logged >=1 matching entry, so a fresh metric with zero data can't have an alert built on it. Keep false until Cloud Armor has produced at least one DENY (the metric + dashboard tile work regardless); then flip true and re-apply."
+  type        = bool
+  default     = false
+}
+
+variable "denied_api_threshold" {
+  description = "Alert when PERMISSION_DENIED API calls exceed this count per 5 min (credentials hammering the IAM wall)."
+  type        = number
+  default     = 10
+}
+
+variable "sa_token_mint_threshold" {
+  description = "Alert when SA access-token mints (GenerateAccessToken) exceed this count per 5 min (possible SA-takeover/impersonation)."
+  type        = number
+  default     = 20
+}
+
+variable "sa_key_create_threshold" {
+  description = "Alert when SA key-creation ATTEMPTS exceed this count per 5 min. Default 0 = any attempt fires (org policy blocks these; a hit is always suspicious)."
+  type        = number
+  default     = 0
+}
+
 variable "labels" {
   description = "Resource labels (e.g. env, app)."
   type        = map(string)

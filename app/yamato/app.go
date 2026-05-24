@@ -61,5 +61,10 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("GET /wiki/{$}", a.handleWikiIndex)
 	mux.HandleFunc("GET /wiki/{slug}", a.handleArticle)
 
+	// Internal NOC ("Yamato Defense Command"). The LB routes /noc and /noc/* to the SAME
+	// IAP backend as /wiki, so it is private to signed-in identities.
+	mux.HandleFunc("GET /noc", a.handleNOC)
+	mux.HandleFunc("GET /noc/{$}", a.handleNOC)
+
 	return mux
 }

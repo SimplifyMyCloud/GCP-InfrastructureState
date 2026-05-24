@@ -15,6 +15,10 @@ module "frontdoor" {
   wiki_service_name      = var.wiki_service_name
   iap_members            = var.iap_members
   iap_enabled            = var.iap_enabled
+
+  enable_cloud_armor         = var.enable_cloud_armor
+  cloud_armor_preview        = var.cloud_armor_preview
+  enable_adaptive_protection = var.enable_adaptive_protection
 }
 
 output "load_balancer_ip" {
@@ -25,4 +29,9 @@ output "load_balancer_ip" {
 output "managed_certificate_name" {
   description = "Managed cert to watch until ACTIVE."
   value       = module.frontdoor.managed_certificate_name
+}
+
+output "cloud_armor_policy_name" {
+  description = "Cloud Armor policy guarding the front door (null if disabled)."
+  value       = module.frontdoor.cloud_armor_policy_name
 }

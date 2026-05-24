@@ -90,3 +90,13 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# GCE Bakery (Packer) — keep secrets and build artifacts out of git.
+# targets.env holds run/target config (the .example template stays tracked);
+# manifest.json is build output; *-sa.json / leaked-*.json are stolen-cred material
+# used in demos and must never be committed.
+**/gce-bakery/**/targets.env
+**/gce-bakery/**/manifest.json
+**/gce-bakery/**/*-sa.json
+**/gce-bakery/**/leaked-*.json
+**/gce-bakery/**/packer_cache/

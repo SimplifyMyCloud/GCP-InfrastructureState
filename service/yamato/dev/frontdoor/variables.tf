@@ -43,3 +43,21 @@ variable "iap_enabled" {
   type        = bool
   default     = true
 }
+
+variable "enable_cloud_armor" {
+  description = "Attach the Cloud Armor edge policy (OWASP WAF + rate limiting + adaptive protection) to the front door."
+  type        = bool
+  default     = true
+}
+
+variable "cloud_armor_preview" {
+  description = "Cloud Armor PREVIEW (log-only) vs ENFORCE (block). false = enforce. Flip true if you need to validate rules without blocking."
+  type        = bool
+  default     = false
+}
+
+variable "enable_adaptive_protection" {
+  description = "Enable Cloud Armor Adaptive Protection (L7 DDoS). Set false if this project isn't enrolled in Cloud Armor Enterprise."
+  type        = bool
+  default     = true
+}

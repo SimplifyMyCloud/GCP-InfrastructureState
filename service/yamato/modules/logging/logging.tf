@@ -120,3 +120,69 @@ resource "google_logging_metric" "iap_denied" {
     display_name = "yamato IAP/front-door denials (403)"
   }
 }
+
+# --- Layer 4: attack-surface metrics (light up during a red-team scan) ----------------------------------------------
+#
+# These are the "the defense is working" signals for the gamilas demo. Each maps to a wall
+# the attacker hits: Cloud Armor at the edge, IAM at the control plane.
+
+# Cloud Armor denials at the LB (Profile 1's blocked scan/injection payloads). Requires
+# Cloud Armor on the front door (service/yamato/dev/frontdoor) + LB logging (already on).
+resource "google_logging_metric" "cloud_armor_blocked" {
+  project = var.project_id
+  name    = "yamato/cloud_armor_blocked"
+  filter  = "resource.type=\"http_load_balancer\" AND jsonPayload.enforcedSecurityPolicy.outcome=\"DENY\""
+
+  metric_descriptor {
+    metric_kind  = "DELTA"
+    value_type   = "INT64"
+    unit         = "1"
+    display_name = "yamato Cloud Armor blocked requests"
+  }
+}
+
+# Denied API calls — PERMISSION_DENIED (google.rpc.Code 7) in audit logs. The IAM wall:
+# every time the stolen-creds attacker (Profile 2) is told "no", it lands here.
+resource "google_logging_metric" "denied_api_calls" {
+  project = var.project_id
+  name    = "yamato/denied_api_calls"
+  filter  = "protoPayload.@type=\"type.googleapis.com/google.cloud.audit.AuditLog\" AND protoPayload.status.code=7"
+
+  metric_descriptor {
+    metric_kind  = "DELTA"
+    value_type   = "INT64"
+    unit         = "1"
+    display_name = "yamato denied API calls (PERMISSION_DENIED)"
+  }
+}
+
+# Service-account token minting via IAM Credentials (GenerateAccessToken). The core
+# SA-takeover / impersonation signal — a spike means someone is assuming SAs.
+resource "google_logging_metric" "sa_token_mints" {
+  project = var.project_id
+  name    = "yamato/sa_token_mints"
+  filter  = "protoPayload.serviceName=\"iamcredentials.googleapis.com\" AND protoPayload.methodName=\"GenerateAccessToken\""
+
+  metric_descriptor {
+    metric_kind  = "DELTA"
+    value_type   = "INT64"
+    unit         = "1"
+    display_name = "yamato SA access-token mints"
+  }
+}
+
+# Service-account KEY creation attempts. Org policy iam.disableServiceAccountKeyCreation
+# blocks these — so any hit is the attacker rattling a locked door (and likely also
+# shows up in denied_api_calls). Should be flat at zero in normal operation.
+resource "google_logging_metric" "sa_key_create_attempts" {
+  project = var.project_id
+  name    = "yamato/sa_key_create_attempts"
+  filter  = "protoPayload.methodName=\"google.iam.admin.v1.CreateServiceAccountKey\""
+
+  metric_descriptor {
+    metric_kind  = "DELTA"
+    value_type   = "INT64"
+    unit         = "1"
+    display_name = "yamato SA key-creation attempts"
+  }
+}

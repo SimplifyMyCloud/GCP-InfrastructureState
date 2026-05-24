@@ -13,6 +13,11 @@ output "notification_channel_id" {
 }
 
 output "dashboard_id" {
-  description = "Monitoring dashboard ID."
+  description = "Performance & security dashboard ID."
   value       = google_monitoring_dashboard.yamato.id
+}
+
+output "security_dashboard_id" {
+  description = "SECURITY / attack-view dashboard ID (the screen to project during the demo)."
+  value       = google_monitoring_dashboard.yamato_security.id
 }

@@ -26,6 +26,109 @@
 
 locals {
   np = var.name_prefix
+
+  # OWASP preconfigured WAF rule set (Cloud Armor). Each becomes a deny(403) rule.
+  # These are exactly the payload families the gamilas-redteam suite throws:
+  # sqlmap -> sqli, dalfox -> xss, nikto/nuclei -> scannerdetection, etc.
+  waf_rules = [
+    { expr = "sqli-v33-stable", priority = 1000, desc = "Block SQL injection (sqlmap)" },
+    { expr = "xss-v33-stable", priority = 1001, desc = "Block cross-site scripting (dalfox)" },
+    { expr = "lfi-v33-stable", priority = 1002, desc = "Block local file inclusion" },
+    { expr = "rfi-v33-stable", priority = 1003, desc = "Block remote file inclusion" },
+    { expr = "rce-v33-stable", priority = 1004, desc = "Block remote code execution" },
+    { expr = "scannerdetection-v33-stable", priority = 1005, desc = "Block scanners (nikto/nuclei/whatweb)" },
+    { expr = "protocolattack-v33-stable", priority = 1006, desc = "Block protocol attacks" },
+    { expr = "sessionfixation-v33-stable", priority = 1007, desc = "Block session fixation" },
+  ]
+}
+
+# --- Cloud Armor edge security policy ------------------------------------------------------------------------------
+#
+# The marquee defense for the attack demo: OWASP preconfigured WAF rules block injection /
+# scan payloads BY NAME, a per-IP rate-based ban throttles then bans the scan flood, and
+# Adaptive Protection watches for L7 DDoS. log_level=VERBOSE so each blocked request carries
+# the matched WAF rule ID — the evidence the dashboard + presentation feed on. Attached to
+# both backends below. Preview vs enforce is var.cloud_armor_preview (default: ENFORCE).
+resource "google_compute_security_policy" "edge" {
+  count       = var.enable_cloud_armor ? 1 : 0
+  project     = var.project_id
+  name        = "${local.np}-armor"
+  description = "Cloud Armor edge: OWASP WAF + per-IP rate limiting + adaptive protection for the yamato front door."
+  type        = "CLOUD_ARMOR"
+
+  # Adaptive Protection (L7 DDoS ML). Toggleable: some projects need Cloud Armor Enterprise
+  # for this, so it's gated to keep the apply clean where that's not enrolled.
+  dynamic "adaptive_protection_config" {
+    for_each = var.enable_adaptive_protection ? [1] : []
+    content {
+      layer_7_ddos_defense_config {
+        enable = true
+      }
+    }
+  }
+
+  # VERBOSE so blocked-request logs include the matched preconfigured WAF rule IDs.
+  advanced_options_config {
+    log_level = "VERBOSE"
+  }
+
+  # Per-source-IP rate limit, then ban — catches the scan flood (ffuf/nuclei/sqlmap volume).
+  # CRITICAL ordering: this rule's match is src_ip_ranges=["*"], i.e. EVERY request, and
+  # Cloud Armor is first-match-wins by ascending priority. It MUST sit at a HIGHER priority
+  # number than the WAF rules (1000-1007) so injection/scan payloads are evaluated and
+  # blocked FIRST; otherwise this catch-all short-circuits every request to its conform
+  # action (allow) and the WAF rules never run. Hence 2000 (after WAF, before default allow).
+  rule {
+    action      = "rate_based_ban"
+    priority    = 2000
+    preview     = var.cloud_armor_preview
+    description = "Per-source-IP rate limit; ban offenders (the scan flood)."
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+    rate_limit_options {
+      conform_action   = "allow"
+      exceed_action    = "deny(429)"
+      enforce_on_key   = "IP"
+      ban_duration_sec = var.rate_limit_ban_duration_sec
+      rate_limit_threshold {
+        count        = var.rate_limit_count
+        interval_sec = var.rate_limit_interval_sec
+      }
+    }
+  }
+
+  # OWASP preconfigured WAF rules — one deny(403) rule per family.
+  dynamic "rule" {
+    for_each = local.waf_rules
+    content {
+      action      = "deny(403)"
+      priority    = rule.value.priority
+      preview     = var.cloud_armor_preview
+      description = rule.value.desc
+      match {
+        expr {
+          expression = "evaluatePreconfiguredWaf('${rule.value.expr}', {'sensitivity': ${var.waf_sensitivity}})"
+        }
+      }
+    }
+  }
+
+  # Default allow (required, lowest priority). Legit @iq9.io traffic still meets IAP downstream.
+  rule {
+    action      = "allow"
+    priority    = 2147483647
+    description = "Default allow."
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+  }
 }
 
 # The iap.googleapis.com API is enabled by the foundation project state,
@@ -101,6 +204,9 @@ resource "google_compute_backend_service" "public" {
   protocol              = "HTTP"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 
+  # Cloud Armor on the public backend — the unauth scan (Profile 1) hits this first.
+  security_policy = var.enable_cloud_armor ? google_compute_security_policy.edge[0].id : null
+
   backend {
     group = google_compute_region_network_endpoint_group.public.id
   }
@@ -116,6 +222,10 @@ resource "google_compute_backend_service" "wiki" {
   name                  = "${local.np}-be-wiki"
   protocol              = "HTTP"
   load_balancing_scheme = "EXTERNAL_MANAGED"
+
+  # Cloud Armor on the wiki backend too — defense-in-depth in FRONT of IAP, so injection /
+  # scan payloads are blocked at the edge before they even reach the IAP login.
+  security_policy = var.enable_cloud_armor ? google_compute_security_policy.edge[0].id : null
 
   backend {
     group = google_compute_region_network_endpoint_group.wiki.id
@@ -162,6 +272,13 @@ resource "google_compute_url_map" "this" {
 
     path_rule {
       paths   = [var.wiki_path_prefix, "${var.wiki_path_prefix}/*"]
+      service = google_compute_backend_service.wiki.id
+    }
+
+    # The internal NOC page rides the SAME IAP-gated backend, so /noc is private to the IAP
+    # members (no new service or backend needed). The app serves it from its /noc handler.
+    path_rule {
+      paths   = [var.noc_path_prefix, "${var.noc_path_prefix}/*"]
       service = google_compute_backend_service.wiki.id
     }
   }

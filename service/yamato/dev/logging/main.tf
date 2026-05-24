@@ -13,6 +13,8 @@ module "logging" {
   sql_instance_name  = var.sql_instance_name
   notification_email = var.notification_email
 
+  enable_cloud_armor_alert = var.enable_cloud_armor_alert
+
   labels = {
     env = "dev"
     app = "yamato"
@@ -25,6 +27,11 @@ output "app_log_bucket_id" {
 }
 
 output "dashboard_id" {
-  description = "Monitoring dashboard ID."
+  description = "Performance & security dashboard ID."
   value       = module.logging.dashboard_id
+}
+
+output "security_dashboard_id" {
+  description = "SECURITY / attack-view dashboard ID."
+  value       = module.logging.security_dashboard_id
 }

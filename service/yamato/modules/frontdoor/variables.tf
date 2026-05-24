@@ -38,6 +38,12 @@ variable "wiki_path_prefix" {
   default     = "/wiki"
 }
 
+variable "noc_path_prefix" {
+  description = "URL path prefix for the internal NOC page ('Yamato Defense Command'), routed to the SAME IAP-gated backend as the wiki so it is private to the IAP members. Served by the app's /noc handler."
+  type        = string
+  default     = "/noc"
+}
+
 variable "iap_members" {
   description = "Principals allowed through IAP (roles/iap.httpsResourceAccessor) on the wiki backend. domain:iq9.io = anyone with an @iq9.io identity."
   type        = list(string)
@@ -54,4 +60,48 @@ variable "enable_http_redirect" {
   description = "Also stand up a port-80 listener that 301-redirects to HTTPS."
   type        = bool
   default     = true
+}
+
+# --- Cloud Armor (edge WAF + rate limiting) ------------------------------------------------------------------------
+
+variable "enable_cloud_armor" {
+  description = "Attach a Cloud Armor security policy (OWASP WAF + per-IP rate limiting + adaptive protection) to both backend services."
+  type        = bool
+  default     = true
+}
+
+variable "cloud_armor_preview" {
+  description = "Run every Cloud Armor rule in PREVIEW (log what WOULD be blocked, do NOT block). false = ENFORCE (actually block). Flip to false for the live attack demo."
+  type        = bool
+  default     = false
+}
+
+variable "waf_sensitivity" {
+  description = "Sensitivity (1-4) for the OWASP preconfigured WAF rules. 1 = fewest false positives; higher catches more but risks blocking legit traffic."
+  type        = number
+  default     = 1
+}
+
+variable "enable_adaptive_protection" {
+  description = "Enable Cloud Armor Adaptive Protection (L7 DDoS ML detection). Set false if the project isn't enrolled in Cloud Armor Enterprise and the apply complains — the WAF + rate-limit rules are independent of this."
+  type        = bool
+  default     = true
+}
+
+variable "rate_limit_count" {
+  description = "Requests allowed per source IP per rate_limit_interval_sec before the rate-based ban triggers."
+  type        = number
+  default     = 100
+}
+
+variable "rate_limit_interval_sec" {
+  description = "Sliding window (seconds) for the rate limit count."
+  type        = number
+  default     = 60
+}
+
+variable "rate_limit_ban_duration_sec" {
+  description = "How long (seconds) a source IP is banned once it exceeds the rate limit."
+  type        = number
+  default     = 300
 }

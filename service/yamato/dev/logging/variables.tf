@@ -26,3 +26,9 @@ variable "notification_email" {
   description = "Email address that receives alert notifications."
   type        = string
 }
+
+variable "enable_cloud_armor_alert" {
+  description = "Create the Cloud Armor blocks alert. Leave false until Cloud Armor has logged its first DENY, then flip true and re-apply."
+  type        = bool
+  default     = false
+}
