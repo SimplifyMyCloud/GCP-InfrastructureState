@@ -160,7 +160,11 @@ resource "google_monitoring_alert_policy" "cloud_armor_blocks" {
   conditions {
     display_name = "Cloud Armor blocked requests"
     condition_threshold {
-      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.cloud_armor_blocked.name}\" AND resource.type=\"http_load_balancer\""
+      # Cloud Monitoring uses `l7_lb_rule` as the monitored-resource type for the modern
+      # global external Application LB — NOT `http_load_balancer` (which is the Cloud
+      # Logging-side name on the underlying log entries). Confirmed against the live
+      # metricDescriptor: monitoredResourceTypes=['l7_lb_rule'].
+      filter          = "metric.type=\"logging.googleapis.com/user/${google_logging_metric.cloud_armor_blocked.name}\" AND resource.type=\"l7_lb_rule\""
       comparison      = "COMPARISON_GT"
       threshold_value = var.cloud_armor_block_threshold
       duration        = "0s"
