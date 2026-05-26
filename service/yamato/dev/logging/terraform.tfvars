@@ -7,7 +7,7 @@ run_service_name   = "iq9-run-dev-yamato"
 sql_instance_name  = "yamato-dev"
 notification_email = "chris@simplifymy.cloud"
 
-# Cloud Armor blocks alert: keep false until Cloud Armor has logged its first DENY (the
-# metric needs data before Monitoring will accept the alert). After the front-door reorder
-# is applied and a real block has happened, flip to true and re-apply this state.
-enable_cloud_armor_alert = false
+# Cloud Armor blocks alert: enabled on 2026-05-24 after the first volley seeded the
+# `cloud_armor_blocked` log metric — 11 of 14 attacks blocked across rules 1000-1007, so
+# the descriptor is now registered with http_load_balancer and the alert validates.
+enable_cloud_armor_alert = true
