@@ -1,4 +1,3 @@
-
 ✨ Gemini Enterprise:
 SSL/TLS Certificate Security Analysis Report                                                                                                                                
 
