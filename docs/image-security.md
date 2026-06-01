@@ -1,6 +1,6 @@
 # Image Security — per-article portraits
 
-A focused security review of the image-handling model on the Yamato wiki, written against commit `80e47d2` on `dev-refresh`. That commit added a per-article profile portrait slot to `/wiki/<slug>` and seeded `app/yamato/static/img/articles/` with seven JPEGs (six copied from `crew/`, plus a `sips`-derived JPG of the existing hero PNG). This document is the *why* alongside the *what* — the threat model, the findings, what is genuinely safe, and what would need to change if a "real" upload feature ever shipped.
+A focused security review of the image-handling model on the Yamato wiki, originally written against commit `80e47d2` on `dev-refresh` (which added a per-article profile portrait slot to `/wiki/<slug>` and seeded `app/yamato/static/img/articles/` with seven JPEGs). The three actionable findings — F-1 (`nosniff`), F-2 (extension whitelist), and F-4 (`.DS_Store` droppings) — were resolved in commit `ffa1d91` and are summarised under "Resolved findings" below. This document is the *why* alongside the *what* — the threat model, the findings, what is genuinely safe, and what would need to change if a "real" upload feature ever shipped.
 
 ## What this app does with images
 
@@ -29,15 +29,9 @@ The categories that matter for a static-bytes pipeline are:
 
 Browser-side script execution from a raw `<img src=*.jpg>` is **not** a realistic vector — the image decode happens in a sandboxed pipeline and a JPEG cannot run code at decode time absent a libjpeg CVE in the user's browser, which is out of scope for this app.
 
-## Findings from this review
+## Open findings
 
-### F-1 — `/static/*` is missing `X-Content-Type-Options: nosniff` (medium)
-
-`http.FileServerFS` infers `Content-Type` from the file extension and serves the bytes raw. No middleware in `app/yamato/app.go` or the LB module (`service/yamato/modules/frontdoor/`) sets `X-Content-Type-Options: nosniff` on the response. Older browsers — and a handful of edge cases in modern ones — will run MIME sniffing on the body and can promote a file whose extension is `.jpg` but whose bytes look like HTML/JS to `text/html`, turning a static asset into a stored-XSS vector on the `simplifymy.cloud` origin. That this is a *maintainer* upload pipeline shrinks the population of attackers, but the mitigation is one line of middleware and would close the polyglot-file class entirely. Recommendation: wrap the `/static/` handler in a middleware that always sets `X-Content-Type-Options: nosniff`, and consider `Content-Security-Policy: default-src 'none'; img-src 'self'` scoped to `/static/img/*`. *Out of scope for this PR — file as a follow-up.*
-
-### F-2 — file extension whitelist is convention-only (low)
-
-The article template hardcodes a `.jpg` extension in the `<img src>`, but `http.FileServerFS` will serve *anything* under `static/img/articles/` regardless of extension. Today the directory contains only the seven JPEGs the developer dropped in. There is no build-time check that, say, a `.svg`, `.html`, or `.js` accidentally placed under `static/img/articles/` would be refused service. SVG in particular is XML and can carry `<script>` that *does* execute when an SVG is referenced via `<iframe>`, `<object>`, or inlined into HTML — though a browser will *not* execute scripts inside an SVG referenced via `<img src=*.svg>`. The current template uses the safer `<img>` path, but the directory itself is permissive. Recommendation: either a CI lint that whitelists extensions under `static/img/`, or — better — a small Go init() in `app.go` that walks the embedded FS at startup and rejects unknown extensions before `ListenAndServe`. *Forward-looking; no live exposure today.*
+The three actionable findings (F-1, F-2, F-4) have been closed and migrated to the "Resolved findings" section further down. The five remaining items below are all informational or by-design.
 
 ### F-3 — EXIF metadata is intact on all seven seed images (low / info)
 
@@ -51,10 +45,6 @@ The committed JPEGs were not stripped of EXIF before commit. A segment-by-segmen
 - `space-battleship-yamato.jpg` — APP1/Exif (176 B): orientation, resolution, ExifVersion 0210 — the residue from `sips`'s JPEG encoder.
 
 No GPS coordinates, camera serial numbers, or human-readable PII are present in any file. The `Software = "Google"` tag on `iq-9.jpg` is a minor sourcing tell but not a security issue. **No finding worth a fix; documenting that the EXIF was reviewed.** A future maintainer-checklist item might be "strip EXIF on commit" (`exiftool -all=` or a pre-commit hook), but the cost/benefit at current volume does not justify it.
-
-### F-4 — `.DS_Store` files are embedded into the binary (low)
-
-`//go:embed static` is recursive and follows the directory tree literally. The repo currently contains `static/.DS_Store`, `static/img/.DS_Store`, and `static/img/crew/.DS_Store` (all macOS Finder droppings). These are baked into the running binary and served on `GET /static/.DS_Store` as `application/octet-stream`. `.DS_Store` files are known to leak directory listings — they are why every static-site how-to tells you to add them to `.gitignore`. Today they expose the names "img", "crew", "articles", "README.md", and the seven JPGs — which a curious user could already discover by guessing slugs. So the disclosure delta is small, but the right answer is a repo-wide `.gitignore` entry and a `go:embed` pattern that excludes them. *Tracked as a small follow-up.*
 
 ### F-5 — slug-keyed paths leak the article list pre-IAP (info)
 
@@ -92,14 +82,29 @@ What's clean:
 - EXIF on the seed images is shallow — no GPS, no PII, no embedded thumbnails of size.
 - All "copied-from-crew" / "copied-from-hero" claims are byte-identical to source.
 - No franchise art was introduced — the developer let the 8 license-blocked slugs render image-less rather than guess.
+- `/static/*` now emits `X-Content-Type-Options: nosniff`, `/static/img/*` is gated by a raster-image extension allowlist, and `.DS_Store` is no longer in the embed tree (see "Resolved findings").
 
 What's a nit:
-- F-1 (`nosniff`) and F-2 (no extension whitelist) are both single-line fixes worth doing the next time someone is in `app.go`.
-- F-4 (`.DS_Store` files embedded) is a `.gitignore` change.
 - F-3 (EXIF kept) is fine at current volume; would become a checklist item if the seed grew.
 
 What's deferred:
-- A real maintainer pre-commit hook that strips EXIF, whitelists extensions, and `file(1)`-verifies the magic bytes match the claimed extension. Worth ~20 minutes the next time `cloudbuild.yaml` or pre-commit config is touched.
+- A real maintainer pre-commit hook that strips EXIF and `file(1)`-verifies the magic bytes match the claimed extension. Worth ~20 minutes the next time `cloudbuild.yaml` or pre-commit config is touched. The runtime extension allowlist closes the directly-served vector; magic-byte verification is the next ring of defense.
+
+## Resolved findings
+
+These three items were independently verified as fixed during the follow-up review pass. Code reads cited below are against the post-fix tree.
+
+### F-1 — `/static/*` is missing `X-Content-Type-Options: nosniff` (medium) — Resolved in `ffa1d91`
+
+The `/static/` mount now routes through a `staticHandler(...)` wrapper in `app/yamato/app.go` that sets `X-Content-Type-Options: nosniff` (and a five-minute `Cache-Control: public, max-age=300`) on every response before delegating to `http.FileServerFS`. The wrapper is a real pass-through — the inner `fileServer.ServeHTTP(w, r)` call is present on the success path — so static assets keep being served, they just arrive with the polyglot-MIME-sniffing class structurally closed at the response layer.
+
+### F-2 — file extension whitelist is convention-only (low) — Resolved in `ffa1d91`
+
+The same `staticHandler` enforces a raster-image extension allowlist (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`) on any path under `/static/img/`. Anything else — `.svg`, `.html`, `.js`, or an extensionless path — short-circuits to `http.NotFound` before the FileServer sees the request. SVG is intentionally excluded, which permanently removes the `<object>` / `<iframe>` SVG-script escalation path even if a future template ever changes how images are referenced. Other `/static/` prefixes (e.g. `style.css`) are unaffected.
+
+### F-4 — `.DS_Store` files are embedded into the binary (low) — Resolved in `ffa1d91`
+
+All four Finder droppings — `app/yamato/.DS_Store`, `static/.DS_Store`, `static/img/.DS_Store`, and `static/img/crew/.DS_Store` — were deleted from the working tree, so the next `//go:embed static` no longer bakes them into the binary. `.DS_Store` was added to `app/yamato/.gitignore` as a local belt-and-suspenders rule (the repo-root `.gitignore` already had the same pattern, which is why none had ever been tracked in git). Verified post-fix: `find app/yamato -name .DS_Store` returns nothing.
 
 ## Future state — if user uploads ever happen
 
@@ -120,8 +125,13 @@ None of this applies today. Documenting it here so that the first PR that propos
 
 ## See also
 
-- `app/yamato/app.go` — `staticFS` embed and the `GET /static/` mount.
+- `app/yamato/app.go` — `staticFS` embed, the `GET /static/` mount, and the post-fix `staticHandler` wrapper.
 - `app/yamato/templates/article.html` — the `<figure class="article-portrait">` block.
 - `app/yamato/static/img/README.md` — the maintainer-facing rules for what art can be dropped in.
+- `app/yamato/.gitignore` — the local `.DS_Store` rule added by the F-4 fix.
 - `docs/infrastructurestate.md` — the Service / Application Layer boundary that explains why this is an app-layer change with no Terraform touched.
 - `docs/security/zero-trust-iap.md` — what *is* gated by IAP, and what (like `/static/*`) is intentionally not.
+
+---
+
+*Verification pass: 2026-06-01. Fixes verified independently against commit `ffa1d91` on `dev-refresh`; doc update committed in [this commit]. The fixer's nosniff header, image extension allowlist, and `.DS_Store` purge were each re-checked by reading the post-fix code and the working tree; `go vet ./... && go build ./...` exits 0 in `app/yamato/`.*
