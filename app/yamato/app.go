@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"path"
+	"strings"
 )
 
 //go:embed templates/*.html
@@ -53,7 +55,7 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("GET /healthz", a.handleHealth)
 
 	staticRoot, _ := fs.Sub(staticFS, "static")
-	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticRoot)))
+	mux.Handle("GET /static/", staticHandler(staticRoot))
 
 	// --- Protected surface (the LB routes /wiki and /wiki/* to the IAP backend) ---
 	// Both "/wiki" and "/wiki/" land on the index; "/wiki/{slug}" is an article.
@@ -68,4 +70,50 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("GET /noc/{$}", a.handleNOC)
 
 	return mux
+}
+
+// allowedImageExts is the whitelist of file extensions served under /static/img/.
+// The article template hardcodes `.jpg` and the maintainer rules in
+// static/img/README.md call for raster portraits only, so the directory should
+// never serve HTML, JS, or SVG (SVG can carry <script> that runs when referenced
+// outside an <img> tag — see docs/image-security.md F-2). Anything outside this
+// list under /static/img/ is rejected with 404 before the FileServer sees it.
+// Adjust here if a new portrait format is ever introduced.
+var allowedImageExts = map[string]bool{
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+	".webp": true,
+	".gif":  true,
+}
+
+// staticHandler wraps http.FileServerFS with two security headers and one path
+// check, applied to every /static/* response:
+//
+//   - X-Content-Type-Options: nosniff — defeats MIME-sniffing on polyglot files
+//     (closes F-1 in docs/image-security.md). The static FS infers Content-Type
+//     from the extension; nosniff makes that the only signal a browser uses.
+//   - Cache-Control: public, max-age=300 — every container rebuild invalidates
+//     the embedded asset set, so a five-minute window is safe and cheap.
+//   - Under /static/img/, only the extensions in allowedImageExts are served;
+//     anything else 404s (closes F-2). Subdirectory listings (paths ending in
+//     "/") are passed through unchanged so FileServer can return its own 404.
+func staticHandler(root fs.FS) http.Handler {
+	fileServer := http.StripPrefix("/static/", http.FileServerFS(root))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Cache-Control", "public, max-age=300")
+
+		// Extension whitelist for the image namespace only. Other prefixes
+		// (e.g. /static/style.css) keep their existing behaviour.
+		if strings.HasPrefix(r.URL.Path, "/static/img/") && !strings.HasSuffix(r.URL.Path, "/") {
+			ext := strings.ToLower(path.Ext(r.URL.Path))
+			if ext == "" || !allowedImageExts[ext] {
+				http.NotFound(w, r)
+				return
+			}
+		}
+
+		fileServer.ServeHTTP(w, r)
+	})
 }
