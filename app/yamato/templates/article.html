@@ -2,6 +2,12 @@
 {{template "topbar" .}}
 <main class="wiki article">
   <p class="crumb"><a href="/wiki">← Back to the Archive</a></p>
+  {{/* Profile image. Drop a licensed/owned image at static/img/articles/<slug>.jpg
+       and it shows here; if absent, onerror removes the slot so the article body
+       leads on its own. Mirrors the crew-avatar fallback pattern on the landing. */}}
+  <figure class="article-portrait">
+    <img src="/static/img/articles/{{.Article.Slug}}.jpg" alt="" onerror="this.parentElement.remove()">
+  </figure>
   <p class="kicker">{{.Article.Category}}</p>
   <h1>{{.Article.Title}}</h1>
   {{range .Article.Paragraphs}}<p>{{.}}</p>{{end}}
