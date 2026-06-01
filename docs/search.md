@@ -133,7 +133,7 @@ Four layers protect the search surface.
 ## Edge cases the handler covers
 
 - **Empty `q` or whitespace-only `q`.** `strings.TrimSpace` reduces both to `""`; the handler short-circuits before touching the database and renders the empty-state copy.
-- **`q` longer than 200 characters.** Truncated to 200 (see "Known issues" — the truncation is byte-wise, which is a bug).
+- **`q` longer than 200 characters.** Silently truncated to 200 *runes* (not bytes), so multi-byte characters like emoji are never cut mid-sequence.
 - **`q` with no matches.** `tsv @@ plainto_tsquery(...)` returns no rows; the template renders "No records matched."
 - **`q` containing tsquery operator syntax.** `plainto_tsquery` ignores it; the term reaches the index as a plain word.
 - **`q` containing HTML.** Auto-escaped on echo-back into the input box, and the body it searches is also escaped on snippet rendering. No markup escapes the safe channel.
@@ -141,9 +141,8 @@ Four layers protect the search surface.
 
 ## Known issues
 
-These were flagged in review. They are documented here so they don't get lost; the fixes have not been applied.
+These were flagged in review. They are documented here so they don't get lost.
 
-- **F-001 (medium, functional)** — The query-length truncation in `app/yamato/handlers.go` is byte-wise (`q = q[:200]`), not rune-wise. A pasted string of 198 ASCII characters followed by a 4-byte emoji is valid UTF-8 at 202 bytes but invalid at 200 bytes after the slice, and Postgres rejects it with `invalid byte sequence for encoding "UTF8"` — surfacing as an HTTP 500 instead of the silent truncation the design promised. Fix: truncate over `[]rune(q)` or walk with `for i, r := range q` to find the byte index of the cap-th rune.
 - **F-002 (low, quality)** — The `ts_headline` options string in `app/yamato/db.go` is assembled at SQL evaluation time via `||` concatenation with the sentinel constants. The options grammar uses `,` and `=` as delimiters; today's sentinels happen to contain neither, but the dependency between the Go-side constants and the SQL-side grammar is not enforced anywhere. A future rename that introduces `,` or `=` into the sentinels would silently mis-parse. Fix: build the options string in Go and pass it as a single parameter, or add a package-`init` assertion that the constants contain neither character.
 - **F-003 (low, quality)** — The 200-character cap is duplicated three times: the `maxSearchQueryLen` constant in `app/yamato/handlers.go`, and `maxlength="200"` on the search inputs in `app/yamato/templates/search.html` and `app/yamato/templates/wiki_index.html`. The HTML attribute is only a client-side hint, but the values can drift. Fix: pass `MaxLen: maxSearchQueryLen` into the template data and template the attribute, or add a comment on the constant naming the two templates.
 

@@ -77,8 +77,10 @@ type searchView struct {
 func (a *app) handleSearch(w http.ResponseWriter, r *http.Request) {
 	raw := r.URL.Query().Get("q")
 	q := strings.TrimSpace(raw)
-	if len(q) > maxSearchQueryLen {
-		q = q[:maxSearchQueryLen]
+	// Cap by rune count, not byte length — a byte slice q[:N] can land mid-rune
+	// and produce invalid UTF-8 that Postgres rejects with a 500. (Fixes F-001.)
+	if rs := []rune(q); len(rs) > maxSearchQueryLen {
+		q = string(rs[:maxSearchQueryLen])
 	}
 
 	data := map[string]any{
