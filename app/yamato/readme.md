@@ -20,6 +20,7 @@ that state's readme for the full story.)
 | `/static/*`      | public service | no         | CSS / theme / images        |
 | `/healthz`       | public service | no         | DB-aware health check       |
 | `/wiki`, `/wiki/*` | wiki service | **yes**    | wiki index + articles       |
+| `/wiki/search`   | wiki service | **yes**    | full-text search (see [`docs/search.md`](../../docs/search.md)) |
 
 **The app must keep all protected content under `/wiki`** — IAP only covers that
 prefix. Anything outside it is public. The app itself does no auth; IAP at the LB
@@ -50,10 +51,12 @@ content — redeploying refreshes it.
 ```
 main.go        server bootstrap + graceful shutdown
 app.go         app struct, embeds (templates/static/schema), routing
-db.go          Cloud SQL connector pool, schema apply, article queries
-handlers.go    landing / wiki index / article / health, IAP identity
-schema.sql     DDL + Star Blazers seed (embedded)
-templates/     html/template pages (auto-escaped)
+db.go          Cloud SQL connector pool, schema apply, article queries,
+               full-text search (plainto_tsquery + ts_rank + ts_headline)
+handlers.go    landing / wiki index / article / search / health, IAP identity
+schema.sql     DDL + Star Blazers seed (embedded); also the `tsv` column,
+               GIN index, and trigger that power /wiki/search
+templates/     html/template pages (auto-escaped) — includes search.html
 static/        style.css (Star Blazers theme); img/ drop-in art (hero ship +
                crew avatars) with graceful fallbacks — see static/img/README.md
 Dockerfile     multi-stage -> distroless static, nonroot
