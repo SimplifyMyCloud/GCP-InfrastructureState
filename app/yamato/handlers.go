@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"html"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -51,6 +53,77 @@ func (a *app) handleArticle(w http.ResponseWriter, r *http.Request) {
 		"User":    iapUser(r),
 		"Article": art,
 	})
+}
+
+// maxSearchQueryLen caps user-supplied search input. Longer queries are
+// silently truncated rather than 400'd so a stray paste does not surface an
+// error to a signed-in operator.
+const maxSearchQueryLen = 200
+
+// maxSearchResults caps the result set so a very-broad query (e.g. "the")
+// cannot return an unbounded page.
+const maxSearchResults = 50
+
+// searchView is one row as the template sees it — Snippet is a pre-rendered,
+// html-escaped fragment with <mark>...</mark> tags around matched terms, safe
+// to emit via the template's default escaper (it's template.HTML).
+type searchView struct {
+	Slug     string
+	Title    string
+	Category string
+	Snippet  template.HTML
+}
+
+func (a *app) handleSearch(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("q")
+	q := strings.TrimSpace(raw)
+	if len(q) > maxSearchQueryLen {
+		q = q[:maxSearchQueryLen]
+	}
+
+	data := map[string]any{
+		"Title": "Search · Yamato Wiki",
+		"User":  iapUser(r),
+		"Query": q,
+		"Hits":  []searchView(nil),
+		"Count": 0,
+	}
+
+	if q == "" {
+		a.render(w, "search.html", data)
+		return
+	}
+
+	hits, err := a.db.search(r.Context(), q, maxSearchResults)
+	if err != nil {
+		a.serverError(w, "search articles", err)
+		return
+	}
+
+	views := make([]searchView, 0, len(hits))
+	for _, h := range hits {
+		views = append(views, searchView{
+			Slug:     h.Slug,
+			Title:    h.Title,
+			Category: h.Category,
+			Snippet:  renderSnippet(h.Snippet),
+		})
+	}
+	data["Hits"] = views
+	data["Count"] = len(views)
+	a.render(w, "search.html", data)
+}
+
+// renderSnippet turns a ts_headline result (which contains sentinel markers
+// around matched terms) into safe HTML: every character from the underlying
+// body is html-escaped, then the sentinels are swapped for real <mark> tags.
+// This guarantees no body content can inject markup, while still allowing the
+// highlight pair through.
+func renderSnippet(raw string) template.HTML {
+	escaped := html.EscapeString(raw)
+	escaped = strings.ReplaceAll(escaped, snippetMarkStart, "<mark>")
+	escaped = strings.ReplaceAll(escaped, snippetMarkEnd, "</mark>")
+	return template.HTML(escaped)
 }
 
 // navCard is one tile on the NOC ("Yamato Defense Command") page.

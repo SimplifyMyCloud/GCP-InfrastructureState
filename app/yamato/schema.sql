@@ -15,6 +15,28 @@ CREATE TABLE IF NOT EXISTS articles (
 
 CREATE INDEX IF NOT EXISTS articles_category_idx ON articles (category);
 
+-- Full-text search: a generated tsvector column over title+body (title weighted
+-- higher), kept in sync by a trigger so /wiki/search can use plainto_tsquery +
+-- ts_rank against a GIN index. All ADD/CREATE statements are IF NOT EXISTS or
+-- OR REPLACE so this block is safe to re-run on every app startup.
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS tsv tsvector;
+
+CREATE INDEX IF NOT EXISTS articles_tsv_idx ON articles USING GIN (tsv);
+
+CREATE OR REPLACE FUNCTION articles_tsv_refresh() RETURNS trigger AS $$
+BEGIN
+    NEW.tsv :=
+        setweight(to_tsvector('english', coalesce(NEW.title, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(NEW.body,  '')), 'B');
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS articles_tsv_trg ON articles;
+CREATE TRIGGER articles_tsv_trg
+    BEFORE INSERT OR UPDATE OF title, body ON articles
+    FOR EACH ROW EXECUTE FUNCTION articles_tsv_refresh();
+
 INSERT INTO articles (slug, title, category, body) VALUES
 
 ('space-battleship-yamato', 'Space Battleship Yamato (the Argo)', 'Ships',

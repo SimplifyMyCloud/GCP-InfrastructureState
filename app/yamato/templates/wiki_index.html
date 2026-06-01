@@ -3,6 +3,10 @@
 <main class="wiki">
   <h1>The Archive</h1>
   <p class="lede">Records recovered aboard the Space Battleship Yamato.</p>
+  <form class="search-form" method="get" action="/wiki/search" role="search">
+    <input type="search" name="q" placeholder="Search the archive…" maxlength="200">
+    <button type="submit">Search</button>
+  </form>
   {{range .Groups}}
   <section class="group">
     <h2>{{.Category}}</h2>

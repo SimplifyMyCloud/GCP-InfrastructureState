@@ -140,6 +140,62 @@ func (s *store) listGrouped(ctx context.Context) ([]categoryGroup, error) {
 	return groups, rows.Err()
 }
 
+// searchHit is one row returned by search: the article slug + title + category
+// plus a short snippet (with sentinel markers around matched terms produced by
+// ts_headline). The handler html-escapes Snippet and then swaps the sentinels
+// for <mark> tags before passing it to the template as template.HTML, so the
+// underlying body text can never inject markup.
+type searchHit struct {
+	Slug     string
+	Title    string
+	Category string
+	Snippet  string
+}
+
+// Snippet sentinel markers: chosen so they do not occur in real article text
+// and so html.EscapeString leaves them intact (no <, >, &, ', " characters).
+const (
+	snippetMarkStart = "{{HL_START}}"
+	snippetMarkEnd   = "{{HL_END}}"
+)
+
+// search runs a full-text search across title+body using plainto_tsquery (which
+// is forgiving of raw user input — it tokenizes and ANDs the terms, ignoring
+// operator syntax). Results are ranked by ts_rank and capped at `limit`. The
+// query is parameterized; q is never interpolated into SQL.
+func (s *store) search(ctx context.Context, q string, limit int) ([]searchHit, error) {
+	rows, err := s.pool.Query(ctx, `
+        SELECT slug,
+               title,
+               category,
+               ts_headline(
+                   'english',
+                   body,
+                   plainto_tsquery('english', $1),
+                   'StartSel=' || $3 || ', StopSel=' || $4 || ', MaxFragments=2, MaxWords=18, MinWords=6, ShortWord=3, HighlightAll=FALSE'
+               ) AS snippet
+        FROM articles
+        WHERE tsv @@ plainto_tsquery('english', $1)
+        ORDER BY ts_rank(tsv, plainto_tsquery('english', $1)) DESC,
+                 title ASC
+        LIMIT $2
+    `, q, limit, snippetMarkStart, snippetMarkEnd)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var hits []searchHit
+	for rows.Next() {
+		var h searchHit
+		if err := rows.Scan(&h.Slug, &h.Title, &h.Category, &h.Snippet); err != nil {
+			return nil, err
+		}
+		hits = append(hits, h)
+	}
+	return hits, rows.Err()
+}
+
 // get returns one article by slug, or pgx.ErrNoRows if it doesn't exist.
 func (s *store) get(ctx context.Context, slug string) (article, error) {
 	var a article

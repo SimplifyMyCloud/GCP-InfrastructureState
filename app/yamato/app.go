@@ -59,6 +59,7 @@ func (a *app) routes() http.Handler {
 	// Both "/wiki" and "/wiki/" land on the index; "/wiki/{slug}" is an article.
 	mux.HandleFunc("GET /wiki", a.handleWikiIndex)
 	mux.HandleFunc("GET /wiki/{$}", a.handleWikiIndex)
+	mux.HandleFunc("GET /wiki/search", a.handleSearch)
 	mux.HandleFunc("GET /wiki/{slug}", a.handleArticle)
 
 	// Internal NOC ("Yamato Defense Command"). The LB routes /noc and /noc/* to the SAME
