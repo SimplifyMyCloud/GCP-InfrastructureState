@@ -17,6 +17,10 @@ public Star Blazers landing page and gates the wiki behind Identity-Aware Proxy.
   brand/client resources — those depend on the IAP OAuth Admin API deprecated
   after July 2025), and `roles/iap.httpsResourceAccessor` granted to
   **`domain:iq9.io`** — only @iq9.io identities can log in.
+- The **IAP project service agent** is force-created and granted `roles/run.invoker`
+  on the wiki Cloud Run service. Without this binding, IAP login fails with
+  *"The IAP service account is not provisioned"* — enabling the API alone doesn't
+  auto-create the agent or wire it into Cloud Run.
 - URL map, HTTPS proxy, port-443 forwarding rule, and a port-80 → HTTPS redirect.
 
 ## How the two surfaces work

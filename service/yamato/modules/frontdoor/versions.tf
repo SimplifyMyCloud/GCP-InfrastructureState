@@ -10,5 +10,11 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 6.0"
     }
+    # google-beta is required for google_project_service_identity, which forces
+    # creation of the IAP service agent so terraform can bind it to run.invoker.
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 6.0"
+    }
   }
 }

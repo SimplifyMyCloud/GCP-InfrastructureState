@@ -16,6 +16,7 @@ Proxy (IAP).
   (`iap { enabled = var.iap_enabled }`) — not the deprecated
   `google_iap_brand`/`google_iap_client`.
 - `roles/iap.httpsResourceAccessor` granted to `var.iap_members` (default `domain:iq9.io`).
+- The IAP project **service agent** (`service-<PROJECT_NUMBER>@gcp-sa-iap.iam.gserviceaccount.com`) is force-created via `google_project_service_identity` (from `google-beta`), and granted `roles/run.invoker` on `var.wiki_service_name` so IAP can invoke the wiki Cloud Run service on the authenticated user's behalf. Without this, login fails with *"The IAP service account is not provisioned"* — enabling the `iap.googleapis.com` API alone doesn't auto-create the agent or its invoker binding.
 - URL map (default → public, `/wiki*` → wiki), HTTPS target proxy, port-443
   forwarding rule, and an optional port-80 → HTTPS redirect.
 

@@ -254,6 +254,42 @@ resource "google_iap_web_backend_service_iam_member" "wiki" {
   member              = each.value
 }
 
+# --- IAP -> Cloud Run service-agent provisioning --------------------------------------------------------------------
+
+# IAP fronting Cloud Run invokes the backend service on the authenticated user's
+# behalf using a project-scoped Google-managed service agent:
+#     service-<PROJECT_NUMBER>@gcp-sa-iap.iam.gserviceaccount.com
+# That agent must (a) exist in the project, and (b) hold roles/run.invoker on the
+# wiki Cloud Run service. Without it, login surfaces the cryptic
+# "IAP service account is not provisioned" error from the IAP runtime, regardless
+# of the allUsers invoker binding the cloudrun state grants for the LB itself.
+# See https://cloud.google.com/iap/docs/enabling-cloud-run.
+#
+# google_project_service_identity is a google-beta resource — it triggers the
+# same creation that `gcloud beta services identity create --service=iap…` does.
+# Its destroy is a no-op (Google doesn't permit deletion of managed service
+# agents), so we leave it ungated by var.iap_enabled: toggling IAP off should
+# not churn the agent, only the IAM binding that uses it.
+resource "google_project_service_identity" "iap" {
+  provider = google-beta
+  project  = var.project_id
+  service  = "iap.googleapis.com"
+}
+
+# Grant the IAP service agent invoker on the wiki Cloud Run service only —
+# scoped to the IAP-gated surface, never the public service. The count-style
+# gate matches the iap_members binding above so flipping var.iap_enabled
+# cleanly attaches/detaches both.
+resource "google_cloud_run_v2_service_iam_member" "iap_invoker_wiki" {
+  count = var.iap_enabled ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = var.wiki_service_name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_project_service_identity.iap.email}"
+}
+
 # --- URL map: public by default, IAP for the wiki path -------------------------------------------------------------
 
 resource "google_compute_url_map" "this" {
