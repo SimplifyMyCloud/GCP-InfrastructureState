@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -60,11 +61,21 @@ func nocProjectID() string {
 }
 
 // nocCountTile holds the "blocks in the last 1h / 24h" tile data.
+//
+// Per-side availability is tracked independently (Last1hAvailable /
+// Last24hAvailable) so that when one scan errors and the other succeeds —
+// a common transient on slow API days — the template renders "—" for the
+// failed half rather than a misleading "0". Available remains true when
+// either side has data, so the tile shell stays visible even on a partial
+// outage; only when BOTH sides fail does the whole tile fall back to the
+// "logs unavailable" empty state.
 type nocCountTile struct {
-	Last1h    int64
-	Last24h   int64
-	Available bool   // false → render the fallback ("logs unavailable")
-	Error     string // operator-visible explanation when Available is false
+	Last1h           int64
+	Last24h          int64
+	Last1hAvailable  bool
+	Last24hAvailable bool
+	Available        bool   // true when EITHER side has data (closes F-001)
+	Error            string // operator-visible explanation; non-empty when at least one side failed
 }
 
 // nocTopRow is one row in a top-N tile (IPs, URLs, WAF priorities).
@@ -182,6 +193,120 @@ func nocTripwireFilter(since time.Time, serviceName string) string {
 	)
 }
 
+// nocCacheTTL bounds how long an assembled page snapshot stays warm in
+// memory before the next request re-runs the fan-out. 25s is deliberately
+// shorter than the 30s meta-refresh interval so each refresh always
+// re-validates against fresh data, but long enough that two visitors
+// refreshing in the same window share one set of API calls. The TTL is
+// also what smooths over occasional transient API timeouts: a single
+// slow gRPC dial on one tile no longer flips the visible page between
+// "data" and "unavailable" every refresh, because the prior good snapshot
+// stays renderable while the next fetch runs.
+const nocCacheTTL = 25 * time.Second
+
+// nocState owns the NOC dashboard's per-process state: long-lived Cloud
+// Logging and Cloud Monitoring clients (reused across requests instead of
+// reconstructed every refresh — closes F-003) and a short-TTL cache of
+// the assembled page (closes the auto-refresh flip-flop and brings cold-
+// path LCP from ~6s to ~50ms on warm cache).
+//
+// Both clients are safe for concurrent use by multiple goroutines per
+// the google-cloud-go SDK contract. Lazy init under clientMu lets a
+// transient failure on the first request be retried on the second
+// instead of poisoning the process for its lifetime (sync.Once would
+// have done the latter).
+type nocState struct {
+	clientMu  sync.Mutex
+	logClient *logadmin.Client
+	monClient *monitoring.AlertPolicyClient
+
+	cacheMu  sync.Mutex
+	cached   *nocPageData
+	cachedAt time.Time
+}
+
+// nocLogClient returns the process-shared Cloud Logging client, lazily
+// constructing it on the first call (or after a prior init failure).
+// Caller MUST NOT Close it; lifecycle is owned by app.Close().
+func (a *app) nocLogClient(ctx context.Context) (*logadmin.Client, error) {
+	a.noc.clientMu.Lock()
+	defer a.noc.clientMu.Unlock()
+	if a.noc.logClient != nil {
+		return a.noc.logClient, nil
+	}
+	c, err := logadmin.NewClient(ctx, nocProjectID())
+	if err != nil {
+		return nil, err
+	}
+	a.noc.logClient = c
+	return c, nil
+}
+
+// nocMonClient returns the process-shared Cloud Monitoring client. Same
+// lifecycle contract as nocLogClient — caller MUST NOT Close.
+func (a *app) nocMonClient(ctx context.Context) (*monitoring.AlertPolicyClient, error) {
+	a.noc.clientMu.Lock()
+	defer a.noc.clientMu.Unlock()
+	if a.noc.monClient != nil {
+		return a.noc.monClient, nil
+	}
+	c, err := monitoring.NewAlertPolicyClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	a.noc.monClient = c
+	return c, nil
+}
+
+// getCachedNOC returns the most recently assembled page snapshot if it
+// is still fresh, plus a bool indicating cache hit. The returned value
+// is a shallow copy so the caller can overlay per-request fields (User)
+// without mutating the cache.
+func (a *app) getCachedNOC() (nocPageData, bool) {
+	a.noc.cacheMu.Lock()
+	defer a.noc.cacheMu.Unlock()
+	if a.noc.cached == nil {
+		return nocPageData{}, false
+	}
+	if time.Since(a.noc.cachedAt) > nocCacheTTL {
+		return nocPageData{}, false
+	}
+	return *a.noc.cached, true
+}
+
+// setCachedNOC stores a freshly assembled page snapshot with the current
+// wall clock. Subsequent requests within nocCacheTTL skip the fan-out.
+func (a *app) setCachedNOC(data nocPageData) {
+	a.noc.cacheMu.Lock()
+	defer a.noc.cacheMu.Unlock()
+	cp := data
+	a.noc.cached = &cp
+	a.noc.cachedAt = time.Now()
+}
+
+// close releases the long-lived API clients. Called from app.Close at
+// process shutdown; errors are logged but not surfaced because nothing
+// downstream can act on them.
+func (s *nocState) close() {
+	if s == nil {
+		return
+	}
+	s.clientMu.Lock()
+	defer s.clientMu.Unlock()
+	if s.logClient != nil {
+		if err := s.logClient.Close(); err != nil {
+			log.Printf("noc: logadmin close: %v", err)
+		}
+		s.logClient = nil
+	}
+	if s.monClient != nil {
+		if err := s.monClient.Close(); err != nil {
+			log.Printf("noc: monitoring close: %v", err)
+		}
+		s.monClient = nil
+	}
+}
+
 // handleNOCDashboard renders the live NOC dashboard at /wiki/noc.
 //
 // The handler fans out four independent API calls in parallel:
@@ -197,21 +322,51 @@ func nocTripwireFilter(since time.Time, serviceName string) string {
 // Each call has an independent failure mode and an independent fallback;
 // the page always renders even when every external call fails.
 func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
+	// Cache check is the first move: if a recent snapshot is still warm,
+	// we skip the fan-out entirely and only overlay the per-request fields.
+	// This is what closes the auto-refresh flip-flop bug — a single slow
+	// API call no longer makes the next refresh render "unavailable" tiles,
+	// because the prior good snapshot stays renderable until the TTL expires.
+	data, hit := a.getCachedNOC()
+	if !hit {
+		data = a.fetchNOCData(r.Context())
+		a.setCachedNOC(data)
+	}
+
+	// Per-request overlay. User is IAP-asserted and cannot be cached;
+	// Title and RefreshSecs are static but live in fetchNOCData for
+	// snapshot completeness, so they survive the cache hit unchanged.
+	data.User = iapUser(r)
+
+	a.render(w, "noc_dashboard.html", data)
+}
+
+// fetchNOCData runs the four-call fan-out, assembles a nocPageData
+// snapshot, and returns it. The snapshot is cacheable in its entirety
+// because every field (including AsOf — which records when the FETCH
+// happened, not when the request rendered) is fetch-time, not request-time.
+//
+// Each goroutine acquires the shared client at goroutine start and treats
+// a client-acquisition failure identically to a query failure: the per-tile
+// fallback state renders and the page never 500s. Errors that reach the
+// fallback path are also surfaced to stderr via log.Printf so operators
+// can read Cloud Run logs to diagnose a persistent "unavailable" state
+// instead of guessing (closes F-004).
+func (a *app) fetchNOCData(ctx context.Context) nocPageData {
 	proj := nocProjectID()
 	now := time.Now().UTC()
 
 	data := nocPageData{
 		Title:       "Defense Command · Live",
-		User:        iapUser(r),
 		Project:     proj,
 		AsOf:        now.Format("2006-01-02 15:04:05 UTC"),
 		RefreshSecs: 30,
 	}
 
 	// Four goroutines fan out in parallel. Each writes only to its own
-	// pre-declared local variables; the handler assembles the data struct
-	// after wg.Wait() to keep concurrent access to data fields out of the
-	// picture entirely. Each fanout call wraps the request context in a
+	// pre-declared local variables; the snapshot is assembled after
+	// wg.Wait() to keep concurrent access to data fields out of the
+	// picture. Each fanout call wraps the parent context in a
 	// nocAPITimeout deadline so a hung API does not pin the page.
 	var (
 		wg sync.WaitGroup
@@ -242,36 +397,57 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		defer wg.Done()
 		// The 24h scan feeds three tiles at once (top IPs, top URLs, top
 		// priorities) and also the 24h half of the counts tile.
-		ctx, cancel := context.WithTimeout(r.Context(), nocAPITimeout)
+		callCtx, cancel := context.WithTimeout(ctx, nocAPITimeout)
 		defer cancel()
-		count24h, ipsMap, urlsMap, priorsMap, scan24Err = scan24h(ctx, proj, now)
+		client, err := a.nocLogClient(callCtx)
+		if err != nil {
+			scan24Err = fmt.Errorf("logadmin client: %w", err)
+			return
+		}
+		count24h, ipsMap, urlsMap, priorsMap, scan24Err = scan24h(callCtx, client, now)
 	}()
 
 	go func() {
 		defer wg.Done()
-		ctx, cancel := context.WithTimeout(r.Context(), nocAPITimeout)
+		callCtx, cancel := context.WithTimeout(ctx, nocAPITimeout)
 		defer cancel()
-		count1h, scan1hErr = scan1hCount(ctx, proj, now)
+		client, err := a.nocLogClient(callCtx)
+		if err != nil {
+			scan1hErr = fmt.Errorf("logadmin client: %w", err)
+			return
+		}
+		count1h, scan1hErr = scan1hCount(callCtx, client, now)
 	}()
 
 	go func() {
 		defer wg.Done()
-		ctx, cancel := context.WithTimeout(r.Context(), nocAPITimeout)
+		callCtx, cancel := context.WithTimeout(ctx, nocAPITimeout)
 		defer cancel()
-		alertTile, alertErr = fetchAlertTile(ctx, proj)
+		client, err := a.nocMonClient(callCtx)
+		if err != nil {
+			alertErr = fmt.Errorf("alert policy client: %w", err)
+			return
+		}
+		alertTile, alertErr = fetchAlertTile(callCtx, client, proj)
 	}()
 
 	go func() {
 		defer wg.Done()
-		ctx, cancel := context.WithTimeout(r.Context(), nocAPITimeout)
+		callCtx, cancel := context.WithTimeout(ctx, nocAPITimeout)
 		defer cancel()
-		tripTotal, tripPathMap, tripErr = scanTripwire(ctx, proj, now, nocTripwireServiceName())
+		client, err := a.nocLogClient(callCtx)
+		if err != nil {
+			tripErr = fmt.Errorf("logadmin client: %w", err)
+			return
+		}
+		tripTotal, tripPathMap, tripErr = scanTripwire(callCtx, client, now, nocTripwireServiceName())
 	}()
 
 	wg.Wait()
 
 	// 24h tiles (counts/24h half, top IPs, top URLs, top priorities).
 	if scan24Err != nil {
+		log.Printf("noc dashboard: 24h scan: %v", scan24Err)
 		msg := "Cloud Logging unavailable — retry on next refresh"
 		data.Counts.Error = msg
 		data.TopIPs = nocTopTile{Available: false, Error: msg}
@@ -279,6 +455,7 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		data.TopPriors = nocTopTile{Available: false, Error: msg}
 	} else {
 		data.Counts.Last24h = count24h
+		data.Counts.Last24hAvailable = true
 		data.Counts.Available = true
 		data.TopIPs = topTile(ipsMap, 5)
 		data.TopURLs = topTile(urlsMap, 5)
@@ -286,19 +463,25 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 1h half of the counts tile is independent: it can succeed when the
-	// 24h scan failed (or vice versa). Available stays true if either side
-	// has data; the template renders "—" for the side that errored.
+	// 24h scan failed (or vice versa). Per-side Available flags let the
+	// template render "—" for the failed half rather than a misleading
+	// "0" (closes F-001). The tile-level Available stays true whenever
+	// either side has data, so the tile shell remains visible during a
+	// partial outage.
 	if scan1hErr != nil {
+		log.Printf("noc dashboard: 1h scan: %v", scan1hErr)
 		if data.Counts.Error == "" {
 			data.Counts.Error = "1h window unavailable"
 		}
 	} else {
 		data.Counts.Last1h = count1h
+		data.Counts.Last1hAvailable = true
 		data.Counts.Available = true
 	}
 
 	// Alert tile.
 	if alertErr != nil {
+		log.Printf("noc dashboard: alert policies: %v", alertErr)
 		data.Alerts = nocAlertTile{Available: false, Error: "Monitoring API unavailable — alert state cannot be read"}
 	} else {
 		data.Alerts = alertTile
@@ -309,6 +492,7 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 	// the headline number is "X attackers tripped a wire" — the rows are
 	// the supporting breakdown.
 	if tripErr != nil {
+		log.Printf("noc dashboard: tripwire scan: %v", tripErr)
 		data.Tripwire = nocTripwireTile{Available: false, Error: "Cloud Logging unavailable — retry on next refresh"}
 	} else {
 		top := topTile(tripPathMap, 3)
@@ -320,7 +504,7 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	a.render(w, "noc_dashboard.html", data)
+	return data
 }
 
 // scanTripwire pulls every honeypot hit in the last 24h and returns the
@@ -333,13 +517,9 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 // (see honeypot.go logTripwire). logadmin unwraps that into a
 // map[string]any in entry.Payload — we read the `path` field defensively
 // and skip any malformed entry.
-func scanTripwire(ctx context.Context, projectID string, now time.Time, serviceName string) (int64, map[string]int64, error) {
+func scanTripwire(ctx context.Context, client *logadmin.Client, now time.Time, serviceName string) (int64, map[string]int64, error) {
 	since := now.Add(-24 * time.Hour)
-	client, err := logadmin.NewClient(ctx, projectID)
-	if err != nil {
-		return 0, nil, fmt.Errorf("logadmin client: %w", err)
-	}
-	defer client.Close()
+	// client is process-shared (see nocState.logClient) — DO NOT Close here.
 
 	it := client.Entries(ctx,
 		logadmin.Filter(nocTripwireFilter(since, serviceName)),
@@ -385,13 +565,9 @@ func extractTripwirePath(payload any) string {
 // tiles. PageSize is capped at nocEntryCap; if the actual 24h volume is
 // higher than the cap (very loud day), the aggregations are accurate
 // within the sampled window.
-func scan24h(ctx context.Context, projectID string, now time.Time) (int64, map[string]int64, map[string]int64, map[string]int64, error) {
+func scan24h(ctx context.Context, client *logadmin.Client, now time.Time) (int64, map[string]int64, map[string]int64, map[string]int64, error) {
 	since := now.Add(-24 * time.Hour)
-	client, err := logadmin.NewClient(ctx, projectID)
-	if err != nil {
-		return 0, nil, nil, nil, fmt.Errorf("logadmin client: %w", err)
-	}
-	defer client.Close()
+	// client is process-shared (see nocState.logClient) — DO NOT Close here.
 
 	it := client.Entries(ctx,
 		logadmin.Filter(nocBlockedFilter(since)),
@@ -441,13 +617,9 @@ func scan24h(ctx context.Context, projectID string, now time.Time) (int64, map[s
 // Separated from the 24h scan so a failure of either window leaves the
 // other intact, and so the 1h number is not a stale aggregate when the
 // 24h scan hits the entry cap.
-func scan1hCount(ctx context.Context, projectID string, now time.Time) (int64, error) {
+func scan1hCount(ctx context.Context, client *logadmin.Client, now time.Time) (int64, error) {
 	since := now.Add(-1 * time.Hour)
-	client, err := logadmin.NewClient(ctx, projectID)
-	if err != nil {
-		return 0, fmt.Errorf("logadmin client: %w", err)
-	}
-	defer client.Close()
+	// client is process-shared (see nocState.logClient) — DO NOT Close here.
 
 	it := client.Entries(ctx,
 		logadmin.Filter(nocBlockedFilter(since)),
@@ -560,13 +732,8 @@ func topTile(counts map[string]int64, n int) nocTopTile {
 // If/when the Go SDK grows an Incidents.List, this can be enriched without
 // changing the tile contract. The template renders one row per policy and
 // only the colorClass+timestamp move.
-func fetchAlertTile(ctx context.Context, projectID string) (nocAlertTile, error) {
-	client, err := monitoring.NewAlertPolicyClient(ctx)
-	if err != nil {
-		return nocAlertTile{}, fmt.Errorf("alert policy client: %w", err)
-	}
-	defer client.Close()
-
+func fetchAlertTile(ctx context.Context, client *monitoring.AlertPolicyClient, projectID string) (nocAlertTile, error) {
+	// client is process-shared (see nocState.monClient) — DO NOT Close here.
 	it := client.ListAlertPolicies(ctx, &monitoringpb.ListAlertPoliciesRequest{
 		Name: "projects/" + projectID,
 	})

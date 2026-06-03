@@ -19,11 +19,13 @@ var staticFS embed.FS
 //go:embed schema.sql
 var schemaSQL string
 
-// app holds the process-wide dependencies: the database pool and parsed
-// templates. One instance is built at startup and shared across requests.
+// app holds the process-wide dependencies: the database pool, parsed
+// templates, and the NOC dashboard's shared API clients + tile cache.
+// One instance is built at startup and shared across requests.
 type app struct {
 	db   *store
 	tmpl *template.Template
+	noc  *nocState // see noc_dashboard.go — shared logadmin/monitoring clients + tile cache
 }
 
 func newApp(ctx context.Context) (*app, error) {
@@ -38,12 +40,15 @@ func newApp(ctx context.Context) (*app, error) {
 		return nil, err
 	}
 
-	return &app{db: db, tmpl: tmpl}, nil
+	return &app{db: db, tmpl: tmpl, noc: &nocState{}}, nil
 }
 
 func (a *app) Close() {
 	if a.db != nil {
 		a.db.Close()
+	}
+	if a.noc != nil {
+		a.noc.close()
 	}
 }
 

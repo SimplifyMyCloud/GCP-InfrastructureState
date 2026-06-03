@@ -20,11 +20,19 @@
       {{if .Counts.Available}}
         <div class="t-twin">
           <div class="t-twin-cell">
-            <span class="t-num{{if gt .Counts.Last1h 0}} t-num-hot{{end}}">{{.Counts.Last1h}}</span>
+            {{if .Counts.Last1hAvailable}}
+              <span class="t-num{{if gt .Counts.Last1h 0}} t-num-hot{{end}}">{{.Counts.Last1h}}</span>
+            {{else}}
+              <span class="t-num t-num-dash" title="1h window unavailable on this refresh">—</span>
+            {{end}}
             <span class="t-sub">last 1h</span>
           </div>
           <div class="t-twin-cell">
-            <span class="t-num{{if gt .Counts.Last24h 0}} t-num-hot{{end}}">{{.Counts.Last24h}}</span>
+            {{if .Counts.Last24hAvailable}}
+              <span class="t-num{{if gt .Counts.Last24h 0}} t-num-hot{{end}}">{{.Counts.Last24h}}</span>
+            {{else}}
+              <span class="t-num t-num-dash" title="24h window unavailable on this refresh">—</span>
+            {{end}}
             <span class="t-sub">last 24h</span>
           </div>
         </div>
