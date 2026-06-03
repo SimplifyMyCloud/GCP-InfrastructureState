@@ -19,6 +19,7 @@ that state's readme for the full story.)
 | `/`              | public service | no         | Star Blazers landing page   |
 | `/static/*`      | public service | no         | CSS / theme / images        |
 | `/healthz`       | public service | no         | DB-aware health check       |
+| `/admin`, `/backup.sql`, `/api/v1/users`, `/server-status`, `/phpmyadmin`, `/console` | public service | no | Honeypot tripwires — Layer 0 lure, see [`docs/honeypot.md`](../../docs/honeypot.md) |
 | `/wiki`, `/wiki/*` | wiki service | **yes**    | wiki index + articles       |
 | `/wiki/search`   | wiki service | **yes**    | full-text search (see [`docs/search.md`](../../docs/search.md)) |
 | `/wiki/noc`      | wiki service | **yes**    | live defense dashboard — see [`docs/noc.md`](../../docs/noc.md) |
@@ -57,8 +58,12 @@ db.go          Cloud SQL connector pool, schema apply, article queries,
 handlers.go    landing / wiki index / article / search / health / noc launcher,
                IAP identity
 noc_dashboard.go  /wiki/noc live defense dashboard — Cloud Logging + Cloud
-               Monitoring fan-out, client-side aggregation, per-tile fallbacks
-               (see docs/noc.md)
+               Monitoring fan-out (4 goroutines including scanTripwire),
+               client-side aggregation, per-tile fallbacks (see docs/noc.md)
+honeypot.go    Layer 0 lure — 6 fake-200 tripwire routes on the PUBLIC
+               service mux, structured-JSON log emitter (slog),
+               response menu, startup invariant checker (see
+               docs/honeypot.md)
 schema.sql     DDL + Star Blazers seed (embedded); also the `tsv` column,
                GIN index, and trigger that power /wiki/search
 templates/     html/template pages (auto-escaped) — includes search.html and

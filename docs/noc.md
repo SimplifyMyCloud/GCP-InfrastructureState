@@ -1,14 +1,14 @@
 # NOC Dashboard — `/wiki/noc`
 
-The live view of GCP defense activity on the Yamato wiki. This is the page that turns the [Fort Knox claim](./security/fort-knox.md) into something a prospect can stare at: an IAP-gated dashboard, served as part of the wiki, that pulls Cloud Armor blocks and alert-policy state from the Cloud Logging and Cloud Monitoring APIs at request time and renders them as five tiles that refresh every 30 seconds. No slides, no narration, no recorded video — the dashboard is the evidence, and it updates while the prospect is still looking at it.
+The live view of GCP defense activity on the Yamato wiki. This is the page that turns the [Fort Knox claim](./security/fort-knox.md) into something a prospect can stare at: an IAP-gated dashboard, served as part of the wiki, that pulls Cloud Armor blocks, honeypot tripwire hits, and alert-policy state from the Cloud Logging and Cloud Monitoring APIs at request time and renders them as six tiles that refresh every 30 seconds. No slides, no narration, no recorded video — the dashboard is the evidence, and it updates while the prospect is still looking at it.
 
 This document is the *why* and the *how*: what the page is, the request lifecycle, the queries that feed each tile, the security posture, the IAM the user still needs to grant, and the open issues a reviewer flagged that did not block the ship. The code lives in the **Application Layer** (Go on Cloud Run); no Terraform was touched to add the route — but two new IAM bindings on the runtime SA *are* required for the tiles to populate, and those are called out below.
 
 ## What this page is
 
-A signed-in `@iq9.io` operator (or a consulting prospect sitting next to one) opens `https://yamato-dev.iq9.io/wiki/noc`. IAP intercepts at the Google Front End, demands an identity, lets a verified `@iq9.io` Google account through, and hands the request to the wiki Cloud Run service. The Go binary's mux registers `GET /wiki/noc` and dispatches to `handleNOCDashboard`, which fans out three independent API calls in parallel — two against Cloud Logging (for the 24h and 1h Cloud Armor DENY windows) and one against Cloud Monitoring (for the live state of the project's alert policies). When all three return (or time out, or fail), the handler assembles a `nocPageData` struct and renders `templates/noc_dashboard.html`. A `<meta http-equiv="refresh" content="30">` in the page head causes the browser to reload every 30 seconds, so the operator never has to touch the page to see the next minute's blocks.
+A signed-in `@iq9.io` operator (or a consulting prospect sitting next to one) opens `https://yamato-dev.iq9.io/wiki/noc`. IAP intercepts at the Google Front End, demands an identity, lets a verified `@iq9.io` Google account through, and hands the request to the wiki Cloud Run service. The Go binary's mux registers `GET /wiki/noc` and dispatches to `handleNOCDashboard`, which fans out four independent API calls in parallel — three against Cloud Logging (the 24h and 1h Cloud Armor DENY windows, plus a 24h honeypot-tripwire scan on the public Cloud Run service) and one against Cloud Monitoring (for the live state of the project's alert policies). When all four return (or time out, or fail), the handler assembles a `nocPageData` struct and renders `templates/noc_dashboard.html`. A `<meta http-equiv="refresh" content="30">` in the page head causes the browser to reload every 30 seconds, so the operator never has to touch the page to see the next minute's blocks.
 
-Five tiles:
+Six tiles:
 
 | Tile | What it shows |
 | --- | --- |
@@ -16,6 +16,7 @@ Five tiles:
 | **Top source IPs · 24h** | Top 5 attacker IPs (with their per-IP block counts) over the last 24h. |
 | **Top probed URLs · 24h** | Top 5 paths attackers tried to reach (`/wp-config.php`, `/.env`, `/onvif/device_service`, the usual menu). |
 | **Top WAF rule priorities · 24h** | Top 5 Cloud Armor policy priorities firing — which rule categories are doing the work. |
+| **Tripwire hits · 24h** | Total honeypot hits in the last 24h plus the top 3 probed bait paths. The Layer 0 lure on the public service — see [`docs/honeypot.md`](./honeypot.md) for the full story. |
 | **Alert policies · live state** | The 9 (project-wide; see Known issues F-007) alert policies, each with enabled/disabled, severity, and last-mutation timestamp; disabled or invalid policies float to the top with a red dot. |
 
 The page exists as a sibling of `/wiki` rather than as a standalone surface for one reason: IAP scoping is enforced at the LB by the `/wiki` and `/wiki/*` path rule (`service/yamato/modules/frontdoor/frontdoor.tf`), and putting the dashboard at `/wiki/noc` inherits that gate by virtue of the prefix. No new IAP backend, no new path rule, no new url_map entry — just one more route on the wiki Cloud Run service's existing mux.
@@ -61,18 +62,20 @@ stdlib ServeMux          app/yamato/app.go              [Layer 4]
         |  mux.HandleFunc("GET /wiki/noc", a.handleNOCDashboard)
         v
 handleNOCDashboard       app/yamato/noc_dashboard.go
-        |  fan out 3 goroutines, each with a 6s context.WithTimeout
+        |  fan out 4 goroutines, each with a 6s context.WithTimeout
         v
-   +----+-------------------+-------------------------+
-   |                        |                         |
-   v                        v                         v
-scan24h                  scan1hCount               fetchAlertTile
-logadmin.Entries         logadmin.Entries          monitoring.ListAlertPolicies
-24h DENY scan, capped    1h DENY count, capped     all project alert policies
-at nocEntryCap=3000      at nocEntryCap=3000       (DisplayName, Enabled,
-   |                        |                       Severity, MutationRecord)
-   |                        |                         |
-   +----+-------------------+-------------------------+
+   +----+-------------------+-------------------------+----------------------+
+   |                        |                         |                      |
+   v                        v                         v                      v
+scan24h                  scan1hCount               fetchAlertTile          scanTripwire
+logadmin.Entries         logadmin.Entries          monitoring.              logadmin.Entries
+24h DENY scan, capped    1h DENY count, capped     ListAlertPolicies        24h tripwire scan,
+at nocEntryCap=3000      at nocEntryCap=3000       all project alert        capped at
+   |                        |                      policies (DisplayName,   nocEntryCap=3000,
+   |                        |                      Enabled, Severity,       jsonPayload.tripwire
+   |                        |                      MutationRecord)          =true on public svc
+   |                        |                         |                      |
+   +----+-------------------+-------------------------+----------------------+
         |
         v  wg.Wait()
         v
@@ -140,6 +143,18 @@ Each tile has the same contract: a Cloud Logging or Cloud Monitoring query, a cl
 **Empty state.** *"No activity in the last 24h."*
 
 **Error state.** Same fallback as the other top-N tiles.
+
+### Tripwire hits · 24h
+
+**What it shows.** The total number of honeypot tripwire hits on the *public* Cloud Run service over the last 24 hours, plus the top 3 probed bait paths. The headline number lights up with a gold "hot" class when greater than zero so an active probe day reads visibly distinct from a quiet day. This is the Layer 0 lure surface; the [full story is in `docs/honeypot.md`](./honeypot.md).
+
+**What feeds it.** A fourth Cloud Logging scan in the fan-out, against the public service `iq9-run-dev-yamato`, filtering on `jsonPayload.tripwire=true`. The 6 honeypot routes registered in `app/yamato/honeypot.go` each emit one structured log entry per hit (see honeypot.md for the field shape); `scanTripwire` aggregates those entries by `jsonPayload.path` and feeds the tile a `(Total, Rows=top3)` payload. Same `nocEntryCap=3000` cap as the other scans, same per-call 6s timeout.
+
+**Empty state.** *"No tripwires sprung in the last 24h."*
+
+**Error state.** *"Cloud Logging unavailable — retry on next refresh."*
+
+**Read together with the *Edge blocks* and *Top probed URLs* tiles.** A probe that matches a Cloud Armor WAF signature gets DENY'd at the edge and lands in *Edge blocks* + *Top probed URLs*. A probe that hits a bait path (which is not, on its own, a WAF signature) passes through Cloud Armor, lands on the public service, and lands in *Tripwire hits*. The two tiles are complementary views of the same incoming probe traffic — different layers, different events, both real. See [honeypot.md → *The Fort Knox layer placement*](./honeypot.md#the-fort-knox-layer-placement--layer-0) for the layered argument, and **F-003** in *Known issues* over there for the rate-limit-ban interaction that biases the tripwire count low on heavy single-IP probing days.
 
 ### Alert policies · live state
 
@@ -277,16 +292,18 @@ Intentionally out of scope for the first ship; named here so the next person who
 
 | File | Role |
 | --- | --- |
-| `app/yamato/noc_dashboard.go` | `handleNOCDashboard`, the three fan-out scans, the aggregation helpers, the alert-tile fetcher, the page-data struct. |
-| `app/yamato/app.go` | Route registration: `mux.HandleFunc("GET /wiki/noc", a.handleNOCDashboard)` between `/wiki/search` and `/wiki/{slug}`. |
-| `app/yamato/templates/noc_dashboard.html` | The five tiles, the meta-refresh, the empty/error template branches, the alert-policy row formatting. |
-| `app/yamato/static/style.css` | `.noc-dash`, `.noc-dash-grid`, `.noc-dash-tile`, `.t-twin`, `.t-list`, `.t-alerts`, `.noc-alert-{red,amber,green}` — uses the existing Star Blazers theme tokens. |
+| `app/yamato/noc_dashboard.go` | `handleNOCDashboard`, the four fan-out scans (including `scanTripwire`), the aggregation helpers, the alert-tile fetcher, the page-data struct. |
+| `app/yamato/honeypot.go` | The Layer 0 lure routes and `logTripwire` log emitter that produce the entries the tripwire tile aggregates over. See [`docs/honeypot.md`](./honeypot.md). |
+| `app/yamato/app.go` | Route registration: `mux.HandleFunc("GET /wiki/noc", a.handleNOCDashboard)` between `/wiki/search` and `/wiki/{slug}`; the public-service honeypot routes are registered in the same `routes()` method just above. |
+| `app/yamato/templates/noc_dashboard.html` | The six tiles, the meta-refresh, the empty/error template branches, the alert-policy row formatting. |
+| `app/yamato/static/style.css` | `.noc-dash`, `.noc-dash-grid`, `.noc-dash-tile`, `.t-twin`, `.t-list`, `.t-alerts`, `.noc-alert-{red,amber,green}`, `.k-tripwire`, `.t-num-trip` — uses the existing Star Blazers theme tokens. |
 | `app/yamato/go.mod` / `go.sum` | New direct deps: `cloud.google.com/go/logging`, `cloud.google.com/go/monitoring`, `google.golang.org/api` (promoted from indirect for `iterator`). |
 | `service/yamato/modules/cloudrun/cloudrun.tf` | Where the two new `google_project_iam_member` resources will go when the user applies the IAM change — `roles/logging.viewer` and `roles/monitoring.viewer` on the runtime SA. **Not yet applied.** |
 | `service/yamato/modules/frontdoor/frontdoor.tf` | url_map `path_rule` for `/wiki` + `/wiki/*` — gates `/wiki/noc` via IAP by prefix. Unchanged by this feature. |
 
 ## See also
 
+- [`docs/honeypot.md`](./honeypot.md) — the Layer 0 honeypot tripwires that feed the *Tripwire hits · 24h* tile; the lure surface outside the Fort Knox perimeter gate.
 - [`docs/security/in-the-wild-2026-06-03.md`](./security/in-the-wild-2026-06-03.md) — the recorded evidence the live dashboard operationalizes; same Cloud Logging filter, same priority distribution.
 - [`docs/security/fort-knox.md`](./security/fort-knox.md) — the five-layer claim the dashboard is the live view of.
 - [`docs/security/defense-in-depth.md`](./security/defense-in-depth.md) — the layered defense model the tiles visualise per layer.
