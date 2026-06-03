@@ -348,6 +348,125 @@ a:hover { text-decoration: underline; }
   margin-top: 2rem;
 }
 
+/* --- NOC Dashboard (/wiki/noc) ------------------------------------------------------------------------------ */
+/* Live tile grid showing Cloud Armor + IAP defense activity. Reuses the Star Blazers theme tokens (--gold, --red,
+   --green) and the topbar partial. The page is IAP-gated by the LB's /wiki/* path rule and auto-refreshes via a
+   <meta http-equiv="refresh"> tag in the template head — no JS framework. Tile geometry: CSS grid with
+   auto-fit minmax so the page reads at-a-glance from across a conference room without horizontal scroll. */
+.noc-dash { flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 1.6rem 1.5rem 4rem; }
+.noc-dash-hero { text-align: center; padding: 1.4rem 0 1.6rem; }
+.noc-dash-hero .eyebrow {
+  letter-spacing: 0.42em; text-transform: uppercase; font-size: 0.66rem;
+  color: var(--muted); margin: 0 0 0.6rem;
+}
+.noc-dash-hero h1 {
+  font-family: var(--display); font-weight: 900; font-style: italic; margin: 0;
+  letter-spacing: 0.05em; font-size: clamp(2rem, 6vw, 3.4rem); color: var(--red);
+  text-shadow: 0 0 22px rgba(255, 59, 46, 0.5), 0 2px 0 var(--red-deep);
+}
+.noc-dash-hero h1 b { color: var(--ink); }
+.noc-dash-hero .subtitle {
+  font-family: var(--display); font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 0.78rem; color: var(--muted); margin: 0.6rem 0 0;
+}
+.noc-dash-hero .live { color: var(--green); font-weight: 700; }
+.noc-dash-hero .live::before { content: "● "; animation: blink 1.6s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+
+.noc-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.noc-dash-tile {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+  background: var(--panel); border: 1px solid var(--line);
+  border-top: 3px solid var(--steel-deep);
+  border-radius: 8px; color: var(--ink); backdrop-filter: blur(4px);
+}
+.noc-dash-tile.t-wide { grid-column: 1 / -1; }
+.noc-dash-tile.k-counts { border-top-color: var(--gold); }
+.noc-dash-tile.k-ips    { border-top-color: var(--red); }
+.noc-dash-tile.k-urls   { border-top-color: var(--red); }
+.noc-dash-tile.k-priors { border-top-color: var(--gold); }
+.noc-dash-tile.k-alerts { border-top-color: var(--green); }
+
+.noc-dash-tile .t-label {
+  font-family: var(--display); font-weight: 700; font-size: 0.72rem;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+  margin: 0;
+}
+
+/* Counts tile: two big numbers side by side (1h / 24h). Demo-readable from across a room. */
+.noc-dash-tile .t-twin { display: flex; gap: 1rem; }
+.noc-dash-tile .t-twin-cell { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+.noc-dash-tile .t-num {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  line-height: 1; color: var(--ink);
+}
+.noc-dash-tile .t-num-hot { color: var(--red); text-shadow: 0 0 16px rgba(255, 59, 46, 0.45); }
+.noc-dash-tile .t-sub {
+  margin-top: 0.3rem;
+  font-family: var(--display); font-size: 0.66rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* Top-N list tiles: ordered list, key on the left, count badge on the right. */
+.noc-dash-tile .t-list { list-style: none; margin: 0; padding: 0; }
+.noc-dash-tile .t-list li {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+.noc-dash-tile .t-list li:last-child { border-bottom: 0; }
+.noc-dash-tile .t-key { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.noc-dash-tile .t-key-mono { font-family: "Menlo", "Monaco", "Consolas", monospace; font-size: 0.86rem; }
+.noc-dash-tile .t-count {
+  font-family: var(--display); font-weight: 700; color: var(--gold);
+  background: rgba(244, 181, 58, 0.12); padding: 0.1rem 0.55rem;
+  border-radius: 4px; font-size: 0.82rem;
+}
+
+.noc-dash-tile .t-empty { color: var(--muted); font-size: 0.86rem; margin: 0.3rem 0 0; }
+.noc-dash-tile .t-note  { color: var(--muted); font-size: 0.78rem; margin: 0.4rem 0 0; }
+.noc-dash-tile .t-note-warn { color: var(--gold); }
+
+/* Alert policies tile: one row per policy, status dot + name + enabled/disabled + last-change timestamp. */
+.noc-dash-tile .t-alerts { list-style: none; margin: 0; padding: 0; }
+.noc-dash-tile .t-alert-row {
+  display: grid;
+  grid-template-columns: 0.6rem 1fr auto auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+.noc-dash-tile .t-alert-row:last-child { border-bottom: 0; }
+.noc-dash-tile .t-alert-dot {
+  width: 0.6rem; height: 0.6rem; border-radius: 50%;
+  background: var(--steel-deep);
+}
+.noc-dash-tile .noc-alert-green .t-alert-dot { background: var(--green); box-shadow: 0 0 8px rgba(126, 231, 135, 0.6); }
+.noc-dash-tile .noc-alert-amber .t-alert-dot { background: var(--gold); box-shadow: 0 0 8px rgba(244, 181, 58, 0.6); }
+.noc-dash-tile .noc-alert-red   .t-alert-dot { background: var(--red);   box-shadow: 0 0 8px rgba(255, 59, 46, 0.6); }
+.noc-dash-tile .t-alert-name  { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.noc-dash-tile .t-alert-state {
+  font-family: var(--display); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.noc-dash-tile .noc-alert-red .t-alert-state { color: var(--red); }
+.noc-dash-tile .t-alert-when {
+  color: var(--muted); font-size: 0.74rem;
+  font-family: "Menlo", "Monaco", "Consolas", monospace;
+}
+
 /* --- Footer ------------------------------------------------------------------------------------------------ */
 .site-footer {
   display: flex;

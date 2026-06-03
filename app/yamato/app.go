@@ -59,9 +59,13 @@ func (a *app) routes() http.Handler {
 
 	// --- Protected surface (the LB routes /wiki and /wiki/* to the IAP backend) ---
 	// Both "/wiki" and "/wiki/" land on the index; "/wiki/{slug}" is an article.
+	// /wiki/noc is the live defense-command dashboard — pulled from Cloud Logging
+	// + Cloud Monitoring at request time and IAP-gated by the LB's /wiki/* path
+	// rule (no separate auth wiring; it lives under /wiki for exactly this reason).
 	mux.HandleFunc("GET /wiki", a.handleWikiIndex)
 	mux.HandleFunc("GET /wiki/{$}", a.handleWikiIndex)
 	mux.HandleFunc("GET /wiki/search", a.handleSearch)
+	mux.HandleFunc("GET /wiki/noc", a.handleNOCDashboard)
 	mux.HandleFunc("GET /wiki/{slug}", a.handleArticle)
 
 	// Internal NOC ("Yamato Defense Command"). The LB routes /noc and /noc/* to the SAME
