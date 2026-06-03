@@ -8,7 +8,10 @@ Direct VPC egress that bridges them to Cloud SQL over private IP.
 
 - `google_service_account` `iq9-yamato-dev-run` — the shared runtime identity,
   granted `roles/cloudsql.client` (project) and `roles/secretmanager.secretAccessor`
-  on the DB password secret. Nothing else.
+  on the DB password secret. Nothing else today; the live NOC dashboard at
+  `/wiki/noc` adds a need for `roles/logging.viewer` and `roles/monitoring.viewer`
+  on this SA — see [`docs/noc.md`](../../../../docs/noc.md) for the rationale and
+  the module path the bindings belong on.
 - `google_cloud_run_v2_service` `iq9-run-dev-yamato` — the **public** service
   (serves `/`, `/static/*`, `/healthz`).
 - `google_cloud_run_v2_service` `iq9-run-dev-yamato-wiki` — the **IAP-gated**
