@@ -88,6 +88,30 @@
       {{end}}
     </article>
 
+    {{/* TILE: honeypot tripwire hits — Layer 0 lure on the public service */}}
+    <article class="noc-dash-tile k-tripwire">
+      <h2 class="t-label">Tripwire hits · 24h</h2>
+      {{if .Tripwire.Available}}
+        <div class="t-twin">
+          <div class="t-twin-cell">
+            <span class="t-num{{if gt .Tripwire.Total 0}} t-num-trip{{end}}">{{.Tripwire.Total}}</span>
+            <span class="t-sub">honeypot hits</span>
+          </div>
+        </div>
+        {{if .Tripwire.Empty}}
+          <p class="t-empty">No tripwires sprung in the last 24h.</p>
+        {{else}}
+          <ol class="t-list">
+            {{range .Tripwire.Rows}}
+              <li><span class="t-key t-key-mono">{{.Key}}</span><span class="t-count">{{.Count}}</span></li>
+            {{end}}
+          </ol>
+        {{end}}
+      {{else}}
+        <p class="t-empty">{{.Tripwire.Error}}</p>
+      {{end}}
+    </article>
+
     {{/* TILE: alert policy state board (9 policies in dev) */}}
     <article class="noc-dash-tile k-alerts t-wide">
       <h2 class="t-label">Alert policies · live state</h2>

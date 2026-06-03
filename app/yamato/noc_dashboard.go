@@ -109,6 +109,18 @@ type nocAlertTile struct {
 	Empty     bool
 }
 
+// nocTripwireTile holds the "Tripwire hits — 24h" tile data: a total
+// count of honeypot hits in the last 24h plus the top 3 paths hit.
+// Fed by a Cloud Logging scan of `jsonPayload.tripwire=true` entries
+// on the public Cloud Run service (see nocTripwireFilter).
+type nocTripwireTile struct {
+	Total     int64
+	Rows      []nocTopRow // top 3 paths by hit count
+	Available bool
+	Error     string
+	Empty     bool
+}
+
 // nocPageData is the typed bag the noc_dashboard.html template renders.
 type nocPageData struct {
 	Title       string
@@ -122,6 +134,7 @@ type nocPageData struct {
 	TopURLs     nocTopTile
 	TopPriors   nocTopTile
 	Alerts      nocAlertTile
+	Tripwire    nocTripwireTile
 }
 
 // nocBlockedFilter is the Cloud Logging filter that selects Cloud Armor
@@ -145,15 +158,41 @@ func nocBlockedFilter(since time.Time) string {
 	)
 }
 
+// nocTripwireServiceName returns the public Cloud Run service whose
+// stderr stream carries honeypot tripwire entries. Env override exists
+// so a future test/stage environment can point the tile at a different
+// service without an image rebuild.
+func nocTripwireServiceName() string {
+	return getenv("HONEYPOT_SERVICE_NAME", "iq9-run-dev-yamato")
+}
+
+// nocTripwireFilter is the Cloud Logging filter the tripwire tile uses.
+// Tripwire entries arrive on the public Cloud Run service's stderr as
+// structured JSON (see honeypot.go logTripwire). resource.type and
+// resource.labels.service_name pin the search to the right stream;
+// jsonPayload.tripwire=true matches every honeypot hit and nothing else.
+func nocTripwireFilter(since time.Time, serviceName string) string {
+	return fmt.Sprintf(
+		`resource.type="cloud_run_revision" `+
+			`AND resource.labels.service_name="%s" `+
+			`AND jsonPayload.tripwire=true `+
+			`AND timestamp>="%s"`,
+		serviceName,
+		since.UTC().Format(time.RFC3339),
+	)
+}
+
 // handleNOCDashboard renders the live NOC dashboard at /wiki/noc.
 //
-// The handler fans out three independent API calls in parallel:
+// The handler fans out four independent API calls in parallel:
 //
 //   - one Cloud Logging scan of the last 24h Cloud Armor DENY events,
 //     which feeds the counts tile, top-IPs tile, top-URLs tile, and
 //     top-priorities tile (one scan, four aggregations);
 //   - one Cloud Logging scan of the last 1h DENY events for the 1h counter;
-//   - one Cloud Monitoring call for the 9 alert policy states.
+//   - one Cloud Monitoring call for the 9 alert policy states;
+//   - one Cloud Logging scan of the last 24h honeypot tripwire hits
+//     (jsonPayload.tripwire=true on the public Cloud Run service).
 //
 // Each call has an independent failure mode and an independent fallback;
 // the page always renders even when every external call fails.
@@ -169,7 +208,7 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		RefreshSecs: 30,
 	}
 
-	// Three goroutines fan out in parallel. Each writes only to its own
+	// Four goroutines fan out in parallel. Each writes only to its own
 	// pre-declared local variables; the handler assembles the data struct
 	// after wg.Wait() to keep concurrent access to data fields out of the
 	// picture entirely. Each fanout call wraps the request context in a
@@ -191,8 +230,13 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		// Alert tile output.
 		alertErr  error
 		alertTile nocAlertTile
+
+		// Tripwire (honeypot) tile output.
+		tripErr     error
+		tripTotal   int64
+		tripPathMap map[string]int64
 	)
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -215,6 +259,13 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), nocAPITimeout)
 		defer cancel()
 		alertTile, alertErr = fetchAlertTile(ctx, proj)
+	}()
+
+	go func() {
+		defer wg.Done()
+		ctx, cancel := context.WithTimeout(r.Context(), nocAPITimeout)
+		defer cancel()
+		tripTotal, tripPathMap, tripErr = scanTripwire(ctx, proj, now, nocTripwireServiceName())
 	}()
 
 	wg.Wait()
@@ -253,7 +304,80 @@ func (a *app) handleNOCDashboard(w http.ResponseWriter, r *http.Request) {
 		data.Alerts = alertTile
 	}
 
+	// Tripwire tile. Reuses topTile() for the rows so the rendering shape
+	// matches the other top-N tiles; Total is preserved separately because
+	// the headline number is "X attackers tripped a wire" — the rows are
+	// the supporting breakdown.
+	if tripErr != nil {
+		data.Tripwire = nocTripwireTile{Available: false, Error: "Cloud Logging unavailable — retry on next refresh"}
+	} else {
+		top := topTile(tripPathMap, 3)
+		data.Tripwire = nocTripwireTile{
+			Total:     tripTotal,
+			Rows:      top.Rows,
+			Available: true,
+			Empty:     tripTotal == 0,
+		}
+	}
+
 	a.render(w, "noc_dashboard.html", data)
+}
+
+// scanTripwire pulls every honeypot hit in the last 24h and returns the
+// total count plus a frequency map keyed by path. The shape mirrors
+// scan24h: same nocEntryCap cap, same NewestFirst ordering, same
+// best-effort error semantics (the tile renders an "unavailable" state
+// on failure; the page does not 500).
+//
+// The Cloud Logging payload for a tripwire entry is the slog JSON output
+// (see honeypot.go logTripwire). logadmin unwraps that into a
+// map[string]any in entry.Payload — we read the `path` field defensively
+// and skip any malformed entry.
+func scanTripwire(ctx context.Context, projectID string, now time.Time, serviceName string) (int64, map[string]int64, error) {
+	since := now.Add(-24 * time.Hour)
+	client, err := logadmin.NewClient(ctx, projectID)
+	if err != nil {
+		return 0, nil, fmt.Errorf("logadmin client: %w", err)
+	}
+	defer client.Close()
+
+	it := client.Entries(ctx,
+		logadmin.Filter(nocTripwireFilter(since, serviceName)),
+		logadmin.PageSize(nocEntryCap),
+		logadmin.NewestFirst(),
+	)
+
+	paths := map[string]int64{}
+	var n int64
+	for n < nocEntryCap {
+		e, err := it.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return 0, nil, fmt.Errorf("entries.Next: %w", err)
+		}
+		n++
+		if p := extractTripwirePath(e.Payload); p != "" {
+			paths[p]++
+		}
+	}
+	return n, paths, nil
+}
+
+// extractTripwirePath pulls the `path` field from a tripwire log entry
+// payload. logadmin unmarshalls jsonPayload into map[string]any; we walk
+// the top-level key defensively and return "" on any miss so a single
+// malformed entry cannot poison the aggregation.
+func extractTripwirePath(payload any) string {
+	m, ok := payload.(map[string]any)
+	if !ok {
+		return ""
+	}
+	if s, ok := m["path"].(string); ok {
+		return s
+	}
+	return ""
 }
 
 // scan24h pulls every Cloud Armor DENY event in the last 24h and returns

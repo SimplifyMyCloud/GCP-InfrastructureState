@@ -57,6 +57,16 @@ func (a *app) routes() http.Handler {
 	staticRoot, _ := fs.Sub(staticFS, "static")
 	mux.Handle("GET /static/", staticHandler(staticRoot))
 
+	// --- Honeypot tripwires (PUBLIC service ONLY — must stay outside /wiki) ---
+	// Each path returns a small, believable fake 200 and emits one structured
+	// log entry (jsonPayload.tripwire=true). The NOC tile at /wiki/noc reads
+	// those entries back. Registered without a method prefix so we capture
+	// GET, POST, HEAD, and the unusual verbs bots use to fingerprint software.
+	// See honeypot.go for the contract; honeypotPaths() is the source of truth.
+	for _, p := range honeypotPaths() {
+		mux.HandleFunc(p, a.handleHoneypot)
+	}
+
 	// --- Protected surface (the LB routes /wiki and /wiki/* to the IAP backend) ---
 	// Both "/wiki" and "/wiki/" land on the index; "/wiki/{slug}" is an article.
 	// /wiki/noc is the live defense-command dashboard — pulled from Cloud Logging
