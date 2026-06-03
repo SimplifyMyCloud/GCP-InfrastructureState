@@ -33,6 +33,24 @@ resource "google_project_iam_member" "cloudsql_client" {
   member  = "serviceAccount:${google_service_account.runtime.email}"
 }
 
+# The NOC dashboard at /wiki/noc reads live Cloud Armor + IAP block activity
+# from Cloud Logging and alert-policy state from Cloud Monitoring. Both are
+# read-only and project-scoped; see docs/noc.md for the request lifecycle and
+# the tile-by-tile filter shapes. The handler degrades gracefully when these
+# bindings are absent (per-tile "unavailable" fallback), so revoking them
+# disables the dashboard cleanly without breaking the rest of the app.
+resource "google_project_iam_member" "logging_viewer" {
+  project = var.project_id
+  role    = "roles/logging.viewer"
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
+resource "google_project_iam_member" "monitoring_viewer" {
+  project = var.project_id
+  role    = "roles/monitoring.viewer"
+  member  = "serviceAccount:${google_service_account.runtime.email}"
+}
+
 # This state grants its own SA access to the secret the cloudsql state created —
 # each state owns its IAM. Referenced by secret ID (string), so no cross-state
 # resource dependency.

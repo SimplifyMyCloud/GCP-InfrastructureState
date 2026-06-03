@@ -34,6 +34,105 @@ Or with more structure (entirely optional — natural language is fine):
 
 Claude will read this file, fold the feature ask into each role's brief, and launch the `Workflow` tool. Watch `/workflows` for live progress; a structured summary lands when the pipeline completes.
 
+## How to write a feature brief
+
+The brief is the steering wheel for the entire pipeline. A well-shaped brief gets three sharp commits in fifteen minutes; a vague one gets sprawl, scope-creep, and three sub-par roles. The skill is in giving the agents enough context to make good judgment calls *and* trusting them to make those calls within the lanes you have drawn. The playbook itself handles all the standing conventions — branch, commit format, role lanes, output schemas — so your brief only needs to cover the per-feature bits.
+
+### The anatomy of a good brief
+
+Five sections, in order of importance:
+
+| Section | What it is | What the agents do with it |
+|---|---|---|
+| **Feature** | One sentence: what is being built | The headline. The Developer plans around it; the Writer titles their doc with it. |
+| **Why / who it's for** | One or two sentences on purpose and audience | Lets each agent make tradeoffs the brief did not anticipate. *"This is for live consulting demos"* tells the Developer to optimize for visual clarity over feature breadth, and tells the Writer to lead with the demo flow rather than the API. |
+| **In scope** | 3–6 concrete bullets of what is included | Bounds the Developer. Each bullet is something they MUST build; nothing else needs to be MVP. |
+| **Out of scope** | 2–4 bullets of what is explicitly NOT included | Prevents creep. The Developer reads this and *resists* building those things even when they seem natural. Without this list, agents overshoot every time. |
+| **Constraints / quality bar** | Non-obvious rules the agents would not otherwise know | *"Must work with empty data"* / *"Must not block on Cloud Logging API timeout"* / *"Must read auth from IAP only, no fallback"* — surfaces failure modes the Tester will pressure-test. |
+
+Optional but useful when relevant:
+
+- **Design hint** — if you have a specific shape in mind (a tile grid like Grafana, a sidebar layout like the existing wiki index, a particular template structure). Use sparingly; over-prescribing robs the Developer of judgment and signals lack of trust.
+- **Demo flow** — one paragraph on what you would show a prospect. Powerful: the Writer threads this through `/docs/<feature>.md` as the narrative spine.
+
+### What to leave out
+
+These are the classic over-specs that backfire:
+
+- **Do not write code.** If you write the SQL or the handler shape, the Developer becomes a transcriptionist and the Tester loses their adversarial leverage — *"the Developer just did what you said, so the design must be fine"*.
+- **Do not re-explain the repo.** The playbook already has the branch, app path, build verification, commit format. Repeating them adds noise that crowds out the per-feature signal.
+- **Do not reference prior conversations.** Agents have fresh context. *"Like we discussed yesterday"* means nothing to them — paste the relevant facts directly.
+- **Do not soften with "maybe" or "would be nice".** Each item is either in scope or out of scope. Maybe-items lead to half-built features that the Tester cannot pressure-test (was it a requirement? was it tested?). Decide before you write the brief.
+
+### Where the brief lives
+
+Two patterns, choose by the size of the feature:
+
+**Pattern 1 — inline in Claude Code (default for most features).** Paste the brief directly into the Claude Code chat as the message that triggers the run. Open the line with *"Use the multi-agent playbook"* and follow it with the brief inline. Claude reads this playbook from disk, reads the brief from the chat, folds the two together into three role-specific prompts, and launches the `Workflow`. The brief is ephemeral — once the workflow runs, its job is done; what persists is the three commits, the doc, and the structured findings. This pattern fits the great majority of feature work.
+
+**Pattern 2 — saved to a file under `docs/briefs/` (for substantial features or when you want a record).** For features large enough to want to iterate on the brief before launching, or features whose brief is itself worth preserving as a historical artifact, drop the brief into a new file at `docs/briefs/<feature-slug>.md`. Then invoke with *"Use the multi-agent playbook with the brief at `docs/briefs/<feature-slug>.md`."* Claude reads the playbook and the brief from disk and proceeds identically. The file gets version-controlled alongside the resulting commits, so future archaeology has the *ask* and the *implementation* side by side.
+
+Either pattern produces the same workflow run. Inline is faster; file-saved is more durable. Both are fine.
+
+### A worked example — the NOC dashboard brief
+
+A real brief, used to launch the NOC dashboard feature on 2026-06-03. Demonstrates the anatomy above:
+
+```
+Use the multi-agent playbook.
+
+Feature: A live NOC dashboard for the Yamato wiki at /wiki/noc,
+showing Cloud Armor and IAP defense activity in real time, pulled
+from the Cloud Logging API.
+
+Why / who it's for: This is the centerpiece of the consulting demo.
+A prospect should be able to look at this page and immediately see
+the Fort Knox defense layers working against real adversaries — no
+slides, no narration, just live evidence. Visual clarity matters
+more than feature breadth.
+
+In scope:
+- A /wiki/noc page (IAP-gated, under /wiki, follows the existing
+  Star Blazers wiki theme)
+- Tile: blocks in the last 1h and last 24h
+- Tile: top 5 source IPs (with provider attribution if cheap)
+- Tile: top 5 probed URLs
+- Tile: top WAF rule priorities firing
+- Tile: status of the 9 alert policies (green / yellow / red)
+- All data pulled from Cloud Logging API using the runtime SA
+- Auto-refresh every 30s (meta refresh tag is fine; no JS framework)
+
+Out of scope:
+- World map of source IPs (next feature)
+- Historical analytics / charts over time
+- Per-rule drill-down pages
+- WebSocket / SSE push (meta refresh suffices)
+- Modifying Cloud Armor rules or alert policies
+
+Constraints / quality bar:
+- Must render cleanly with an EMPTY Cloud Logging response (a quiet day)
+- Must NOT crash or block if the Cloud Logging API times out — show a
+  fallback state ("logs unavailable, try again") and keep rendering the
+  rest of the page
+- IAP gating is non-negotiable; /wiki/noc must NEVER be reachable
+  without an @iq9.io identity
+- The Cloud Logging API call must use the existing runtime SA — do NOT
+  introduce a new service account
+- The runtime SA may need roles/logging.viewer added; if so, document
+  it in the Writer's doc but flag it for the user (Terraform change
+  required, not done by this pipeline)
+
+Demo flow: open https://yamato-dev.iq9.io/wiki/noc in front of a
+prospect, log in with @iq9.io, watch the tiles populate from live
+Cloud Logging data showing real overnight attacks blocked.
+```
+
+Read each section against the anatomy above and you can see what the agents will do with it. The Developer knows exactly what to build (the in-scope list) and what to leave for later (the out-of-scope list). The Tester has a target list of failure modes to probe (empty logs, API timeout, IAP bypass attempts). The Writer has a demo flow to thread through `/docs/noc.md` and a clear sense of audience. Three sharp commits, one feature, one fifteen-minute pipeline.
+
+### The pattern, generalized
+
+The brief is essentially **"here is the box you may build inside, here is why the box has these walls, and here is what would tempt you to break out of it but should not."** Everything else — schema choices, query shapes, template structure, error handling style — is the Developer's call. That is the point of role-separation: you describe the destination; they decide the route.
+
 ## The flow at a glance
 
 ```
