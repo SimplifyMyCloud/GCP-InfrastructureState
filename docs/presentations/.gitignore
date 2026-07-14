@@ -1,0 +1,5 @@
+# Generated slide renders from `marp deck.md ...` — the source of truth is
+# deck.md; the HTML/PDF/PPTX are ephemeral outputs, regenerable in seconds.
+*.html
+*.pdf
+*.pptx
