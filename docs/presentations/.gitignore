@@ -1,5 +1,8 @@
 # Generated slide renders from `marp deck.md ...` — the source of truth is
-# deck.md; the HTML/PDF/PPTX are ephemeral outputs, regenerable in seconds.
-*.html
+# deck.md. PDF and PPTX are treated as ephemeral outputs (regenerable in
+# seconds); the HTML render IS tracked so it can be opened directly from a
+# clone or served via GitHub Pages without requiring the Marp CLI on the
+# reader's machine. Re-run `marp deck.md --html -o deck.html` after every
+# deck.md change and commit both together to keep them in sync.
 *.pdf
 *.pptx
