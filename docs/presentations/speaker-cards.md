@@ -16,7 +16,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 1 · Title — "Life of a Packet"
+## Slide 1 · Life of a Packet
 
 **The moment:** Set the tone. WarGames callback + Fort Knox promise.
 
@@ -30,7 +30,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 2 · Cold open — "It is 1983"
+## Slide 2 · It is 1983.
 
 **The moment:** Anchor the entire talk in ONE relatable adversary scenario.
 
@@ -47,7 +47,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 3 · Two mindsets, only one survives
+## Slide 3 · Two mindsets. Only one survives.
 
 **The moment:** The paradigm shift in one table. Show the delta.
 
@@ -64,7 +64,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 4 · The six layers protecting GCP
+## Slide 4 · The six layers protecting GCP.
 
 **The moment:** Show the roadmap. This is our map for the next 20 slides.
 
@@ -80,7 +80,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 5 · Concept 1 · BeyondCorp premise
+## Slide 5 · Concept 1 · The trust boundary is not the network.
 
 **The moment:** Anchor the whole zero-trust story in a specific historical event.
 
@@ -101,7 +101,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 6 · Fort Knox parallel · Six walls
+## Slide 6 · Fort Knox parallel · One wall isn't Fort Knox. Six walls are.
 
 **The moment:** The metaphor promise, delivered visually.
 
@@ -113,7 +113,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 7 · Concept 2 · TLS wrap on the client
+## Slide 7 · Concept 2 · The packet is encrypted before it leaves your laptop.
 
 **The moment:** The packet is opaque BEFORE it leaves the laptop.
 
@@ -134,7 +134,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 8 · Fort Knox parallel · The armored truck
+## Slide 8 · Fort Knox parallel · The armored truck. And it might be empty.
 
 **The moment:** The uncertainty tax, made physical.
 
@@ -146,7 +146,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 9 · Concept 3 · GFE + DDoS scrubbing
+## Slide 9 · Concept 3 · The packet lands at Google's edge. TLS terminates. DDoS dies.
 
 **The moment:** The volumetric wall. Where public-internet attacks die.
 
@@ -168,7 +168,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 10 · Fort Knox parallel · Outer gate + tanks
+## Slide 10 · Fort Knox parallel · The outer gate. Backed by a tank division.
 
 **The moment:** Asymmetric defense, made physical.
 
@@ -180,7 +180,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 11 · Concept 4 · Google's private backbone
+## Slide 11 · Concept 4 · The packet leaves the public internet. From here it's Google's own fiber.
 
 **The moment:** The packet has left the public internet. What comes next.
 
@@ -203,7 +203,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 12 · Fort Knox parallel · Base interior roads
+## Slide 12 · Fort Knox parallel · The base interior. Private roads. Roving patrols. Random ID checks.
 
 **The moment:** Interior is monitored more than perimeter, not less.
 
@@ -215,7 +215,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 13 · Concept 5 · IAP identity check
+## Slide 13 · Concept 5 · IAP checks identity. Per request. Every request.
 
 **The moment:** The zero-trust moment. BeyondCorp made concrete for user identity.
 
@@ -239,7 +239,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 14 · Fort Knox parallel · Biometric gate
+## Slide 14 · Fort Knox parallel · The Depository's biometric gate. Every visit, every time.
 
 **The moment:** Per-request identity, made physical.
 
@@ -251,7 +251,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 15 · Concept 6 · IAP context check
+## Slide 15 · Concept 6 · Even with the right identity: is the request also in the right context?
 
 **The moment:** Where credential theft gets defeated.
 
@@ -276,7 +276,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 16 · Fort Knox parallel · The escort
+## Slide 16 · Fort Knox parallel · The escort in the hallway. Right person, right context, or turned around.
 
 **The moment:** Context check, made physical.
 
@@ -288,7 +288,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 17 · Concept 7 · VPC firewall
+## Slide 17 · Concept 7 · The VPC firewall. Only IAP gets through. No exceptions.
 
 **The moment:** Belt-and-suspenders at the network layer. Independence matters.
 
@@ -311,7 +311,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 18 · Fort Knox parallel · Vault hallway roster
+## Slide 18 · Fort Knox parallel · The vault hallway. Escort service only. No exceptions.
 
 **The moment:** Independent authorization, made physical.
 
@@ -323,7 +323,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 19 · Concept 8 · OS Login
+## Slide 19 · Concept 8 · OS Login validates the SSH key. Second independent check at the VM.
 
 **The moment:** The innermost check. Second independent auth system at the VM.
 
@@ -351,7 +351,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 20 · Fort Knox parallel · The vault cage
+## Slide 20 · Fort Knox parallel · The vault cage. YOUR key to YOUR cage. Sentry says no.
 
 **The moment:** Second independent check, made physical.
 
@@ -363,7 +363,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 21 · Concept 9 · Return path
+## Slide 21 · Concept 9 · Return path. Same six hops. And where the trap closes.
 
 **The moment:** Bridge to the finale. Same six hops reversed — different experience.
 
@@ -381,7 +381,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 22 · Fort Knox parallel · Courier vs. intruder
+## Slide 22 · Fort Knox parallel · Legitimate courier walks out unnoticed. The intruder does not.
 
 **The moment:** Return-path duality, made physical.
 
@@ -393,7 +393,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 23 · Concept 10 · APT counterfactual
+## Slide 23 · Concept 10 · The APT gets in. And meets the reverse-flow defenses.
 
 **The moment:** The finale. Grant the impossible; watch the reverse-flow defenses close the trap.
 
@@ -421,7 +421,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 24 · Fort Knox parallel · Gold in hand, alarms firing
+## Slide 24 · Fort Knox parallel · Gold in hand. Alarms already firing. Guards converging. Razor wire on every fence.
 
 **The moment:** The physics of the guarantee, made physical.
 
@@ -433,7 +433,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 25 · Meet the Yamato Wiki
+## Slide 25 · Now — the same six layers, in production, against real adversaries.
 
 **The moment:** Pivot from theory to proof.
 
@@ -448,7 +448,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 26 · Layer 1 in production — 345 real attacks
+## Slide 26 · Layer 1 in production — 345 real attacks. All blocked.
 
 **The moment:** The moment prospects realize the deck isn't theoretical.
 
@@ -466,7 +466,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 27 · Layer 2 in production — IAP gating /wiki
+## Slide 27 · Layer 2 in production — IAP gating /wiki.
 
 **The moment:** Show the same IAP mechanism, different rule.
 
@@ -480,7 +480,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 28 · Layers 3–5 in production
+## Slide 28 · Layers 3–5 in production.
 
 **The moment:** Complete the mapping — this wiki has the same architecture as David's VM.
 
@@ -498,7 +498,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 29 · The NOC — live evidence
+## Slide 29 · The NOC — live evidence, refreshed every 30 seconds.
 
 **The moment:** They don't have to trust the story. They watch it hold.
 
@@ -516,7 +516,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 30 · Layer 0 — the honeypot lure
+## Slide 30 · Layer 0 — the honeypot lure.
 
 **The moment:** We don't just block. We identify.
 
@@ -536,7 +536,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 31 · What this cost to build
+## Slide 31 · What this cost to build.
 
 **The moment:** The consulting angle. Playbook is the product; wiki is the receipt.
 
@@ -554,7 +554,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 32 · Terraform appendix
+## Slide 32 · Appendix — Terraform for the ingress path.
 
 **The moment:** For the appendix reader / technical follow-up.
 
@@ -567,7 +567,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 33 · Further reading — the long form
+## Slide 33 · Further reading — the long form.
 
 **The moment:** Give prospects the receipts.
 
@@ -579,7 +579,7 @@ Each card = one slide. Bulleted riffs, not prose. Glance and go.
 
 <div style="page-break-after: always;"></div>
 
-## Slide 34 · Thank you
+## Slide 34 · Thank you.
 
 **The moment:** Land the pitch. Invite engagement.
 
