@@ -1,0 +1,83 @@
+// ---------------------------------------------------------------------------
+// GCP Foundation Layer — Bootstrap Flow
+// Lean diagram for use as a verbal-walkthrough background.
+//
+//   svg:  dot -Tsvg bootstrap-flow.dot -o bootstrap-flow.svg
+//   png:  dot -Tpng -Gdpi=300 bootstrap-flow.dot -o bootstrap-flow.png
+// ---------------------------------------------------------------------------
+
+digraph bootstrap_flow {
+    rankdir = TB;
+    bgcolor = "white";
+    pad = "0.5";
+    nodesep = 0.55;
+    ranksep = 0.7;
+    splines = polyline;
+
+    // Larger, calmer defaults — these need to read at a glance from across a room
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=16, margin="0.32,0.18"];
+    edge [fontname="Helvetica", fontsize=13, color="#9aa0a6", arrowsize=0.9, penwidth=1.2];
+
+    // ----- Anchor -----
+    org [label="GCP Organization",
+         shape=cylinder, fillcolor="#ffffff", color="#5f6368", penwidth=1.5, fontsize=15];
+
+    // ----- Numbered steps — short, declarative -----
+    s1 [label=<<b>1</b>  Bootstrap VM via GCP Cloud Shell>, fillcolor="#e8f0fe", color="#1967d2", penwidth=1.8];
+    s2 [label=<<b>2</b>  OpsEnv &#8212; GCP Folder>, fillcolor="#e8f0fe", color="#1967d2", penwidth=1.8];
+    s3 [label=<<b>3</b>  InfraState GCP Project>, fillcolor="#e8f0fe", color="#1967d2", penwidth=1.8];
+
+    snap [label=<<b>4</b>  VM snapshot>,       fillcolor="#fef7e0", color="#f9ab00", penwidth=1.8];
+
+    s5 [label=<<b>5</b>  Environments &#8212; GCP Folders>, fillcolor="#f3e8fd", color="#7b3ff2", penwidth=1.8];
+
+    // Env folder children (one rank)
+    subgraph cluster_envs {
+        label = "";
+        style = "invis";
+        rank = "same";
+        node [shape=folder, fillcolor="#e6f4ea", color="#188038", penwidth=1.5, fontsize=15];
+        e_sbx [label="sandbox"];
+        e_dev [label="development"];
+        e_prd [label="production"];
+        e_log [label="logs"];
+        e_shr [label="shared"];
+    }
+
+    s6 [label=<<b>6</b>  Foundation Layer>, fillcolor="#f3e8fd", color="#7b3ff2", penwidth=1.8];
+
+    // Audit log destination — visually distinct teal so the eye reads it as a
+    // sibling artefact to the Foundation Layer, not part of the build chain.
+    warehouse [label=<<B>Log Warehouse</B><BR/><FONT POINT-SIZE="13">Audit Logs</FONT>>,
+               fillcolor="#e0f7fa", color="#00838f", fontcolor="#006064", penwidth=1.8];
+
+    // Anchor the warehouse to the right of the Foundation Layer.
+    { rank = same; s6; warehouse; }
+    s6 -> warehouse [style=invis];
+
+    // ----- Edges -----
+    org -> s1 [arrowhead=none, style=dashed, color="#bdc1c6"];
+    s1 -> s2 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="5" CELLSPACING="0"><TR><TD BGCOLOR="black"><FONT COLOR="#00FF41" FACE="Courier" POINT-SIZE="12"> $ gcloud </FONT></TD></TR></TABLE>>];
+    s2 -> s3 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="5" CELLSPACING="0"><TR><TD BGCOLOR="black"><FONT COLOR="#00FF41" FACE="Courier" POINT-SIZE="12"> $ gcloud </FONT></TD></TR></TABLE>>];
+    s3 -> snap [style=dashed, color="#f9ab00"];
+    s3 -> s5 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="5" CELLSPACING="0"><TR><TD BGCOLOR="black"><FONT COLOR="#00FF41" FACE="Courier" POINT-SIZE="12"> $ terraform </FONT></TD></TR></TABLE>>, color="#7b3ff2"];
+
+    // Lock the env folders' left-to-right order: sandbox → dev → prod → logs → shared.
+    // ordering=out tells dot to lay child nodes out in the order their edges
+    // are declared, instead of reordering to minimise crossings.
+    s5 [ordering="out"];
+    s5 -> e_sbx;
+    s5 -> e_dev;
+    s5 -> e_prd;
+    s5 -> e_log;
+    s5 -> e_shr;
+
+    e_sbx -> s6;
+    e_dev -> s6;
+    e_prd -> s6;
+    e_log -> s6;
+    e_shr -> s6;
+
+    // Dotted teal edge — logs folder feeds the audit log warehouse.
+    e_log -> warehouse [style=dotted, color="#00838f", penwidth=1.5, arrowsize=0.8];
+}

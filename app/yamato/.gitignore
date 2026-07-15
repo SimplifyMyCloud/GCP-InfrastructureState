@@ -1,0 +1,12 @@
+# Compiled binary from `go build .` (shares the module dir's name). Built into
+# the container by cloudbuild — never committed.
+/yamato
+
+# Throwaway local preview of the landing page (regenerate as needed; not embedded).
+preview_landing.html
+
+# macOS Finder droppings. They get picked up by `//go:embed static` and served
+# at /static/img/.DS_Store etc. — keep them out of the binary and the repo.
+# (Closes F-4 in docs/image-security.md; the repo-root .gitignore has the same
+# rule, this one is local belt-and-suspenders.)
+.DS_Store

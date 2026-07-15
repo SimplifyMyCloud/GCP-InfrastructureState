@@ -6,6 +6,17 @@ Built using the [GCP Provider Terraform Modules](https://registry.terraform.io/p
 
 ---
 
+## 🔐 Security Checklist Handbook
+
+The **[Security Checklist Handbook](docs/security/)** is the Fort Knox playbook for this
+platform — the layered defenses (Cloud Armor → IAP → locked ingress → least-privilege →
+private data → org policy → full logging), the zero-trust/IAP model, the red-team demo
+playbook, and a business-ready **[Fort Knox pitch](docs/security/fort-knox.md)** with diagram.
+
+![Fort Knox defense-in-depth](docs/diagrams/fort-knox-defense.svg)
+
+---
+
 ## Traditional horizontal environments
 
 ![Horizontal Environment Segmentation](docs/imgs/horizontal_environments.png)

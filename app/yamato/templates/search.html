@@ -1,0 +1,30 @@
+{{template "head" .}}
+{{template "topbar" .}}
+<main class="wiki search">
+  <p class="crumb"><a href="/wiki">← Back to the Archive</a></p>
+  <h1>Search the Archive</h1>
+  <form class="search-form" method="get" action="/wiki/search" role="search">
+    <input type="search" name="q" value="{{.Query}}" placeholder="Search articles…" maxlength="200" autofocus>
+    <button type="submit">Search</button>
+  </form>
+
+  {{if .Query}}
+    {{if .Count}}
+      <p class="lede">{{.Count}} result{{if ne .Count 1}}s{{end}} for &ldquo;{{.Query}}&rdquo;.</p>
+      <ul class="entries search-results">
+        {{range .Hits}}
+        <li class="hit">
+          <a href="/wiki/{{.Slug}}">{{.Title}}</a>
+          <span class="hit-cat">{{.Category}}</span>
+          {{with .Snippet}}<p class="hit-snippet">{{.}}</p>{{end}}
+        </li>
+        {{end}}
+      </ul>
+    {{else}}
+      <p class="lede">No records matched &ldquo;{{.Query}}&rdquo;.</p>
+    {{end}}
+  {{else}}
+    <p class="lede">Enter a term to search article titles and bodies.</p>
+  {{end}}
+</main>
+{{template "foot" .}}

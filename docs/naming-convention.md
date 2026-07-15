@@ -56,22 +56,22 @@ Standard:
 [GCP docs link](https://cloud.google.com/architecture/best-practices-vpc-design#naming)
 
 Standard:
- * Company name: iq9.io: iq9
+ * Base name: iq9.io: iq9
  * Region code: europe-west3: eu-we3
  * Environment codes: sndbx, dev, test, stage, prod
 
 VPC network
- * syntax: `{company}-vpc-{environment-label}-{region}`
+ * syntax: `{base}-vpc-{environment-label}-{region}`
  * example: `iq9-vpc-prod-eu-west3`
 
 Subnet
- * syntax: `{company}-subnet-{environment-label}-{app}`
+ * syntax: `{base}-subnet-{environment-label}-{app}`
  * example: `iq9-subnet-prod-bmwapp`
 
  Firewall rule
- * syntax: `{company}-fw-{environment}-{description-label}{source-label}-{dest-label}-{protocol}-{port}-{action}`
+ * syntax: `{base}-fw-{environment}-{description-label}{source-label}-{dest-label}-{protocol}-{port}-{action}`
  * example: `iq9-fw-dev-bmwapp-internet-internal-tcp-80-allow`
 
  IP route
- * syntax: `{company}-route-{origin}-{destination}`
+ * syntax: `{base}-route-{origin}-{destination}`
  * example: `iq9-route-bmwapp-internet`

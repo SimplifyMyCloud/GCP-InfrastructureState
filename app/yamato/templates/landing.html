@@ -1,0 +1,65 @@
+{{template "head" .}}
+<main class="landing">
+  <section class="hero">
+    <!-- Hero ship image. Drop a licensed/owned image at static/img/yamato.png and it
+         shows here; until then, onerror reveals the original SVG battleship below. -->
+    <img class="hero-ship" src="/static/img/yamato.png" alt="Space Battleship Yamato"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <svg class="ship" style="display:none" viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a8b8cc"/>
+          <stop offset="0.5" stop-color="#5d6e82"/>
+          <stop offset="1" stop-color="#36435a"/>
+        </linearGradient>
+        <radialGradient id="wmg" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#ffe9c0"/>
+          <stop offset="0.4" stop-color="#ff5a3c"/>
+          <stop offset="1" stop-color="#b71c1c" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="engine" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#bfe9ff"/>
+          <stop offset="1" stop-color="#2a7fff" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="700" cy="150" rx="120" ry="32" fill="url(#engine)" opacity="0.65"/>
+      <path d="M70,150 L250,128 L620,132 L702,150 L620,172 L250,176 Z" fill="url(#steel)" stroke="#222a36" stroke-width="2"/>
+      <path d="M252,135 L612,139" stroke="#d3def0" stroke-width="1.5" opacity="0.45"/>
+      <path d="M428,132 L470,132 L466,84 L452,70 L440,84 Z" fill="url(#steel)" stroke="#222a36" stroke-width="1.5"/>
+      <rect x="446" y="90" width="16" height="5" fill="#7ee787" opacity="0.9"/>
+      <rect x="446" y="101" width="16" height="5" fill="#7ee787" opacity="0.7"/>
+      <rect x="446" y="112" width="16" height="5" fill="#7ee787" opacity="0.5"/>
+      <g fill="url(#steel)" stroke="#222a36" stroke-width="1">
+        <rect x="318" y="120" width="26" height="12" rx="2"/>
+        <rect x="360" y="118" width="26" height="12" rx="2"/>
+        <rect x="540" y="120" width="24" height="12" rx="2"/>
+      </g>
+      <g stroke="#9aa8bc" stroke-width="3" stroke-linecap="round">
+        <line x1="320" y1="123" x2="294" y2="119"/>
+        <line x1="362" y1="121" x2="336" y2="117"/>
+      </g>
+      <circle cx="80" cy="150" r="32" fill="url(#wmg)"/>
+      <circle cx="80" cy="150" r="13" fill="#160a06" stroke="#ff6a48" stroke-width="2.5"/>
+    </svg>
+
+    <h1 class="logo">STAR<b>BLAZERS</b></h1>
+    <p class="subtitle">The Voyage of Space Battleship <i>Yamato</i></p>
+    <p class="tagline">148,000 light-years to Iscandar and back — to save a dying Earth.</p>
+    <a class="cta" href="/wiki">Enter the Archive&nbsp;→</a>
+    <p class="gate-note">Beyond this point is gated by <strong>Google Cloud Identity-Aware Proxy</strong>. Sign in with your <b>@iq9.io</b> account to board.</p>
+  </section>
+
+  <section class="crew">
+    <h2>Crew of the Yamato</h2>
+    <ul class="crew-cards">
+      <li><a href="/wiki/captain-avatar"><span class="avatar"><img src="/static/img/crew/captain-avatar.jpg" alt="" onerror="this.remove()"><b>A</b></span><span class="rank">Captain</span><span class="cname">Avatar</span></a></li>
+      <li><a href="/wiki/derek-wildstar"><span class="avatar"><img src="/static/img/crew/derek-wildstar.jpg" alt="" onerror="this.remove()"><b>DW</b></span><span class="rank">Combat Group Leader</span><span class="cname">Derek Wildstar</span></a></li>
+      <li><a href="/wiki/nova"><span class="avatar"><img src="/static/img/crew/nova.jpg" alt="" onerror="this.remove()"><b>N</b></span><span class="rank">Bridge Officer</span><span class="cname">Nova</span></a></li>
+      <li><a href="/wiki/mark-venture"><span class="avatar"><img src="/static/img/crew/mark-venture.jpg" alt="" onerror="this.remove()"><b>MV</b></span><span class="rank">Navigator</span><span class="cname">Mark Venture</span></a></li>
+      <li><a href="/wiki/sandor"><span class="avatar"><img src="/static/img/crew/sandor.jpg" alt="" onerror="this.remove()"><b>S</b></span><span class="rank">Science Officer</span><span class="cname">Sandor</span></a></li>
+      <li><a href="/wiki/iq-9"><span class="avatar"><img src="/static/img/crew/iq-9.jpg" alt="" onerror="this.remove()"><b>IQ</b></span><span class="rank">Analytical Robot</span><span class="cname">IQ-9</span></a></li>
+    </ul>
+    <p class="crew-note">Full dossiers — plus the enemy files on Leader Desslok and the Gamilon Empire — are inside the archive. Sign in to access.</p>
+  </section>
+</main>
+{{template "foot" .}}

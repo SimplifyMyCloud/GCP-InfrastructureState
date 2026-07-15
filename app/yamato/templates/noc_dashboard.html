@@ -1,0 +1,150 @@
+{{template "head" .}}
+<meta http-equiv="refresh" content="{{.RefreshSecs}}">
+{{template "topbar" .}}
+<main class="noc-dash">
+  <section class="noc-dash-hero">
+    <p class="eyebrow">Defense Command · {{.Project}} · IAP @iq9.io</p>
+    <h1>YAMATO <b>NOC</b></h1>
+    <p class="subtitle">
+      <span class="live">live</span>
+      &nbsp;as of {{.AsOf}}
+      &nbsp;·&nbsp; refresh {{.RefreshSecs}}s
+    </p>
+  </section>
+
+  <section class="noc-dash-grid">
+
+    {{/* TILE: blocks in the last 1h and 24h */}}
+    <article class="noc-dash-tile k-counts">
+      <h2 class="t-label">Edge blocks</h2>
+      {{if .Counts.Available}}
+        <div class="t-twin">
+          <div class="t-twin-cell">
+            {{if .Counts.Last1hAvailable}}
+              <span class="t-num{{if gt .Counts.Last1h 0}} t-num-hot{{end}}">{{.Counts.Last1h}}</span>
+            {{else}}
+              <span class="t-num t-num-dash" title="1h window unavailable on this refresh">—</span>
+            {{end}}
+            <span class="t-sub">last 1h</span>
+          </div>
+          <div class="t-twin-cell">
+            {{if .Counts.Last24hAvailable}}
+              <span class="t-num{{if gt .Counts.Last24h 0}} t-num-hot{{end}}">{{.Counts.Last24h}}</span>
+            {{else}}
+              <span class="t-num t-num-dash" title="24h window unavailable on this refresh">—</span>
+            {{end}}
+            <span class="t-sub">last 24h</span>
+          </div>
+        </div>
+        {{with .Counts.Error}}<p class="t-note t-note-warn">{{.}}</p>{{end}}
+      {{else}}
+        <p class="t-empty">Logs unavailable — retry on next refresh.</p>
+      {{end}}
+    </article>
+
+    {{/* TILE: top 5 source IPs */}}
+    <article class="noc-dash-tile k-ips">
+      <h2 class="t-label">Top source IPs · 24h</h2>
+      {{if .TopIPs.Available}}
+        {{if .TopIPs.Empty}}
+          <p class="t-empty">No activity in the last 24h.</p>
+        {{else}}
+          <ol class="t-list">
+            {{range .TopIPs.Rows}}
+              <li><span class="t-key">{{.Key}}</span><span class="t-count">{{.Count}}</span></li>
+            {{end}}
+          </ol>
+        {{end}}
+      {{else}}
+        <p class="t-empty">{{.TopIPs.Error}}</p>
+      {{end}}
+    </article>
+
+    {{/* TILE: top 5 probed URLs */}}
+    <article class="noc-dash-tile k-urls">
+      <h2 class="t-label">Top probed URLs · 24h</h2>
+      {{if .TopURLs.Available}}
+        {{if .TopURLs.Empty}}
+          <p class="t-empty">No activity in the last 24h.</p>
+        {{else}}
+          <ol class="t-list">
+            {{range .TopURLs.Rows}}
+              <li><span class="t-key t-key-mono">{{.Key}}</span><span class="t-count">{{.Count}}</span></li>
+            {{end}}
+          </ol>
+        {{end}}
+      {{else}}
+        <p class="t-empty">{{.TopURLs.Error}}</p>
+      {{end}}
+    </article>
+
+    {{/* TILE: top WAF rule priorities firing */}}
+    <article class="noc-dash-tile k-priors">
+      <h2 class="t-label">Top WAF rule priorities · 24h</h2>
+      {{if .TopPriors.Available}}
+        {{if .TopPriors.Empty}}
+          <p class="t-empty">No activity in the last 24h.</p>
+        {{else}}
+          <ol class="t-list">
+            {{range .TopPriors.Rows}}
+              <li><span class="t-key t-key-mono">priority {{.Key}}</span><span class="t-count">{{.Count}}</span></li>
+            {{end}}
+          </ol>
+        {{end}}
+      {{else}}
+        <p class="t-empty">{{.TopPriors.Error}}</p>
+      {{end}}
+    </article>
+
+    {{/* TILE: honeypot tripwire hits — Layer 0 lure on the public service */}}
+    <article class="noc-dash-tile k-tripwire">
+      <h2 class="t-label">Tripwire hits · 24h</h2>
+      {{if .Tripwire.Available}}
+        <div class="t-twin">
+          <div class="t-twin-cell">
+            <span class="t-num{{if gt .Tripwire.Total 0}} t-num-trip{{end}}">{{.Tripwire.Total}}</span>
+            <span class="t-sub">honeypot hits</span>
+          </div>
+        </div>
+        {{if .Tripwire.Empty}}
+          <p class="t-empty">No tripwires sprung in the last 24h.</p>
+        {{else}}
+          <ol class="t-list">
+            {{range .Tripwire.Rows}}
+              <li><span class="t-key t-key-mono">{{.Key}}</span><span class="t-count">{{.Count}}</span></li>
+            {{end}}
+          </ol>
+        {{end}}
+      {{else}}
+        <p class="t-empty">{{.Tripwire.Error}}</p>
+      {{end}}
+    </article>
+
+    {{/* TILE: alert policy state board (9 policies in dev) */}}
+    <article class="noc-dash-tile k-alerts t-wide">
+      <h2 class="t-label">Alert policies · live state</h2>
+      {{if .Alerts.Available}}
+        {{if .Alerts.Empty}}
+          <p class="t-empty">No alert policies configured on this project.</p>
+        {{else}}
+          <ul class="t-alerts">
+            {{range .Alerts.Rows}}
+              <li class="t-alert-row {{.ColorClass}}">
+                <span class="t-alert-dot" aria-hidden="true"></span>
+                <span class="t-alert-name">{{.DisplayName}}</span>
+                <span class="t-alert-state">
+                  {{if .Enabled}}enabled{{else}}DISABLED{{end}}
+                </span>
+                {{with .LastChange}}<span class="t-alert-when">last changed {{.}}</span>{{end}}
+              </li>
+            {{end}}
+          </ul>
+        {{end}}
+      {{else}}
+        <p class="t-empty">{{.Alerts.Error}}</p>
+      {{end}}
+    </article>
+
+  </section>
+</main>
+{{template "foot" .}}

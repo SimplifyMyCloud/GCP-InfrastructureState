@@ -1,1 +1,0 @@
-# Foundation Layer - GCP Projects - GCP Logging Layer - Log Warehouse

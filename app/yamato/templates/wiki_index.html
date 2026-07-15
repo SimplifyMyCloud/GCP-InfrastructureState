@@ -1,0 +1,23 @@
+{{template "head" .}}
+{{template "topbar" .}}
+<main class="wiki">
+  <h1>The Archive</h1>
+  <p class="lede">Records recovered aboard the Space Battleship Yamato.</p>
+  <form class="search-form" method="get" action="/wiki/search" role="search">
+    <input type="search" name="q" placeholder="Search the archive…" maxlength="200">
+    <button type="submit">Search</button>
+  </form>
+  {{range .Groups}}
+  <section class="group">
+    <h2>{{.Category}}</h2>
+    <ul class="entries">
+      {{range .Articles}}
+      <li><a href="/wiki/{{.Slug}}">{{.Title}}</a></li>
+      {{end}}
+    </ul>
+  </section>
+  {{else}}
+  <p class="lede">The archive is empty.</p>
+  {{end}}
+</main>
+{{template "foot" .}}
