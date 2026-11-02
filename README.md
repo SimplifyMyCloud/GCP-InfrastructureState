@@ -27,6 +27,8 @@ gcp_provider.tf              the ONE shared provider file, symlinked into every 
 
 Repo layout: [`foundation/`](foundation/) (live) · [`service/`](service/) (no apps deployed today) · [`app/`](app/), [`redteam/`](redteam/), [`Bootstrap/`](Bootstrap/) (iq9-era, historical) · [`docs/`](docs/).
 
+Every directory has a `readme.md`, with one exception: [`.github/`](.github/) uses [`about.md`](.github/about.md). GitHub shows a README in `.github/` as the repo's front page in place of this file, so that folder must not have one.
+
 ---
 
 ## 🔐 Security Checklist Handbook
