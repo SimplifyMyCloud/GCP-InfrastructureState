@@ -53,7 +53,7 @@ flowchart TD
   dev["smc-dev<br/>922883963214"]
   prod["smc-prod<br/>386439801809"]
   org --> ops & dev & prod
-  ops --> o1["smc-ops<br/>TF state bucket · TF SAs · smc-dev log bucket"]
+  ops --> o1["smc-ops<br/>TF state bucket · TF SA · org log archive · smc-dev log bucket"]
   dev --> d1["simplifymycloud-dev<br/>the dev / lab project"]
   prod --> p1["smc-prod-simplifymycloud<br/>simplifymy.cloud DNS + site"]
   prod --> p2["smc-prod-bbmrc"]
@@ -200,3 +200,14 @@ The rule for this import was **match GCP exactly**, so known problems were impor
 4. Apply (imports only) and re-plan to `No changes`.
 
 The only things created or changed in GCP during the import: the `smc-tf-foundation-sa` SA, the `smc-ops-tf-state` bucket, the SA's org grants and impersonation grant, 33 management APIs on smc-ops, and the **removal** of 10 leftover `iq9-bootstrap-sa` org grants.
+
+**Hardening after the import (2026-11-02).** Each item is a normal plan → apply, and the last three each ran in their own change window, so `git log` shows the open, apply and close commits:
+
+| Change | Finding |
+| --- | --- |
+| `smc-tf-foundation-sa` made plan-only; change windows introduced | #3 |
+| SSH/RDP from 0.0.0.0/0 deleted (5 prod VPCs + dev's `smc-fw-public-22`) | #2 |
+| `smc-ops-tf-org-admin` stage 1: org-admin binding removed, SA and its user key disabled | #1 |
+| Org-wide log archive sink + bucket; dev log retention 3 → 30 days | #4, #5 |
+
+After each change, all 56 directories re-planned to `No changes`.

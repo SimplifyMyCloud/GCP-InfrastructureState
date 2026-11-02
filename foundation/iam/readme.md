@@ -1,7 +1,7 @@
 <!-- hand-written -->
 # foundation/iam
 
-Who can do what. `iam/gcp-org/` holds org-level grants, the 3 custom roles, the org audit config and the Terraform SA's deploy grants. `iam/<env>/` holds folder-level grants (inherited by every project in that folder). `iam/<env>/<project>/` holds the project's service accounts and project-level grants. Every grant is a `google_*_iam_member` (additive): Terraform owns exactly the listed grants.
+Who can do what. `iam/gcp-org/` holds org-level grants, the 3 custom roles, the org audit config and the Terraform SA's grants (plan-only, plus the change-window switch; see `foundation/readme.md` section 4). `iam/<env>/` holds folder-level grants (inherited by every project in that folder). `iam/<env>/<project>/` holds the project's service accounts and project-level grants. Every grant is a `google_*_iam_member` (additive): Terraform owns exactly the listed grants.
 
 State for any directory below: `gs://smc-ops-tf-state/terraform/state/foundation/iam/<same path>/default.tfstate`.
 

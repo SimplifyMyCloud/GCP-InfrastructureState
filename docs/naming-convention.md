@@ -48,7 +48,7 @@ Actual:
 
 ## Service accounts
 
-`{base}-{purpose}-sa`, e.g. `smc-tf-foundation-sa` (the Terraform identity). `smc-ops-tf-org-admin` predates this and is due to be retired.
+`{base}-{purpose}-sa`, e.g. `smc-tf-foundation-sa` (the Terraform identity). `smc-ops-tf-org-admin` predates this; it was disabled 2026-11-02 and is due for deletion on or after 2026-12-02.
 
 ## GCS buckets
 
@@ -87,7 +87,7 @@ Subnet
 Firewall rule
  * syntax: `{base}-fw-{environment}-{description-label}-{source-label}-{dest-label}-{protocol}-{port}-{action}`
  * example: `smc-fw-dev-gitlab-internet-internal-tcp-443-allow`
- * existing: `smc-fw-iap-22`, `smc-fw-public-22` (short form); Google's `default-allow-*` rules
+ * existing: `smc-fw-iap-22` (short form); Google's `default-allow-*` rules (SSH/RDP ones deleted 2026-11-02)
 
 IP route
  * syntax: `{base}-route-{origin}-{destination}`

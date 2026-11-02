@@ -6,7 +6,7 @@ IAM for the **smc-ops** project: its service accounts and its project-level IAM 
 | | |
 | --- | --- |
 | Terraform state | `gs://smc-ops-tf-state/terraform/state/foundation/iam/smc-ops/smc-ops/default.tfstate` |
-| Imported | 2026-11-01, 9 resources + 1 new grant, zero-diff plan |
+| Imported | 2026-11-01, 9 resources, zero-diff plan; since then 3 new grants (chris@ tokenCreator, state-bucket objectAdmin, log-archive objectCreator) and 1 removed (org-admin binding) |
 | Style | `google_project_iam_member`: one resource per role + member (additive) |
 
 ## What's in here

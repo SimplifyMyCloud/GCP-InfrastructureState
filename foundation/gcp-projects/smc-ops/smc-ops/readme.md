@@ -9,7 +9,7 @@ The **smc-ops** project: the SRE/operations project that holds the Terraform sta
 | Folder | `smc-ops` (`714502724732`) |
 | Billing | `000000-000002-6D3BF8` (simplifymycloud-billing-main) |
 | Terraform state | `gs://smc-ops-tf-state/terraform/state/foundation/gcp-projects/smc-ops/smc-ops/default.tfstate` |
-| Imported | 2026-11-01, 33 resources; 33 management APIs added since |
+| Imported | 2026-11-01, 33 resources; since then 33 management APIs and the `smc-ops-log-archive` bucket added |
 
 ## What's in here
 
