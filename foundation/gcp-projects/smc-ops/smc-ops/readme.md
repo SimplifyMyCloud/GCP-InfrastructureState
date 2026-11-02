@@ -17,7 +17,7 @@ The **smc-ops** project: the SRE/operations project that holds the Terraform sta
 | --- | --- |
 | `gcp_projects_smc_ops.tf` | `google_project.smc_ops` (`deletion_policy = "PREVENT"`) |
 | `gcp_projects_smc_ops_apis.tf` | enabled APIs in two hardcoded lists: the 25 found at import, plus 33 **management APIs** added because calls made as `smc-tf-foundation-sa` bill quota to smc-ops |
-| `gcp_projects_smc_ops_storage.tf` | `gs://smc-ops-tf-state`, the bucket holding **every** state file in the repo (`prevent_destroy`) |
+| `gcp_projects_smc_ops_storage.tf` | `gs://smc-ops-tf-state`, the bucket holding **every** state file in the repo; `gs://smc-ops-log-archive`, the Org's cold log archive (Archive class, 365-day delete, new 2026-11-02). Both `prevent_destroy` |
 | `gcp_projects_smc_ops_monitoring.tf` | 3 security log-metrics, 2 alert policies, 1 email notification channel |
 | `gcp_projects_smc_ops_gcs_backend.tf` | this directory's state location (hardcoded) |
 | `gcp_provider.tf` | symlink to the repo-root `gcp_provider.tf` |
@@ -41,4 +41,4 @@ terraform plan     # expected: No changes (after the first apply)
 
 - The security log-metrics only see logs that land in **smc-ops**. They don't cover the whole org.
 - `custom-role-change` has a metric but no alert policy.
-- The `smc-dev-env-logging` bucket keeps logs for only **3 days** (see `logging/`).
+- ✅ Fixed 2026-11-02: `smc-dev-env-logging` now keeps logs for 30 days (see `logging/`).

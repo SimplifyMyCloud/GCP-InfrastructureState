@@ -11,7 +11,7 @@ Log buckets and project log sinks inside the **smc-ops** project.
 ## Log flow
 
 ```
-smc-dev folder (all projects)  ── smc-dev-env-log-sink ──►  smc-dev-env-logging   us-west1 · 3 days · Log Analytics
+smc-dev folder (all projects)  ── smc-dev-env-log-sink ──►  smc-dev-env-logging   us-west1 · 30 days · Log Analytics
 smc-ops project                ── _Required sink ────────►  _Required bucket      400 days · locked by Google
                                └─ _Default sink ─────────►  _Default bucket       30 days
 ```
@@ -30,4 +30,4 @@ The `smc-dev-env-log-sink` sink itself is owned by `logging/smc-dev/`. Its permi
 
 ## Findings (imported as-is, fix later)
 
-- `smc-dev-env-logging` keeps the whole smc-dev folder's logs for **3 days**. That's too short for incident review.
+- ✅ Fixed 2026-11-02: `smc-dev-env-logging` retention raised from 3 to **30 days**.

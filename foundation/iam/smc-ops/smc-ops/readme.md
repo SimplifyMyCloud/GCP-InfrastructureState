@@ -16,6 +16,7 @@ IAM for the **smc-ops** project: its service accounts and its project-level IAM 
 | `iam_smc_ops_service_accounts.tf` | `smc-tf-foundation-sa` (the new dedicated Terraform SA) and `smc-ops-tf-org-admin` (pre-existing), plus who may act as them: chris@ is `serviceAccountTokenCreator` on `smc-tf-foundation-sa` (new, enables impersonation) and `serviceAccountAdmin`/`serviceAccountUser` on `smc-ops-tf-org-admin` (imported) |
 | `iam_smc_ops_project.tf` | 4 project IAM bindings, including 1 with an IAM condition |
 | `iam_smc_ops_state_bucket.tf` | `storage.objectAdmin` for `smc-tf-foundation-sa` on `gs://smc-ops-tf-state` (new 2026-11-02): the plan-only SA still has to write state-lock objects |
+| `iam_smc_ops_log_archive_bucket.tf` | `storage.objectCreator` on `gs://smc-ops-log-archive` for the org sink's writer identity `service-org-933250405420@gcp-sa-logging` (new 2026-11-02) |
 | `iam_smc_ops_gcs_backend.tf` | this directory's state location |
 | `gcp_provider.tf` | symlink to the repo-root `gcp_provider.tf` |
 
