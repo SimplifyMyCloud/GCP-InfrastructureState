@@ -6,7 +6,7 @@ Terraform for the **simplifymy.cloud Org** (`933250405420`): IAM: service accoun
 | --- | --- |
 | GCP node | the **simplifymy.cloud Org** (`933250405420`) |
 | Terraform state | `gs://smc-ops-tf-state/terraform/state/foundation/iam/gcp-org/default.tfstate` |
-| Imported | 2026-11-01/02 from the live Org, 10 resources, zero-diff plan |
+| Imported | 2026-11-01/02 from the live Org, 13 resources, zero-diff plan |
 
 ## Resources
 
@@ -14,7 +14,7 @@ Terraform for the **simplifymy.cloud Org** (`933250405420`): IAM: service accoun
 | --- | --- |
 | `google_organization_iam_audit_config` | 1 |
 | `google_organization_iam_custom_role` | 3 |
-| `google_organization_iam_member` | 6 |
+| `google_organization_iam_member` | 9 |
 
 ## Files
 
@@ -25,7 +25,7 @@ Terraform for the **simplifymy.cloud Org** (`933250405420`): IAM: service accoun
 | `iam_gcp_org_custom_roles.tf` | org-level custom roles |
 | `iam_gcp_org_gcs_backend.tf` | this directory's state location (hardcoded) |
 | `iam_gcp_org_members.tf` | organization IAM bindings (simplifymy.cloud, 933250405420) |
-| `iam_gcp_org_tf_foundation_sa.tf` | smc-tf-foundation-sa deployment grants |
+| `iam_gcp_org_tf_foundation_sa.tf` | smc-tf-foundation-sa org grants |
 
 Each resource's `import {}` block sits right under it. After the first apply they are no-ops, kept as a record of where each resource came from.
 

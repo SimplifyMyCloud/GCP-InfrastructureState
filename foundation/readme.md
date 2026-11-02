@@ -122,9 +122,25 @@ cd foundation/<slice>/<path> && terraform init && terraform plan
 - **One backend file per directory** (`*_gcs_backend.tf`), hardcoded, with the prefix equal to the git path.
 - **Quota project = smc-ops.** API calls made *as* the SA are billed to smc-ops, so every Google API that Terraform touches anywhere must be enabled on smc-ops ([`gcp_projects_smc_ops_apis.tf`](gcp-projects/smc-ops/smc-ops/gcp_projects_smc_ops_apis.tf), the `added` list).
 
-### Making the SA read-only (the next step after this import)
+### The SA is plan-only; applies happen in change windows
 
-During the import the SA holds **broad org roles** (`roles/owner`, `organizationAdmin`, `orgpolicy.policyAdmin`, `billing.user`, `iam.organizationRoleAdmin`; see [`iam/gcp-org/iam_gcp_org_tf_foundation_sa.tf`](iam/gcp-org/iam_gcp_org_tf_foundation_sa.tf)). The plan is to replace that set with read-only roles so the SA can `plan` but never `apply`. That change is a normal PR to that one file.
+Since 2026-11-02 `smc-tf-foundation-sa` is **read-only** at the Org ([`iam/gcp-org/iam_gcp_org_tf_foundation_sa.tf`](iam/gcp-org/iam_gcp_org_tf_foundation_sa.tf)):
+
+| Grant | Where | Why |
+| --- | --- | --- |
+| `roles/viewer`, `iam.securityReviewer`, `orgpolicy.policyViewer`, `iam.organizationRoleViewer`, `browser`, `firebaserules.viewer`, `storage.bucketViewer` | Org | `terraform plan` can read every resource and IAM policy. The last two cover reads that `viewer` doesn't: Firebase rulesets, and buckets whose own IAM hides them |
+| `roles/storage.objectAdmin` | bucket `smc-ops-tf-state` only ([`iam/smc-ops/smc-ops/`](iam/smc-ops/smc-ops/iam_smc_ops_state_bucket.tf)) | even a plan writes a lock object |
+
+So anyone (or CI) impersonating the SA can `plan` anywhere, but an `apply` fails with permission denied.
+
+**Change windows.** To apply a Foundation change, chris@ opens a window, the SA applies, and chris@ closes the window:
+
+1. In `iam_gcp_org_tf_foundation_sa.tf` set `tf_foundation_sa_write_roles = local.tf_foundation_sa_change_window_roles` (owner, organizationAdmin, orgpolicy.policyAdmin, billing.user, organizationRoleAdmin).
+2. Apply `iam/gcp-org` **as chris@**: `unset GOOGLE_IMPERSONATE_SERVICE_ACCOUNT GOOGLE_BACKEND_IMPERSONATE_SERVICE_ACCOUNT`. The SA can't grant itself roles, and if it applied its own role change it could lose organizationAdmin halfway through.
+3. Wait about a minute for IAM to take effect, then plan and apply the change as the SA.
+4. Set the list back to `toset([])` and apply `iam/gcp-org` as chris@ again. `plan` → `No changes`.
+
+The window's open and close both show up in git and in the Org's audit log.
 
 ---
 
@@ -166,7 +182,7 @@ The rule for this import was **match GCP exactly**, so known problems were impor
 | --- | --- | --- |
 | 1 | `smc-ops-tf-org-admin` SA: **org admin + 2 user-managed keys**; now redundant with `smc-tf-foundation-sa` | [`iam/smc-ops/smc-ops/`](iam/smc-ops/smc-ops/) |
 | 2 | `default-allow-ssh` (22) and `default-allow-rdp` (3389) **open to 0.0.0.0/0** in 5 prod projects; `smc-fw-public-22` in dev | [`firewalls/`](firewalls/) |
-| 3 | `smc-tf-foundation-sa` holds **temporary org `roles/owner`** until the read-only switch | [`iam/gcp-org/`](iam/gcp-org/) |
+| 3 | ✅ Fixed 2026-11-02: `smc-tf-foundation-sa` is plan-only; write roles only in a change window (section 4) | [`iam/gcp-org/`](iam/gcp-org/) |
 | 4 | `smc-dev-env-logging` keeps the whole smc-dev folder's logs for **3 days** | [`logging/smc-ops/smc-ops/`](logging/smc-ops/smc-ops/) |
 | 5 | No org-wide aggregated log sink. Only smc-dev is centralised | [`logging/gcp-org/`](logging/gcp-org/) |
 | 6 | Firebase "Server key" API keys with **no restrictions** | `gcp-projects/smc-prod/*/` readmes |

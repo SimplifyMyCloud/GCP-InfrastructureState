@@ -9,42 +9,27 @@
 #
 # Authentication model
 # --------------------
-# Every foundation Terraform run authenticates as the long-lived
-# iq9-tf-foundation-sa service account, but the SA email is never named
-# inside any *.tf file. Identity is resolved at runtime by Application
-# Default Credentials (ADC) — neither the provider blocks below nor any
-# backend file pins a service account by string. Two paths reach the SA:
+# Every foundation Terraform run authenticates as smc-tf-foundation-sa
+# (project smc-ops), but the SA email is never named inside any *.tf file.
+# Identity is chosen at RUNTIME: chris@ (who holds
+# roles/iam.serviceAccountTokenCreator on the SA) impersonates it via two
+# env vars, one for the provider and one for the GCS backend:
 #
-#   1. Runner VM (`iq9-tf-runner` in `iq9-ops-iac`) — the foundation SA is
-#      attached to the VM as its identity. The Google SDK auto-detects the
-#      GCE metadata server (169.254.169.254) and fetches a token for the
-#      attached SA. Both the provider and the GCS backend pick it up. No
-#      env vars, no flags, no per-state config.
+#   export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=smc-tf-foundation-sa@smc-ops.iam.gserviceaccount.com
+#   export GOOGLE_BACKEND_IMPERSONATE_SERVICE_ACCOUNT=$GOOGLE_IMPERSONATE_SERVICE_ACCOUNT
 #
-#   2. Developer laptop — one gcloud command writes the impersonation
-#      directly into ADC:
-#
-#        gcloud auth application-default login \
-#          --impersonate-service-account=iq9-tf-foundation-sa@iq9-ops-iac.iam.gserviceaccount.com
-#
-#      gcloud stores the impersonation chain in
-#      ~/.config/gcloud/application_default_credentials.json, the SDK reads
-#      it transparently, and the same ADC source is used by the provider
-#      AND the GCS backend. The developer must hold
-#      roles/iam.serviceAccountTokenCreator on the foundation SA (granted
-#      only to the foundation reviewers group).
+# The SA is PLAN-ONLY at the Org. It can apply only during a change window
+# that chris@ opens in foundation/iam/gcp-org/ (see foundation/readme.md,
+# section 4). API calls made as the SA bill to smc-ops (its quota project),
+# so the APIs Terraform uses must be enabled there.
 #
 # Why not `impersonate_service_account` in the backend or provider? Pinning
-# the SA email by string in a *.tf file would (a) burn the identity into
-# git history forever, (b) couple the runtime identity to the IaC source
-# rather than to the runner environment, and (c) break VM runs because the
-# SA would have to impersonate itself, which requires tokenCreator on
-# itself. Letting ADC handle it keeps the IaC unaware of which identity is
-# making the call — the runner determines who you are.
+# the SA email in a *.tf file couples the runtime identity to the IaC source;
+# leaving it to the environment lets the same code run as chris@, as the SA,
+# or later from CI.
 #
-# No service-account keys exist anywhere. Org policy
-# iam.disableServiceAccountKeyCreation blocks creation; auth is always
-# token-based.
+# No service-account keys: org policy iam.disableServiceAccountKeyCreation
+# blocks creating them, and auth is always token-based.
 
 terraform {
   required_version = "~> 1.10"

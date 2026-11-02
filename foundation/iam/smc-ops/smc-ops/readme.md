@@ -15,6 +15,7 @@ IAM for the **smc-ops** project: its service accounts and its project-level IAM 
 | --- | --- |
 | `iam_smc_ops_service_accounts.tf` | `smc-tf-foundation-sa` (the new dedicated Terraform SA) and `smc-ops-tf-org-admin` (pre-existing), plus who may act as them: chris@ is `serviceAccountTokenCreator` on `smc-tf-foundation-sa` (new, enables impersonation) and `serviceAccountAdmin`/`serviceAccountUser` on `smc-ops-tf-org-admin` (imported) |
 | `iam_smc_ops_project.tf` | 5 project IAM bindings, including 1 with an IAM condition |
+| `iam_smc_ops_state_bucket.tf` | `storage.objectAdmin` for `smc-tf-foundation-sa` on `gs://smc-ops-tf-state` (new 2026-11-02): the plan-only SA still has to write state-lock objects |
 | `iam_smc_ops_gcs_backend.tf` | this directory's state location |
 | `gcp_provider.tf` | symlink to the repo-root `gcp_provider.tf` |
 
@@ -33,4 +34,4 @@ Being additive means Terraform manages these bindings and nothing else on the po
 ## Findings (imported as-is, fix later)
 
 - **`smc-ops-tf-org-admin` holds org admin and has 2 user-managed keys** (`2603638549a0…`, `6b59a9c6ae62…`). It overlaps with the new `smc-tf-foundation-sa`. Recommend retiring it once the new SA is live: delete the keys, then the binding, then the SA.
-- `smc-tf-foundation-sa` holds **temporary broad org roles** (owner, organizationAdmin, ...; see `iam/gcp-org/`) until it is switched to read-only.
+- ✅ Fixed 2026-11-02: `smc-tf-foundation-sa` is now **plan-only** at the Org (read roles in `iam/gcp-org/`); its only write is objects in the state bucket. It gets write roles only during a change window (see `foundation/readme.md`).
