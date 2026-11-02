@@ -63,7 +63,7 @@ The developer's `article_image_map` claims `copied-from-crew` for six entries an
 | `nova` | `static/img/crew/nova.jpg` | `4595a8c…707a37` (matches) |
 | `sandor` | `static/img/crew/sandor.jpg` | `bfcca7f…b349780` (matches) |
 
-All six "copy" claims are byte-identical to their source — no silent re-encode, no EXIF mangling, no tool tampering. The ship image is a `sips`-transcoded derivative of the already-shipped `yamato.png` hero and is therefore covered by whatever licensing chain that file is under (per `app/yamato/static/img/README.md`, "owned/licensed/original-derivative only"). The remaining 8 slugs ship no image — `wave-motion-engine`, `wave-motion-gun`, `cosmo-dna`, `the-mission`, `iscandar`, `queen-starsha`, `leader-desslok`, `gamilon-empire` — and the `onerror` removes their figure, which is the right call: no franchise stills were introduced. **Clean.**
+All six "copy" claims are byte-identical to their source — no silent re-encode, no EXIF mangling, no tool tampering. The ship image is a `sips`-transcoded derivative of the already-shipped `yamato.png` hero and is therefore covered by whatever licensing chain that file is under (per `app/yamato/static/img/readme.md`, "owned/licensed/original-derivative only"). The remaining 8 slugs ship no image — `wave-motion-engine`, `wave-motion-gun`, `cosmo-dna`, `the-mission`, `iscandar`, `queen-starsha`, `leader-desslok`, `gamilon-empire` — and the `onerror` removes their figure, which is the right call: no franchise stills were introduced. **Clean.**
 
 ### F-7 — embedded payload growth is well within Cloud Run budget (info)
 
@@ -127,7 +127,7 @@ None of this applies today. Documenting it here so that the first PR that propos
 
 - `app/yamato/app.go` — `staticFS` embed, the `GET /static/` mount, and the post-fix `staticHandler` wrapper.
 - `app/yamato/templates/article.html` — the `<figure class="article-portrait">` block.
-- `app/yamato/static/img/README.md` — the maintainer-facing rules for what art can be dropped in.
+- `app/yamato/static/img/readme.md` — the maintainer-facing rules for what art can be dropped in.
 - `app/yamato/.gitignore` — the local `.DS_Store` rule added by the F-4 fix.
 - `docs/infrastructurestate.md` — the Service / Application Layer boundary that explains why this is an app-layer change with no Terraform touched.
 - `docs/security/zero-trust-iap.md` — what *is* gated by IAP, and what (like `/static/*`) is intentionally not.

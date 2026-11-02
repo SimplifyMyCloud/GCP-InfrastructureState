@@ -498,7 +498,7 @@ cd GCP-InfrastructureState/foundation/gcp-folders
 terraform init
 terraform plan
 terraform apply
-# ...repeat for each foundation directory in the order in foundation/README.md
+# ...repeat for each foundation directory in the order in foundation/readme.md
 ```
 
 The Foundation Layer creates `iq9-ops-observability`, `iq9-ops-bakery`, `sandbox`, `dev`, `prod`, plus all networks, firewalls, IAM bindings, and additional logging configuration.

@@ -123,4 +123,4 @@ Once the ops env is fully deployed (`iq9-ops-iac` joined by `iq9-ops-observabili
 | --- | --- |
 | `bootstrap-checklist.md` | Pilot-style pre-flight checklist of every step in order. Tick each box as you go. |
 | `bootstrap-playbook.md` | The actual `gcloud` command runbook with copy-pasteable commands. |
-| `README.md` | This file — the goal of the bootstrap and how it fits into the larger picture. |
+| `readme.md` | This file — the goal of the bootstrap and how it fits into the larger picture. |

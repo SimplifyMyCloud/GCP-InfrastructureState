@@ -104,7 +104,7 @@ Pilot's pre-flight. One pass, top to bottom. Every box ticked before moving to t
 
 - [ ] SSH'd into `iq9-tf-runner` via IAP
 - [ ] Cloned `GCP-InfrastructureState` repo on the VM
-- [ ] Foundation directories applied in dependency order (see `foundation/README.md`)
+- [ ] Foundation directories applied in dependency order (see `foundation/readme.md`)
 - [ ] All `terraform apply` runs succeeded — zero diff on a re-plan
 
 ---

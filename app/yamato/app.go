@@ -93,7 +93,7 @@ func (a *app) routes() http.Handler {
 
 // allowedImageExts is the whitelist of file extensions served under /static/img/.
 // The article template hardcodes `.jpg` and the maintainer rules in
-// static/img/README.md call for raster portraits only, so the directory should
+// static/img/readme.md call for raster portraits only, so the directory should
 // never serve HTML, JS, or SVG (SVG can carry <script> that runs when referenced
 // outside an <img> tag — see docs/image-security.md F-2). Anything outside this
 // list under /static/img/ is rejected with 404 before the FileServer sees it.

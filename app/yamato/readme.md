@@ -71,7 +71,7 @@ schema.sql     DDL + Star Blazers seed (embedded); also the `tsv` column,
 templates/     html/template pages (auto-escaped) — includes search.html and
                noc_dashboard.html
 static/        style.css (Star Blazers theme); img/ drop-in art (hero ship +
-               crew avatars) with graceful fallbacks — see static/img/README.md
+               crew avatars) with graceful fallbacks — see static/img/readme.md
 Dockerfile     multi-stage -> distroless static, nonroot
 cloudbuild.yaml build + push to Artifact Registry
 ```
@@ -81,7 +81,7 @@ The landing page references `static/img/yamato.png` (hero) and
 an inline SVG battleship, each avatar to an initials badge — so the page looks
 complete even with no images present. Drop in art you have the rights to (licensed
 or owned); the built-in placeholders are original. Details in
-[`static/img/README.md`](static/img/README.md).
+[`static/img/readme.md`](static/img/readme.md).
 
 ## Build & deploy
 
