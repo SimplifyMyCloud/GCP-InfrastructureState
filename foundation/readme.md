@@ -181,7 +181,7 @@ The rule for this import was **match GCP exactly**, so known problems were impor
 
 | # | Finding | Where |
 | --- | --- | --- |
-| 1 | `smc-ops-tf-org-admin` SA: **org admin + 2 user-managed keys**; now redundant with `smc-tf-foundation-sa` | [`iam/smc-ops/smc-ops/`](iam/smc-ops/smc-ops/) |
+| 1 | ⏳ Retiring: `smc-ops-tf-org-admin` had org admin and 1 user-managed key. Stage 1 done 2026-11-02 (binding removed, SA and key disabled); stage 2 deletes them on or after 2026-12-02 | [`iam/smc-ops/smc-ops/`](iam/smc-ops/smc-ops/) |
 | 2 | ✅ Fixed 2026-11-02: `default-allow-ssh`/`-rdp` (0.0.0.0/0) deleted in 5 prod projects and `smc-fw-public-22` in dev. SSH is IAP-only (dev); a new prod VM's PR must add an IAP-only SSH rule | [`firewalls/`](firewalls/) |
 | 3 | ✅ Fixed 2026-11-02: `smc-tf-foundation-sa` is plan-only; write roles only in a change window (section 4) | [`iam/gcp-org/`](iam/gcp-org/) |
 | 4 | `smc-dev-env-logging` keeps the whole smc-dev folder's logs for **3 days** | [`logging/smc-ops/smc-ops/`](logging/smc-ops/smc-ops/) |

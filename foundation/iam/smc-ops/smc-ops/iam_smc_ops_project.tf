@@ -15,8 +15,8 @@ locals {
     "roles/cloudaicompanion.serviceAgent service-328135394383@gcp-sa-cloudaicompanion" = { role = "roles/cloudaicompanion.serviceAgent", member = "serviceAccount:service-328135394383@gcp-sa-cloudaicompanion.iam.gserviceaccount.com" }
     "roles/cloudsecuritycompliance.serviceAgent service-328135394383@gcp-sa-csc-hpsa"  = { role = "roles/cloudsecuritycompliance.serviceAgent", member = "serviceAccount:service-328135394383@gcp-sa-csc-hpsa.iam.gserviceaccount.com" }
     "roles/owner chris@simplifymy.cloud"                                               = { role = "roles/owner", member = "user:chris@simplifymy.cloud" }
-    # ⚠️ Finding: org admin granted at PROJECT scope to a keyed SA.
-    "roles/resourcemanager.organizationAdmin smc-ops-tf-org-admin" = { role = "roles/resourcemanager.organizationAdmin", member = "serviceAccount:smc-ops-tf-org-admin@smc-ops.iam.gserviceaccount.com" }
+    # 2026-11-02: roles/resourcemanager.organizationAdmin for smc-ops-tf-org-admin
+    # REMOVED (SA being retired; see iam_smc_ops_service_accounts.tf).
   }
 }
 

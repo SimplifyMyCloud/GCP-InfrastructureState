@@ -7,9 +7,17 @@
 #                          2026-11-01. After the first full import/apply it is made
 #                          read-only (plan-only); see foundation/readme.md.
 #
-#   smc-ops-tf-org-admin   PRE-EXISTING. Holds roles/resourcemanager.organizationAdmin
-#                          (iam_smc_ops_project.tf) and has 2 user-managed keys.
-#                          Imported as-is; listed as a security finding in readme.md.
+#   smc-ops-tf-org-admin   PRE-EXISTING, BEING RETIRED (decided 2026-11-02; nothing uses it).
+#                          Stage 1 (2026-11-02): org-admin binding removed, SA DISABLED,
+#                          its one user-managed key (2603638549a0…, from 2020) disabled
+#                          with gcloud. A disabled SA can't authenticate, with or
+#                          without keys. Reversible: set disabled = false.
+#                          (Its other key is Google-managed and auto-rotating; it can't
+#                          be disabled or downloaded and goes away with the SA.)
+#                          Stage 2 (on/after 2026-12-02, after a 30-day quiet period):
+#                          delete the user-managed key (gcloud), then remove this SA and
+#                          its two chris@ grants below from code and apply in a change
+#                          window.
 
 resource "google_service_account" "smc_tf_foundation_sa" {
   project      = "smc-ops"
@@ -28,6 +36,7 @@ resource "google_service_account" "smc_ops_tf_org_admin" {
   account_id   = "smc-ops-tf-org-admin"
   display_name = "smc-ops-tf-org-admin"
   description  = "GCP Org Admin SA for Terraform"
+  disabled     = true # retiring: stage 1 of 2, see header
 }
 
 import {
