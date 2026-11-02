@@ -1,15 +1,14 @@
-# Foundation Layer - GCP Folders
+<!-- hand-written -->
+# foundation/gcp-folders
 
-GCP Folders contain environments, dev, test, stage, and production. GCP Folders are long lived, permanent GCP assets.  Because of this fact, the Terraform for the GCP Folders should be hard coded with no variables.  
+The three environment folders directly under the Org, one directory (one state) per folder. Each owns just the `google_folder`, with `deletion_protection = true`.
 
-Terraform will be run in this directory, creating a Terraform state containing just the GCP Folders desired state.
+State for any directory below: `gs://smc-ops-tf-state/terraform/state/foundation/gcp-folders/<same path>/default.tfstate`.
 
-Directory contents:
+| Directory | Terraform for |
+| --- | --- |
+| [`smc-prod/`](smc-prod/) | the `smc-prod` folder itself |
+| [`smc-ops/`](smc-ops/) | the `smc-ops` folder itself |
+| [`smc-dev/`](smc-dev/) | the `smc-dev` folder itself |
 
-* `gcp_folders.tf` - contains all GCP Folders desired state
-* `gcp_providers.tf` - soft Linux link back to the root Terraform providers file
-* `gcs_backend.tf` - Terraform state file located in `terraform/state/foundation/gcp_folders`
-
-Terraform State File stored in a GCS Bucket:
-
-`gs://iq9-tf-states/terraform/state/foundation/gcp_folders`
+Back to the [Foundation guide](../readme.md).

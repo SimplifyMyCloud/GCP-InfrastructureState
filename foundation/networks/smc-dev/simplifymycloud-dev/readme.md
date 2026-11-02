@@ -1,0 +1,41 @@
+# networks/smc-dev/simplifymycloud-dev
+
+Terraform for project **`simplifymycloud-dev`** in folder `smc-dev` (`922883963214`): VPC networks, subnets, routers.
+
+| | |
+| --- | --- |
+| GCP node | project **`simplifymycloud-dev`** in folder `smc-dev` (`922883963214`) |
+| Terraform state | `gs://smc-ops-tf-state/terraform/state/foundation/networks/smc-dev/simplifymycloud-dev/default.tfstate` |
+| Imported | 2026-11-01/02 from the live Org, 2 resources, zero-diff plan |
+
+## Resources
+
+| Terraform type | Count |
+| --- | --- |
+| `google_compute_network` | 1 |
+| `google_compute_subnetwork` | 1 |
+
+## Files
+
+| File | What it holds |
+| --- | --- |
+| `gcp_provider.tf` | symlink to the repo-root `gcp_provider.tf` (Terraform + provider versions) |
+| `networks_simplifymycloud_dev_gcs_backend.tf` | this directory's state location (hardcoded) |
+| `networks_simplifymycloud_dev_network.tf` | VPC networks |
+
+Each resource's `import {}` block sits right under it. After the first apply they are no-ops, kept as a record of where each resource came from.
+
+## Run it
+
+```bash
+cd foundation/networks/smc-dev/simplifymycloud-dev
+export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=smc-tf-foundation-sa@smc-ops.iam.gserviceaccount.com
+export GOOGLE_BACKEND_IMPERSONATE_SERVICE_ACCOUNT=$GOOGLE_IMPERSONATE_SERVICE_ACCOUNT
+terraform init && terraform plan   # expected: No changes
+```
+
+## Seen in GCP but not managed here
+
+| Asset type | Count | Why |
+| --- | --- | --- |
+| Connection | 1 | servicenetworking connection: import id needs network; do by hand |

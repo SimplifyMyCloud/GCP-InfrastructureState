@@ -1,0 +1,145 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# Foundation Layer
+# GCP Projects — smc-dev / simplifymycloud-dev — enabled APIs
+# ---------------------------------------------------------------------------------------------------------------------
+#
+# Every API enabled on simplifymycloud-dev at the 2026-11-01 import (117 APIs). Hardcoded
+# on purpose: reading the list tells you exactly which Google services this
+# project can use. disable_on_destroy = false so removing Terraform code never
+# switches off a live API.
+
+locals {
+  apis = toset([
+    "accesscontextmanager.googleapis.com",
+    "aiplatform.googleapis.com",
+    "analyticshub.googleapis.com",
+    "anthosconfigmanagement.googleapis.com",
+    "anthospolicycontroller.googleapis.com",
+    "apigee.googleapis.com",
+    "apihub.googleapis.com",
+    "appengine.googleapis.com",
+    "appengineflex.googleapis.com",
+    "appenginereporting.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "auditmanager.googleapis.com",
+    "autoscaling.googleapis.com",
+    "bigquery.googleapis.com",
+    "bigqueryconnection.googleapis.com",
+    "bigquerydatapolicy.googleapis.com",
+    "bigquerymigration.googleapis.com",
+    "bigqueryreservation.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "cloudaicompanion.googleapis.com",
+    "cloudapis.googleapis.com",
+    "cloudasset.googleapis.com",
+    "cloudbilling.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudkms.googleapis.com",
+    "cloudmonitoring.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "cloudshell.googleapis.com",
+    "cloudtrace.googleapis.com",
+    "compute.googleapis.com",
+    "config.googleapis.com",
+    "container.googleapis.com",
+    "containeranalysis.googleapis.com",
+    "containerfilesystem.googleapis.com",
+    "containerregistry.googleapis.com",
+    "containerscanning.googleapis.com",
+    "datacatalog.googleapis.com",
+    "dataflow.googleapis.com",
+    "dataform.googleapis.com",
+    "dataplex.googleapis.com",
+    "dataproc-control.googleapis.com",
+    "dataproc.googleapis.com",
+    "dataprocrm.googleapis.com",
+    "datastore.googleapis.com",
+    "deploymentmanager.googleapis.com",
+    "discoveryengine.googleapis.com",
+    "dns.googleapis.com",
+    "endpoints.googleapis.com",
+    "essentialcontacts.googleapis.com",
+    "fcm.googleapis.com",
+    "fcmregistrations.googleapis.com",
+    "file.googleapis.com",
+    "firebase.googleapis.com",
+    "firebaseappdistribution.googleapis.com",
+    "firebasedynamiclinks.googleapis.com",
+    "firebaseextensions.googleapis.com",
+    "firebasehosting.googleapis.com",
+    "firebaseinstallations.googleapis.com",
+    "firebaseremoteconfig.googleapis.com",
+    "firebaserules.googleapis.com",
+    "firestore.googleapis.com",
+    "firestorekeyvisualizer.googleapis.com",
+    "geminidataanalytics.googleapis.com",
+    "gkebackup.googleapis.com",
+    "gkeconnect.googleapis.com",
+    "gkehub.googleapis.com",
+    "googlecloudmessaging.googleapis.com",
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "iap.googleapis.com",
+    "identitytoolkit.googleapis.com",
+    "krmapihosting.googleapis.com",
+    "logging.googleapis.com",
+    "managedidentities.googleapis.com",
+    "mobilecrashreporting.googleapis.com",
+    "monitoring.googleapis.com",
+    "multiclustermetering.googleapis.com",
+    "networkconnectivity.googleapis.com",
+    "networkmanagement.googleapis.com",
+    "notebooks.googleapis.com",
+    "orgpolicy.googleapis.com",
+    "osconfig.googleapis.com",
+    "oslogin.googleapis.com",
+    "policyanalyzer.googleapis.com",
+    "pubsub.googleapis.com",
+    "recommender.googleapis.com",
+    "redis.googleapis.com",
+    "replicapool.googleapis.com",
+    "replicapoolupdater.googleapis.com",
+    "resourceviews.googleapis.com",
+    "run.googleapis.com",
+    "runtimeconfig.googleapis.com",
+    "secretmanager.googleapis.com",
+    "securetoken.googleapis.com",
+    "securitycenter.googleapis.com",
+    "securitycentermanagement.googleapis.com",
+    "servicecontrol.googleapis.com",
+    "servicemanagement.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "serviceusage.googleapis.com",
+    "source.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "spanner.googleapis.com",
+    "sql-component.googleapis.com",
+    "sqladmin.googleapis.com",
+    "stackdriver.googleapis.com",
+    "stackdriverprovisioning.googleapis.com",
+    "storage-api.googleapis.com",
+    "storage-component.googleapis.com",
+    "storage.googleapis.com",
+    "sts.googleapis.com",
+    "testing.googleapis.com",
+    "visionai.googleapis.com",
+    "vmwareengine.googleapis.com",
+    "websecurityscanner.googleapis.com",
+    "workstations.googleapis.com",
+  ])
+}
+
+resource "google_project_service" "apis" {
+  for_each = local.apis
+
+  project            = "simplifymycloud-dev"
+  service            = each.value
+  disable_on_destroy = false
+}
+
+import {
+  for_each = local.apis
+  to       = google_project_service.apis[each.value]
+  id       = "simplifymycloud-dev/${each.value}"
+}

@@ -1,1 +1,0 @@
-# Foundation Layer - Firewalls - Operations

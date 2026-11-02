@@ -1,1 +1,0 @@
-# Foundation Layer - GCP Networks - Production Environment

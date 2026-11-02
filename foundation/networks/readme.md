@@ -1,15 +1,17 @@
-# Foundation Layer - GCP Networks
+<!-- hand-written -->
+# foundation/networks
 
-GCP Networks contain the host VPC networks for the environments, dev, test, stage, and production. GCP Networks are long lived, permanent GCP assets.  Because of this fact, the Terraform for the GCP Networks should be hard coded with no variables.  
+VPC networks, subnets and routers, one directory per project that HAS a VPC. Today that is 6 projects, each with an auto-mode `default` VPC and no peering, Shared VPC or hybrid links. Auto-mode subnets belong to the network and aren't separate resources. See the networking whiteboard in [`../readme.md`](../readme.md#3-whiteboard-2--networking).
 
-Terraform will be run in this directory, creating a Terraform state containing just the GCP Networks desired state.
+State for any directory below: `gs://smc-ops-tf-state/terraform/state/foundation/networks/<same path>/default.tfstate`.
 
-Directory contents:
+| Directory | Terraform for |
+| --- | --- |
+| [`smc-dev/simplifymycloud-dev/`](smc-dev/simplifymycloud-dev/) | project `simplifymycloud-dev` |
+| [`smc-prod/smc-prod-bigbarkozspeedshop/`](smc-prod/smc-prod-bigbarkozspeedshop/) | project `smc-prod-bigbarkozspeedshop` |
+| [`smc-prod/smc-prod-caballerosflyingclub/`](smc-prod/smc-prod-caballerosflyingclub/) | project `smc-prod-caballerosflyingclub` |
+| [`smc-prod/smc-prod-madeinwestgermany/`](smc-prod/smc-prod-madeinwestgermany/) | project `smc-prod-madeinwestgermany` |
+| [`smc-prod/smc-prod-simplifymycloud/`](smc-prod/smc-prod-simplifymycloud/) | project `smc-prod-simplifymycloud` |
+| [`smc-prod/smc-prod-trilliumhiring/`](smc-prod/smc-prod-trilliumhiring/) | project `smc-prod-trilliumhiring` |
 
-* `gcp_vpc_host_{environment}.tf` - contains all GCP Networks Host VPC desired state for that environment.
-* `gcp_providers.tf` - soft Linux link back to the root Terraform providers file
-* `gcs_backend.tf` - Terraform state file located in `terraform/state/foundation/gcp_networks/vpc_host_{environment}/`
-
-Terraform State File stored in a GCS Bucket:
-
-`gs://iq9-tf-states/terraform/state/foundation/gcp_folders`
+Back to the [Foundation guide](../readme.md).

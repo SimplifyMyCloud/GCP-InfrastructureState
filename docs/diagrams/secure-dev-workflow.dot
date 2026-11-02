@@ -1,0 +1,101 @@
+// ---------------------------------------------------------------------------
+// Secure Development Workflow
+//
+// Engineer's ChromeBook → Google Identity-Aware Proxy → GCE Cloud Workstation
+// → self-hosted Git + Observability. Everything below the IAP gate lives
+// inside a Private GCP perimeter — no public IPs, no direct internet egress,
+// every keystroke and every commit captured by Observability.
+//
+//   svg:  dot -Tsvg secure-dev-workflow.dot -o secure-dev-workflow.svg
+//   png:  dot -Tpng -Gdpi=300 secure-dev-workflow.dot -o secure-dev-workflow.png
+// ---------------------------------------------------------------------------
+
+digraph secure_dev_workflow {
+    rankdir = TB;
+    bgcolor = "white";
+    pad = "0.5";
+    nodesep = 0.55;
+    ranksep = 0.7;
+    splines = polyline;
+
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=15, margin="0.32,0.18"];
+    edge [fontname="Helvetica", fontsize=12, color="#9aa0a6", arrowsize=0.9, penwidth=1.2];
+
+    // ----- 1. Engineer's ChromeBook (outside the GCP perimeter) -----
+    // Stylised laptop drawn with HTML labels:
+    //   • a bordered screen with the label inside
+    //   • a one-pixel hinge gap
+    //   • a dark deck with two rows of light "keycaps" + a centered trackpad
+    s1 [shape=plaintext, margin=0, label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <TR><TD>
+          <TABLE BORDER="2" COLOR="#1967d2" CELLBORDER="0" CELLPADDING="8" CELLSPACING="0" BGCOLOR="#e8f0fe">
+            <TR><TD><FONT POINT-SIZE="14"><B>1</B>  ChromeBook</FONT></TD></TR>
+            <TR><TD><FONT POINT-SIZE="10" COLOR="#5f6368">engineer's thin client</FONT></TD></TR>
+          </TABLE>
+        </TD></TR>
+        <TR><TD HEIGHT="2"><FONT POINT-SIZE="1"> </FONT></TD></TR>
+        <TR><TD>
+          <TABLE BORDER="1" COLOR="#202124" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0" BGCOLOR="#3c4043">
+            <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="9" COLOR="#9aa0a6">▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪</FONT></TD></TR>
+            <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="9" COLOR="#9aa0a6">▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪</FONT></TD></TR>
+            <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="6" COLOR="#3c4043">.</FONT></TD></TR>
+            <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="9" COLOR="#9aa0a6">▭▭▭▭</FONT></TD></TR>
+          </TABLE>
+        </TD></TR>
+      </TABLE>>];
+
+    // ----- 2. IAP — security membrane, OUTSIDE the Private GCP perimeter -----
+    // IAP is Google-managed and acts as the gate that authenticates traffic
+    // BEFORE it ever touches the private VPC. Drawn as a wide horizontal
+    // band to emphasise its role as a layer everything must pass through.
+    s2 [label=<<B>2</B>  Identity-Aware Proxy &nbsp; (IAP)<BR/><FONT POINT-SIZE="11" COLOR="#594300">Google-managed gate · Zero Trust authentication &amp; OS / hardware verification<BR/>authenticates the engineer before any traffic enters Private GCP</FONT>>,
+        shape=box, style="rounded,filled", fillcolor="#fef7e0", color="#f9ab00", penwidth=3, fontsize=14, width=6, margin="0.45,0.22"];
+
+    // ----- Private GCP perimeter (cluster) -----
+    // Everything below is GCP-internal: no public IPs, no internet egress.
+    // The dashed border emphasises that this is a logical perimeter
+    // (IAM + private networking), not a physical air-gap. IAP sits OUTSIDE
+    // this cluster — it's the gate, not the room.
+    subgraph cluster_gcp {
+        label = <<B>Private GCP</B>  &nbsp;&mdash;&nbsp;  no public IPs &nbsp;·&nbsp; no direct internet egress>;
+        labeljust = "c";
+        labelloc = "t";
+        style = "filled,rounded,dashed";
+        fillcolor = "#f1f8e9";
+        color = "#2e7d32";
+        penwidth = 2.5;
+        fontsize = 13;
+        fontcolor = "#1b5e20";
+        margin = 22;
+
+        // ----- 3. GCE Cloud Workstation — where code is authored -----
+        s3 [label=<<B>3</B>  GCE Cloud Workstation<BR/><FONT POINT-SIZE="11" COLOR="#5f6368">Terraform &amp; service code authored here</FONT>>,
+            fillcolor="#e8f0fe", color="#1967d2", penwidth=1.8];
+
+        // ----- 4. Self-hosted Git -----
+        s4 [label=<<B>4</B>  Self-hosted Git<BR/><FONT POINT-SIZE="11" COLOR="#80003a">internal repo · never leaves GCP</FONT>>,
+            fillcolor="#fce4ec", color="#c2185b", penwidth=1.8];
+
+        // ----- 5. Observability stack -----
+        s5 [label=<<B>5</B>  Observability<BR/><FONT POINT-SIZE="11" COLOR="#4a1f9a">every keystroke · every commit · every API call</FONT>>,
+            fillcolor="#f3e8fd", color="#7b3ff2", penwidth=1.8];
+    }
+
+    // ----- Edges -----
+    // ChromeBook crosses the perimeter via IAP (HTTPS over public internet).
+    s1 -> s2 [label=<<FONT COLOR="#5f6368" POINT-SIZE="11"><I> public internet · HTTPS </I></FONT>>, color="#bdc1c6"];
+
+    // IAP tunnel into the workstation.
+    s2 -> s3 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="5" CELLSPACING="0"><TR><TD BGCOLOR="black"><FONT COLOR="#00FF41" FACE="Courier" POINT-SIZE="12"> $ gcloud ssh --tunnel-through-iap </FONT></TD></TR></TABLE>>,
+              color="#f9ab00", penwidth=1.5];
+
+    // Workstation pushes/pulls to the self-hosted git server.
+    s3 -> s4 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="5" CELLSPACING="0"><TR><TD BGCOLOR="black"><FONT COLOR="#00FF41" FACE="Courier" POINT-SIZE="12"> $ git push </FONT></TD></TR></TABLE>>];
+
+    // Both the workstation and the git server stream events to Observability.
+    s3 -> s5 [label=<<FONT COLOR="#4a1f9a" POINT-SIZE="11"><I>  every keystroke  </I></FONT>>,
+              style=dotted, color="#7b3ff2", penwidth=1.5];
+    s4 -> s5 [label=<<FONT COLOR="#4a1f9a" POINT-SIZE="11"><I>  every commit  </I></FONT>>,
+              style=dotted, color="#7b3ff2", penwidth=1.5];
+}

@@ -1,28 +1,28 @@
 # GCP Naming Convention
 
-## Org Domain
+Updated 2026-11-02 to match the live **simplifymy.cloud** Org. Where existing names don't follow the standard, they're listed as exceptions: project IDs can never be renamed, so the exceptions stay.
 
-_iq9.io_
+## Org domain
+
+_simplifymy.cloud_ (Org `933250405420`)
 
 ## Base
 
-3 Letters representing the company name
+3 letters representing the company name:
 
-_iq9_
+_smc_
 
-## Top Level Folder
+## Folders
 
-`{base}-{environments}`
+`{base}-{environment}`, directly under the Org:
 
-`iq9-sandbox` - `iq9-dev` - `iq9-production` - `iq9-logging` - `iq9-ops`
+`smc-ops` · `smc-dev` · `smc-prod`
 
 ## GCP Projects
 
 [GCP docs link](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
-_Globally unique across all of GCP and GCP customers_
-
-_The ending number 00-10 is a best practice for the scenario where a new GCP Project must be created and migrated (A/B) to accommodate a not fixable error with a GCP Project._
+_Globally unique across all of GCP and all GCP customers._
 
 Project ID requirements:
 
@@ -35,43 +35,60 @@ Project ID requirements:
 
 Standard:
 
-`{base}-gcp-{environment}-{app}`
+`{base}-{environment}-{app}`
 
 Actual:
 
-`iq9-gcp-ops-01` - iq9 Operations Environment
+| Project | Note |
+| --- | --- |
+| `smc-prod-bbmrc`, `smc-prod-bigbarkozspeedshop`, `smc-prod-caballerosflyingclub`, `smc-prod-madeinwestgermany`, `smc-prod-olympic-flying-club`, `smc-prod-psmtherapy`, `smc-prod-simplifymycloud`, `smc-prod-trilliumhiring` | follow the standard |
+| `smc-ops` | exception: the ops project predates the standard (would be `smc-ops-platform`) |
+| `smc-dental-knox` | exception: missing the `prod` segment |
+| `simplifymycloud-dev` | exception: predates the `smc` base |
 
-`iq9-gcp-prod-bmwapp` - Project Name for the application
+## Service accounts
+
+`{base}-{purpose}-sa`, e.g. `smc-tf-foundation-sa` (the Terraform identity). `smc-ops-tf-org-admin` predates this; it was disabled 2026-11-02 and is due for deletion on or after 2026-12-02.
+
+## GCS buckets
+
+`{project}-{purpose}`, e.g. `smc-ops-tf-state`. Google-created buckets (`<project>.appspot.com`, `staging.<project>.appspot.com`) keep their names.
 
 ## GCP IAM Custom Roles
 
 [GCP docs link](https://cloud.google.com/iam/docs/understanding-custom-roles)
 
 Standard:
-  * syntax: `{company}-iam-{environment}-{rolename}-{rw | ro}`
-  * example: `iq9-iam-dev-gce-rw`
+  * syntax: `{base}-iam-{environment}-{rolename}-{rw | ro}`
+  * example: `smc-iam-dev-gce-rw`
+
+Exception: the 3 org roles `cisIg1Audit2{IapReader,KeyReader,StorageReader}` (camelCase, created by the CIS IG1 audit module).
 
 ## GCP Networks
 
 [GCP docs link](https://cloud.google.com/architecture/best-practices-vpc-design#naming)
 
+Today every VPC in the Org is a Google-created auto-mode `default` network. These rules apply to any **new** VPC.
+
 Standard:
- * Company name: iq9.io: iq9
- * Region code: europe-west3: eu-we3
- * Environment codes: sndbx, dev, test, stage, prod
+ * Base name: simplifymy.cloud → `smc`
+ * Region code: us-west1 → `us-we1`
+ * Environment codes: `ops`, `dev`, `test`, `stage`, `prod`
 
 VPC network
- * syntax: `{company}-vpc-{environment-label}-{region}`
- * example: `iq9-vpc-prod-eu-west3`
+ * syntax: `{base}-vpc-{environment}-{app}-{region}`
+ * example: `smc-vpc-prod-bbmrc-us-we1`
 
 Subnet
- * syntax: `{company}-subnet-{environment-label}-{app}`
- * example: `iq9-subnet-prod-bmwapp`
+ * syntax: `{base}-subnet-{environment}-{app}`
+ * example: `smc-subnet-prod-bbmrc`
+ * exception: `gitlab-lb-test-01-sub` in `simplifymycloud-dev`
 
- Firewall rule
- * syntax: `{company}-fw-{environment}-{description-label}{source-label}-{dest-label}-{protocol}-{port}-{action}`
- * example: `iq9-fw-dev-bmwapp-internet-internal-tcp-80-allow`
+Firewall rule
+ * syntax: `{base}-fw-{environment}-{description-label}-{source-label}-{dest-label}-{protocol}-{port}-{action}`
+ * example: `smc-fw-dev-gitlab-internet-internal-tcp-443-allow`
+ * existing: `smc-fw-iap-22` (short form); Google's `default-allow-*` rules (SSH/RDP ones deleted 2026-11-02)
 
- IP route
- * syntax: `{company}-route-{origin}-{destination}`
- * example: `iq9-route-bmwapp-internet`
+IP route
+ * syntax: `{base}-route-{origin}-{destination}`
+ * example: `smc-route-bbmrc-internet`
