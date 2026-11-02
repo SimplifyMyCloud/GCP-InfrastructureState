@@ -90,9 +90,10 @@ The networking picture is deliberately simple to draw, because today there is ve
    │ simplifymycloud-dev       │   │ smc-prod-simplifymycloud · -bigbarkozspeedshop ·          │
    │ default (auto, REGIONAL)  │   │ -caballerosflyingclub · -madeinwestgermany · -trilliumhiring│
    │ + gitlab-lb-test-01-sub   │   │ default (auto, REGIONAL) — one /20 per region             │
-   │   10.0.0.0/24 us-west1    │   │ fw: default-allow-ssh/rdp/icmp from 0.0.0.0/0             │
-   │ fw: http/https/ssh public,│   │     default-allow-internal 10.128.0.0/9                    │
-   │     iap-22, health checks │   └──────────────────────────────────────────────────────────┘
+   │   10.0.0.0/24 us-west1    │   │ fw: default-allow-icmp from 0.0.0.0/0 (no SSH/RDP)        │
+   │ fw: http/https public,    │   │     default-allow-internal 10.128.0.0/9                    │
+   │     ssh via iap-22 only,  │   │                                                          │
+   │     health checks         │   └──────────────────────────────────────────────────────────┘
    └───────────────────────────┘
    No VPC at all: smc-ops, smc-prod-bbmrc, smc-prod-olympic-flying-club, smc-prod-psmtherapy, smc-dental-knox
 ```
@@ -181,7 +182,7 @@ The rule for this import was **match GCP exactly**, so known problems were impor
 | # | Finding | Where |
 | --- | --- | --- |
 | 1 | `smc-ops-tf-org-admin` SA: **org admin + 2 user-managed keys**; now redundant with `smc-tf-foundation-sa` | [`iam/smc-ops/smc-ops/`](iam/smc-ops/smc-ops/) |
-| 2 | `default-allow-ssh` (22) and `default-allow-rdp` (3389) **open to 0.0.0.0/0** in 5 prod projects; `smc-fw-public-22` in dev | [`firewalls/`](firewalls/) |
+| 2 | ✅ Fixed 2026-11-02: `default-allow-ssh`/`-rdp` (0.0.0.0/0) deleted in 5 prod projects and `smc-fw-public-22` in dev. SSH is IAP-only (dev); a new prod VM's PR must add an IAP-only SSH rule | [`firewalls/`](firewalls/) |
 | 3 | ✅ Fixed 2026-11-02: `smc-tf-foundation-sa` is plan-only; write roles only in a change window (section 4) | [`iam/gcp-org/`](iam/gcp-org/) |
 | 4 | `smc-dev-env-logging` keeps the whole smc-dev folder's logs for **3 days** | [`logging/smc-ops/smc-ops/`](logging/smc-ops/smc-ops/) |
 | 5 | No org-wide aggregated log sink. Only smc-dev is centralised | [`logging/gcp-org/`](logging/gcp-org/) |

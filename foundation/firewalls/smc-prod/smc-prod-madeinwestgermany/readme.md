@@ -6,13 +6,13 @@ Terraform for project **`smc-prod-madeinwestgermany`** in folder `smc-prod` (`38
 | --- | --- |
 | GCP node | project **`smc-prod-madeinwestgermany`** in folder `smc-prod` (`386439801809`) |
 | Terraform state | `gs://smc-ops-tf-state/terraform/state/foundation/firewalls/smc-prod/smc-prod-madeinwestgermany/default.tfstate` |
-| Imported | 2026-11-01/02 from the live Org, 4 resources, zero-diff plan |
+| Imported | 2026-11-01/02 from the live Org, 2 resources, zero-diff plan |
 
 ## Resources
 
 | Terraform type | Count |
 | --- | --- |
-| `google_compute_firewall` | 4 |
+| `google_compute_firewall` | 2 |
 
 ## Files
 
@@ -36,5 +36,3 @@ terraform init && terraform plan   # expected: No changes
 ## Findings (imported as-is, fix in a later PR)
 
 - `default-allow-icmp` allows **icmp** from **0.0.0.0/0** (the whole internet)
-- `default-allow-rdp` allows **tcp:3389** from **0.0.0.0/0** (the whole internet)
-- `default-allow-ssh` allows **tcp:22** from **0.0.0.0/0** (the whole internet)

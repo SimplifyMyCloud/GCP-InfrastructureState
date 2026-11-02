@@ -6,13 +6,13 @@ Terraform for project **`simplifymycloud-dev`** in folder `smc-dev` (`9228839632
 | --- | --- |
 | GCP node | project **`simplifymycloud-dev`** in folder `smc-dev` (`922883963214`) |
 | Terraform state | `gs://smc-ops-tf-state/terraform/state/foundation/firewalls/smc-dev/simplifymycloud-dev/default.tfstate` |
-| Imported | 2026-11-01/02 from the live Org, 6 resources, zero-diff plan |
+| Imported | 2026-11-01/02 from the live Org, 5 resources, zero-diff plan |
 
 ## Resources
 
 | Terraform type | Count |
 | --- | --- |
-| `google_compute_firewall` | 6 |
+| `google_compute_firewall` | 5 |
 
 ## Files
 
@@ -37,4 +37,3 @@ terraform init && terraform plan   # expected: No changes
 
 - `default-allow-http` allows **tcp:80** from **0.0.0.0/0** (the whole internet)
 - `default-allow-https` allows **tcp:443** from **0.0.0.0/0** (the whole internet)
-- `smc-fw-public-22` allows **tcp:22** from **0.0.0.0/0** (the whole internet)
