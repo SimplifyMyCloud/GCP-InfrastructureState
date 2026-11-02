@@ -51,3 +51,47 @@ import {
   to = google_storage_bucket.smc_ops_tf_state
   id = "smc-ops-tf-state"
 }
+
+# gs://smc-ops-log-archive — the Org's cold log archive (NEW 2026-11-02).
+# Written by the org-wide sink `smc-org-log-archive` (logging/gcp-org/), which sends
+# EVERY log from every folder and project here. Archive storage class: the
+# cheapest to keep, slow and costly to read; it's evidence, not a search tool.
+# For searching, use each project's Logs Explorer (_Default, 30 days) or the
+# smc-dev-env-logging bucket. Objects are deleted after 365 days, which also
+# matches Archive's 365-day minimum storage duration, so there's no early-delete fee.
+# Not locked: retention can still be changed. Writer IAM:
+# iam/smc-ops/smc-ops/iam_smc_ops_log_archive_bucket.tf.
+
+resource "google_storage_bucket" "smc_ops_log_archive" {
+  name          = "smc-ops-log-archive"
+  project       = "smc-ops"
+  location      = "US-WEST1"
+  storage_class = "ARCHIVE"
+
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = false
+  labels                      = {}
+
+  versioning {
+    enabled = false
+  }
+
+  # Logs are write-once; soft delete would only add storage cost.
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
+
+  lifecycle_rule {
+    condition {
+      age = 365
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}

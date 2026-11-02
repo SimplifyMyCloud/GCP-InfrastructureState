@@ -20,7 +20,7 @@ resource "google_logging_project_bucket_config" "smc_dev_env_logging" {
   location         = "us-west1"
   bucket_id        = "smc-dev-env-logging"
   description      = "Logging for the DevEnv of SMC"
-  retention_days   = 3
+  retention_days   = 30 # was 3 until 2026-11-02; 30 is the retention included in Logging pricing
   enable_analytics = true
   locked           = false
 }
