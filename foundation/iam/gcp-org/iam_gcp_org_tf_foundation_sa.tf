@@ -40,7 +40,7 @@ locals {
   ])
 
   # Closed (no write roles). Set to local.tf_foundation_sa_change_window_roles to open a window.
-  tf_foundation_sa_write_roles = toset([])
+  tf_foundation_sa_write_roles = local.tf_foundation_sa_change_window_roles
 }
 
 resource "google_organization_iam_member" "tf_foundation_sa_read" {
