@@ -201,7 +201,7 @@ The rule for this import was **match GCP exactly**, so known problems were impor
 
 The only things created or changed in GCP during the import: the `smc-tf-foundation-sa` SA, the `smc-ops-tf-state` bucket, the SA's org grants and impersonation grant, 33 management APIs on smc-ops, and the **removal** of 10 leftover `iq9-bootstrap-sa` org grants.
 
-**Hardening after the import (2026-11-02).** Each item is a normal plan → apply, and the last three each ran in their own change window, so `git log` shows the open, apply and close commits:
+**Hardening after the import (2026-11-02).** Each item is a normal plan → apply, and the last three each ran in their own change window. The open, apply and close commits are listed in [PR SimplifyMyCloud/GCP-InfrastructureState#15](https://github.com/SimplifyMyCloud/GCP-InfrastructureState/pull/15), which went into `main` as one squash commit:
 
 | Change | Finding |
 | --- | --- |
@@ -210,4 +210,4 @@ The only things created or changed in GCP during the import: the `smc-tf-foundat
 | `smc-ops-tf-org-admin` stage 1: org-admin binding removed, SA and its user key disabled | #1 |
 | Org-wide log archive sink + bucket; dev log retention 3 → 30 days | #4, #5 |
 
-After each change, all 56 directories re-planned to `No changes`.
+After each change, all 56 directories re-planned to `No changes`. The first archive batch reached `gs://smc-ops-log-archive` at 22:11 UTC on 2026-11-02 (audit and Firebase Hosting logs).
