@@ -1,6 +1,6 @@
 # app
 
-The **App Layer**: application code that runs *on* Service-Layer infrastructure. Per the repo's layering model ([`../README.md`](../README.md)), app state is **not** managed by Terraform.
+The **App Layer**: application code that runs *on* Service-Layer infrastructure. Per the repo's layering model ([`../readme.md`](../readme.md)), app state is **not** managed by Terraform.
 
 | Directory | App |
 | --- | --- |

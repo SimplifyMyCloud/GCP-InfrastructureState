@@ -1,6 +1,6 @@
 # docs / imgs
 
-Images embedded in the root [`README.md`](../../README.md) and older docs.
+Images embedded in the root [`readme.md`](../../readme.md) and older docs.
 
 | Image(s) | Used for | Current? |
 | --- | --- | --- |
