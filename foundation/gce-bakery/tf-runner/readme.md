@@ -1,7 +1,9 @@
+> **Status (2026-11-02):** renamed from the retired iq9 estate to smc names. Not built yet: smc-ops has no VPC for the build VM, and the `smc-tf-runner-sa` / `smc-tf-ro-sa` / `smc-tf-rw-sa` identities don't exist. Today Terraform runs from a laptop as `smc-tf-foundation-sa` (see [`foundation/readme.md`](../../readme.md#4-who-runs-terraform)).
+
 # tf-runner — the dedicated Terraform runner image
 
 Bakes the box that runs **every** `terraform` command off humans' laptops and inside GCP —
-the `iq9-tf-runner` VM referenced in the repo-root [`gcp_provider.tf`](../../../gcp_provider.tf)
+the `smc-tf-runner` VM referenced in the repo-root [`gcp_provider.tf`](../../../gcp_provider.tf)
 auth model. One reproducible, auditable execution environment for the whole IaC pipeline,
 with a **swappable RO/RW identity** gated by the release schedule.
 
@@ -34,13 +36,13 @@ There are two valid mechanisms; the wrapper supports both:
 
 ### A) Impersonation (recommended — no restart, time-boxed by IAM)
 
-- The VM's **attached** SA is a low-privilege base identity (`iq9-tf-runner-sa`).
+- The VM's **attached** SA is a low-privilege base identity (`smc-tf-runner-sa`).
 - Per run, `tf-run` mints a **short-lived impersonated access token** for the phase's
   target SA and exports `GOOGLE_OAUTH_ACCESS_TOKEN` (consumed by both the provider and the
   GCS backend). Set the targets via env (typically from instance metadata):
   ```bash
-  export TFRUN_RO_SA=iq9-tf-ro-sa@<proj>.iam.gserviceaccount.com
-  export TFRUN_RW_SA=iq9-tf-rw-sa@<proj>.iam.gserviceaccount.com
+  export TFRUN_RO_SA=smc-tf-ro-sa@<proj>.iam.gserviceaccount.com
+  export TFRUN_RW_SA=smc-tf-rw-sa@<proj>.iam.gserviceaccount.com
   ```
 - **The swap is enforced by IAM, not the script:** the base SA only holds
   `roles/iam.serviceAccountTokenCreator` on the **RW** SA *during an approved deployment
@@ -69,17 +71,17 @@ seatbelt on top of the IAM time-boxing.
 ```bash
 cd foundation/gce-bakery/tf-runner
 packer init .
-packer validate -var "gcp_project_id=iq9-gcp-dev-yamato" .
-packer build    -var "gcp_project_id=iq9-gcp-dev-yamato" .
+packer validate -var "gcp_project_id=smc-ops" -var "gcp_network=<vpc>" -var "gcp_subnetwork=<subnet>" .
+packer build    -var "gcp_project_id=smc-ops" -var "gcp_network=<vpc>" -var "gcp_subnetwork=<subnet>" .
 ```
 
-Produces a private image `iq9-img-tf-runner-<ts>` (family `iq9-tf-runner`). Same OS-Login /
-IAP / NAT build path as the other recipes — see [`../gamilas-redteam/`](../gamilas-redteam/)
+Produces a private image `smc-img-tf-runner-<ts>` (family `smc-tf-runner`). OS-Login /
+IAP / NAT build path
 if the build stalls at SSH (IAP role) or NAT warm-up.
 
 ## Deploy (separate Terraform, not in this recipe)
 
-Stand up the runner from the `iq9-tf-runner` family with: the low-priv base SA attached,
+Stand up the runner from the `smc-tf-runner` family with: the low-priv base SA attached,
 **no external IP** (it reaches GCP APIs via Private Google Access / the bakery NAT), on the
 bakery subnet (or its own ops subnet), and the RO/RW target SAs passed via instance
 metadata so `tf-run` picks them up. Then per run:

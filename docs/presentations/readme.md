@@ -1,5 +1,7 @@
 # Presentations
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../../foundation/readme.md).
+
 Slide decks and supporting material for talks / consulting pitches. Written as
 markdown so the words iterate cleanly in git; the render target (Marp, reveal.js,
 Google Slides) is chosen per deck when it's time to present.

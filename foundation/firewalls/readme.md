@@ -1,6 +1,19 @@
-# Foundation Layer - Firewalls
+<!-- hand-written -->
+# foundation/firewalls
 
-Firewalls will be classified as either `internal` or `external` firewalls.
+VPC firewall rules (and Cloud Armor policies, none today), one directory per project with a VPC. Firewall rules live apart from their networks so rule changes, the frequent and risky ones, get their own small state and review.
 
-  * `internal` = Firewalls between internal subnets on a shared VPC or between VPCs.  Internal firewalls only sit between internal networks and never reach the outside internet.
-  * `external` = Firewalls between internal networks and the outside internet.
+⚠️ The prod `default` VPCs still carry Google's original `default-allow-ssh` / `default-allow-rdp` / `default-allow-icmp` rules **open to 0.0.0.0/0**. They were imported as-is; tightening them is the first hardening PR.
+
+State for any directory below: `gs://smc-ops-tf-state/terraform/state/foundation/firewalls/<same path>/default.tfstate`.
+
+| Directory | Terraform for |
+| --- | --- |
+| [`smc-dev/simplifymycloud-dev/`](smc-dev/simplifymycloud-dev/) | project `simplifymycloud-dev` |
+| [`smc-prod/smc-prod-bigbarkozspeedshop/`](smc-prod/smc-prod-bigbarkozspeedshop/) | project `smc-prod-bigbarkozspeedshop` |
+| [`smc-prod/smc-prod-caballerosflyingclub/`](smc-prod/smc-prod-caballerosflyingclub/) | project `smc-prod-caballerosflyingclub` |
+| [`smc-prod/smc-prod-madeinwestgermany/`](smc-prod/smc-prod-madeinwestgermany/) | project `smc-prod-madeinwestgermany` |
+| [`smc-prod/smc-prod-simplifymycloud/`](smc-prod/smc-prod-simplifymycloud/) | project `smc-prod-simplifymycloud` |
+| [`smc-prod/smc-prod-trilliumhiring/`](smc-prod/smc-prod-trilliumhiring/) | project `smc-prod-trilliumhiring` |
+
+Back to the [Foundation guide](../readme.md).

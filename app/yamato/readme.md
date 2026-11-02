@@ -1,5 +1,7 @@
 # yamato — Application Layer
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../../foundation/readme.md).
+
 The Star Blazers wiki: a small Go web app served from Cloud Run, backed by the
 private Cloud SQL Postgres instance. This is the **Application Layer** — it is
 *not* Terraform. The infrastructure it runs on lives in `service/yamato/dev/`

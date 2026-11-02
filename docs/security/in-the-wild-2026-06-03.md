@@ -1,5 +1,7 @@
 # In the Wild — Real-World Attacks Against the Yamato Wiki
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../../foundation/readme.md).
+
 **Observation window:** 2026-06-02 11:00 UTC → 2026-06-03 11:00 UTC (24 hours)
 **Target:** `yamato-dev.iq9.io` (LB external IP `8.233.20.46`)
 **Project:** `iq9-gcp-dev-yamato`

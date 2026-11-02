@@ -1,5 +1,7 @@
 # Wiki Search
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 The full-text search behind `/wiki/search` on the Yamato wiki. This document is the *why* and the *how* — the user-visible behavior, the request lifecycle, the schema, the security posture, and the open issues. The route lives in the **Application Layer** (Go on Cloud Run); no Terraform was touched to add it.
 
 ## What it does, from the user's chair

@@ -64,9 +64,17 @@ terraform {
 provider "google" {
   region = "us-west1"
   zone   = "us-west1-a"
+
+  # Imports must never stamp a "goog-terraform-provisioned" label onto live
+  # resources; the IaC describes GCP as it is.
+  add_terraform_attribution_label = false
 }
 
 provider "google-beta" {
   region = "us-west1"
   zone   = "us-west1-a"
+
+  # Imports must never stamp a "goog-terraform-provisioned" label onto live
+  # resources; the IaC describes GCP as it is.
+  add_terraform_attribution_label = false
 }

@@ -5,7 +5,7 @@
 #
 #   tf-run plan    foundation/networks/bakery          # RO identity
 #   tf-run apply   foundation/networks/bakery          # RW identity (needs deployment window)
-#   tf-run destroy service/yamato/dev/cloudrun         # RW identity (needs deployment window)
+#   tf-run destroy foundation/firewalls/smc-prod/<project>        # RW identity (needs deployment window)
 #
 # Identity selection and the RO/RW swap live in lib/common.sh. The state dir is given
 # relative to the repo root (TFRUN_REPO_DIR). plan writes a tfplan; apply consumes it.

@@ -6,9 +6,32 @@ Built using the [GCP Provider Terraform Modules](https://registry.terraform.io/p
 
 ---
 
+## 🧭 Start here: the live GCP Org
+
+**[`foundation/readme.md`](foundation/readme.md)** is the one-hour guide for a new SRE. It covers the Org tree, the networking whiteboard, who runs Terraform, and the security findings. In one line:
+
+> **GCP = git = Terraform state.** Every Org / folder / project node has one git directory under `foundation/`, and that directory's state lives at the same path in `gs://smc-ops-tf-state/terraform/state/`. All of it was imported from the live Org (2026-11-01/02) and plans to `No changes`.
+
+```
+foundation/
+├── gcp-org/                 org policies
+├── gcp-folders/<env>/       smc-ops · smc-dev · smc-prod
+├── gcp-projects/<env>/<p>/  each project + every in-project service
+├── iam/…                    org / folder / project IAM, SAs, custom roles
+├── logging/…                org / folder / project sinks + log buckets
+├── networks/<env>/<p>/      VPCs and subnets
+├── firewalls/<env>/<p>/     firewall rules
+└── gce-bakery/              Packer image recipes
+gcp_provider.tf              the ONE shared provider file, symlinked into every Terraform dir
+```
+
+Repo layout: [`foundation/`](foundation/) (live) · [`service/`](service/) (no apps deployed today) · [`app/`](app/), [`redteam/`](redteam/), [`Bootstrap/`](Bootstrap/) (iq9-era, historical) · [`docs/`](docs/).
+
+---
+
 ## 🔐 Security Checklist Handbook
 
-The **[Security Checklist Handbook](docs/security/)** is the Fort Knox playbook for this
+_(iq9-era: written for the retired iq9 demo estate; the principles still apply.)_ The **[Security Checklist Handbook](docs/security/)** is the Fort Knox playbook for this
 platform — the layered defenses (Cloud Armor → IAP → locked ingress → least-privilege →
 private data → org policy → full logging), the zero-trust/IAP model, the red-team demo
 playbook, and a business-ready **[Fort Knox pitch](docs/security/fort-knox.md)** with diagram.

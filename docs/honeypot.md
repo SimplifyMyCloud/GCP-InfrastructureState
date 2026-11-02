@@ -1,5 +1,7 @@
 # Honeypot Tripwires — Layer 0 Lure on the Public Service
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 Six deliberately enticing endpoints that exist solely to identify, fingerprint, and track the attackers who probe us. The honeypots are *not* a defense in the same sense as Cloud Armor or IAP — they are an intelligence-collection surface that sits **outside** the perimeter gate, captures the data Cloud Armor's DENY logs cannot, and feeds a new tile on the [`/wiki/noc` dashboard](./noc.md). The naming follows the architecture: the [Fort Knox claim](./security/fort-knox.md) walks Layers 1 through 5; the honeypots are **Layer 0** — the lure outside the fence.
 
 This document is the *why* and the *how*: what the honeypots are, where they sit in the Fort Knox model, the request lifecycle, the six paths and their fake content, the structured log shape the NOC tile depends on, the security posture, the open issues a reviewer flagged that did not block the ship, and how to add a seventh path the day a new attacker class arrives.

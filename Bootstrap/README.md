@@ -1,5 +1,7 @@
 # Bootstrap
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 Manual `gcloud` scaffolding that prepares a GCP Org to host Terraform-managed infrastructure. Once this runs, every subsequent change to the GCP environment is an atomic, peer-reviewed Terraform apply driven from the `iq9-ops-iac` project.
 
 > **Run this once, manually, from GCP Cloud Shell.** After the foundation layer is up, the bootstrap is never run again on the same org.

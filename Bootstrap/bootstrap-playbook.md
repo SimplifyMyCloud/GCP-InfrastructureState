@@ -1,5 +1,7 @@
 # Bootstrap Playbook
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 A pilot's pre-flight: copy-paste each block into GCP Cloud Shell in order, top-to-bottom, ticking each step off in `bootstrap-checklist.md` as you go.
 
 > **Run this once, manually, from GCP Cloud Shell as the genesis Org Admin.**

@@ -1,5 +1,7 @@
 # Multi-Agent Feature Pipeline — Playbook
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 A standing playbook for shipping a small feature through three independent Claude agents — a **Developer**, a **Tester**, and a **Technical Writer** — each with a fresh context window and a clearly bounded lane. The Developer writes the code and commits it; the Tester independently reviews it for functional and security correctness; the Technical Writer documents what shipped, in `/docs/` and in the touched directory readmes. Three roles, three commits on `dev-refresh`, one feature.
 
 The shape was proven out across several test drives in May 2026. It is documented here so the next time we want to use it, we do not redesign the role briefs from scratch — we point at this file. Hand Claude this playbook plus a feature ask, and the pipeline launches.

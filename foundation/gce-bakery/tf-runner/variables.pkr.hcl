@@ -28,7 +28,7 @@ variable "disk_size_gb" {
 variable "gcp_project_id" {
   type        = string
   default     = ""
-  description = "GCP project that owns the build VM and the resulting private image (e.g. iq9-gcp-dev-yamato, or the ops project)."
+  description = "GCP project that owns the build VM and the resulting private image (e.g. smc-ops)."
 }
 
 variable "gcp_zone" {
@@ -55,17 +55,15 @@ variable "gcp_use_os_login" {
   description = "Use OS Login for the SSH session. Keep true under the enforced compute.requireOsLogin org policy."
 }
 
-# --- Bakery network (defaults match foundation/networks/bakery/) -----------------------------------------------------
+# --- Bakery network (no default: smc-ops has no VPC yet; create one in foundation/networks/smc-ops/ first) -----------------------------------------------------
 
 variable "gcp_network" {
   type        = string
-  default     = "iq9-vpc-bakery-us-we1"
   description = "VPC network for the build VM — the dedicated bakery VPC."
 }
 
 variable "gcp_subnetwork" {
   type        = string
-  default     = "iq9-subnet-bakery-build"
   description = "Subnet for the build VM. Must live in the gcp_zone's region (us-west1)."
 }
 

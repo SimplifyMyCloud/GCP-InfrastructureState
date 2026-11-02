@@ -1,5 +1,7 @@
 # NOC Dashboard — `/wiki/noc`
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 The live view of GCP defense activity on the Yamato wiki. This is the page that turns the [Fort Knox claim](./security/fort-knox.md) into something a prospect can stare at: an IAP-gated dashboard, served as part of the wiki, that pulls Cloud Armor blocks, honeypot tripwire hits, and alert-policy state from the Cloud Logging and Cloud Monitoring APIs at request time and renders them as six tiles that refresh every 30 seconds. No slides, no narration, no recorded video — the dashboard is the evidence, and it updates while the prospect is still looking at it.
 
 This document is the *why* and the *how*: what the page is, the request lifecycle, the queries that feed each tile, the security posture, the IAM the user still needs to grant, and the open issues a reviewer flagged that did not block the ship. The code lives in the **Application Layer** (Go on Cloud Run); no Terraform was touched to add the route — but two new IAM bindings on the runtime SA *are* required for the tiles to populate, and those are called out below.

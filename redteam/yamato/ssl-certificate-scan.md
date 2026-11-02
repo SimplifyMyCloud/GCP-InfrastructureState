@@ -1,3 +1,5 @@
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../../foundation/readme.md).
+
 ✨ Gemini Enterprise:
 SSL/TLS Certificate Security Analysis Report                                                                                                                                
 

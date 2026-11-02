@@ -15,15 +15,13 @@ Each subdirectory here is one **recipe** — a self-contained Packer build for o
 
 | Recipe | Image | Purpose |
 | --- | --- | --- |
-| [`gitlab-offline/`](./gitlab-offline/) | _(stub)_ | Offline GitLab appliance image. |
-| [`gamilas-redteam/`](./gamilas-redteam/) | Ubuntu 22.04 + red-team toolkit | **Authorized** security-scanning box (GCP image **and** DigitalOcean snapshot) used to attack our own yamato wiki and prove the GCP defense-in-depth holds, logs, and alerts. |
-| [`tf-runner/`](./tf-runner/) | Ubuntu 22.04 + Terraform toolchain | The dedicated Terraform runner (`iq9-tf-runner`): pinned terraform + gcloud + a RO/RW service-account-swap wrapper, so all IaC runs happen on one auditable, keyless box gated by the release schedule. |
+| [`tf-runner/`](./tf-runner/) | Ubuntu 22.04 + Terraform toolchain | The dedicated Terraform runner (`smc-tf-runner`): pinned terraform + gcloud + a RO/RW service-account-swap wrapper, so all IaC runs happen on one auditable, keyless box gated by the release schedule. |
 
 ## Conventions
 
 - **HCL2 Packer** (`*.pkr.hcl`), `packer init` to fetch plugins, `packer fmt` + `packer
   validate` before build.
-- Image name standard: `iq9-img-{recipe}-{YYYYMMDD-hhmmss}`, image family `iq9-{role}`.
+- Image name standard: `smc-img-{recipe}-{YYYYMMDD-hhmmss}`, image family `smc-{role}`.
 - **Secrets are variables, never hardcoded** (API tokens, project IDs). Tool/content
   *selection* is hardcoded in provisioner scripts — the Foundation security perimeter is
   fixed in code, not parameterised.

@@ -1,46 +1,28 @@
-# Foundation Layer — Logging
+<!-- hand-written -->
+# foundation/logging
 
-The org-wide **cold log archive**: every log the organization emits, captured raw
-into cheap GCS ARCHIVE buckets, partitioned by category. Comprehensive, dumb, cheap.
+Where logs go. `logging/gcp-org/` and `logging/<env>/` hold org- and folder-level sinks; `logging/<env>/<project>/` holds each project's log buckets and sinks. Google's built-in `_Default` / `_Required` sinks are imported with `prevent_destroy` so git shows the whole flow.
 
-This is **deliberately separate from observability**. Live debugging, dashboards,
-metrics, and per-app querying live elsewhere — each project's `_Default` bucket and
-the Service Layer's own logging (see `service/yamato/dev/logging/` for this app).
-This layer never diverts or suppresses those; it only mirrors to immutable archive.
+The only custom routing today: **smc-dev folder → `smc-dev-env-log-sink` → `smc-dev-env-logging` bucket in smc-ops** (3-day retention).
 
-## Layering
+State for any directory below: `gs://smc-ops-tf-state/terraform/state/foundation/logging/<same path>/default.tfstate`.
 
-- **Foundation (here):** org-wide, captures **everything** raw into cheap archive.
-- **Service layer (per app):** custom performance + security logging, owned by each
-  app's dev/SRE team.
-
-## Two states
-
-| State | Owns | Apply order |
-| --- | --- | --- |
-| [`log-warehouse/`](./log-warehouse/) | `iq9-log-warehouse-01` project + three ARCHIVE buckets (`iq9-log-audit`, `iq9-log-security`, `iq9-log-archive`) | **1st** |
-| [`log-sinks/`](./log-sinks/) | Three org-level aggregated sinks (one per bucket) + their writer-identity IAM grants | **2nd** |
-
-Warehouse first — the sink state's bucket IAM bindings reference the buckets by name.
-
-## Categories (partitioned — union = everything, no overlap)
-
-| Bucket | Captures |
+| Directory | Terraform for |
 | --- | --- |
-| `iq9-log-audit` | Admin Activity + System Event (the change/admin trail) |
-| `iq9-log-security` | Data Access + Policy Denied + Access Transparency |
-| `iq9-log-archive` | Everything else (app/infra/general catch-all) |
+| [`smc-prod/`](smc-prod/) | the `smc-prod` folder itself |
+| [`smc-ops/`](smc-ops/) | the `smc-ops` folder itself |
+| [`smc-dev/`](smc-dev/) | the `smc-dev` folder itself |
+| [`gcp-org/`](gcp-org/) | the Org |
+| [`smc-dev/simplifymycloud-dev/`](smc-dev/simplifymycloud-dev/) | project `simplifymycloud-dev` |
+| [`smc-ops/smc-ops/`](smc-ops/smc-ops/) | project `smc-ops` |
+| [`smc-prod/smc-dental-knox/`](smc-prod/smc-dental-knox/) | project `smc-dental-knox` |
+| [`smc-prod/smc-prod-bbmrc/`](smc-prod/smc-prod-bbmrc/) | project `smc-prod-bbmrc` |
+| [`smc-prod/smc-prod-bigbarkozspeedshop/`](smc-prod/smc-prod-bigbarkozspeedshop/) | project `smc-prod-bigbarkozspeedshop` |
+| [`smc-prod/smc-prod-caballerosflyingclub/`](smc-prod/smc-prod-caballerosflyingclub/) | project `smc-prod-caballerosflyingclub` |
+| [`smc-prod/smc-prod-madeinwestgermany/`](smc-prod/smc-prod-madeinwestgermany/) | project `smc-prod-madeinwestgermany` |
+| [`smc-prod/smc-prod-olympic-flying-club/`](smc-prod/smc-prod-olympic-flying-club/) | project `smc-prod-olympic-flying-club` |
+| [`smc-prod/smc-prod-psmtherapy/`](smc-prod/smc-prod-psmtherapy/) | project `smc-prod-psmtherapy` |
+| [`smc-prod/smc-prod-simplifymycloud/`](smc-prod/smc-prod-simplifymycloud/) | project `smc-prod-simplifymycloud` |
+| [`smc-prod/smc-prod-trilliumhiring/`](smc-prod/smc-prod-trilliumhiring/) | project `smc-prod-trilliumhiring` |
 
-## Design decisions (2026-05-20)
-
-- **Destination:** GCS ARCHIVE only — retention, not querying.
-- **Retention:** 365-day lifecycle delete on all three buckets.
-- **Scope:** capture everything org-wide, partitioned into the three categories.
-- **Data Access audit logs:** left at GCP defaults org-wide (Admin Activity is always
-  on; Data Access stays off). Per-app teams opt in for their own project if needed —
-  yamato does, in its Service Layer.
-
-## Required permissions
-
-Applying `log-sinks` needs, at the **organization** scope (`933250405420`):
-`roles/logging.configWriter` + `roles/resourcemanager.organizationViewer`.
+Back to the [Foundation guide](../readme.md).

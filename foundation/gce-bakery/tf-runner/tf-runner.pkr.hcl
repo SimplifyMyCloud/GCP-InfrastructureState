@@ -2,7 +2,7 @@
 # Foundation Layer — GCE Bakery — recipe: tf-runner
 # Bakes the dedicated Terraform RUNNER image — the box that executes every terraform run
 # off humans' laptops and inside GCP, so the IaC pipeline has one reproducible, auditable
-# execution environment. This is the "iq9-tf-runner" VM referenced in the repo-root
+# execution environment. This is the "smc-tf-runner" VM referenced in the repo-root
 # gcp_provider.tf auth model: identity comes from the ATTACHED service account via the
 # metadata server (ADC), never from a key on disk (org policy forbids SA keys anyway).
 #
@@ -29,7 +29,7 @@ packer {
 }
 
 locals {
-  image_name = "iq9-img-tf-runner-${formatdate("YYYYMMDD-hhmmss", timestamp())}"
+  image_name = "smc-img-tf-runner-${formatdate("YYYYMMDD-hhmmss", timestamp())}"
 
   common_labels = {
     layer   = "foundation"
@@ -57,7 +57,7 @@ source "googlecompute" "tf_runner" {
 
   source_image_family = var.gcp_source_image_family
   image_name          = local.image_name
-  image_family        = "iq9-tf-runner"
+  image_family        = "smc-tf-runner"
   image_description   = "Dedicated Terraform runner (Ubuntu 22.04): terraform ${var.terraform_version}, gcloud, RO/RW SA-swap wrapper."
 
   ssh_username = var.ssh_username

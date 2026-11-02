@@ -1,5 +1,7 @@
 # Infrastructure State
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../foundation/readme.md).
+
 The shape, granularity, and change-control posture of the Terraform state files in this repo. This document is the *why* behind the foundation layer; the per-directory readmes are the *what*.
 
 ## The Foundation Layer

@@ -53,6 +53,4 @@ service-account email or key is pinned in any `*.tf` file.
 
 ## Apps
 
-| App | Description |
-| --- | --- |
-| [`yamato/`](./yamato/) | Star Blazers fact wiki — Cloud Run (Go) + Cloud SQL Postgres, behind an IAP-gated external HTTPS load balancer |
+**None deployed today** (2026-11-02). The previous app, `yamato` (Cloud Run + Cloud SQL behind an IAP load balancer), targeted the retired iq9 estate. Its Terraform was removed from this tree; it's still in git history, at tag `iq9-final`. A new app starts as `service/<app>/{modules,<env>}/` following the structure above.

@@ -1,5 +1,7 @@
 # Defense in Depth — the layered vault
 
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../../foundation/readme.md).
+
 [← Security index](./readme.md)
 
 IAP ([zero-trust-iap.md](./zero-trust-iap.md)) is the front door, but a door is not a vault.

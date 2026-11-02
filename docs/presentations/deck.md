@@ -1,3 +1,5 @@
+> **Historical (iq9 era).** Written for the retired **iq9** estate, which was torn down on 2026-11-01. The projects, names and URLs below no longer exist in the GCP Org. For the Org as it is today, see [`foundation/readme.md`](../../foundation/readme.md).
+
 <!--
 Deck: Life of a Packet — the six layers between a hostile network and your server
 Status: Pass 3 — full rebuild around 10-concept pairs (technical + Fort Knox parallel per concept)
